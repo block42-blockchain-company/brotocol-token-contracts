@@ -10,6 +10,7 @@ use crate::{
     commands,
     queries,
 };
+
 use services::vesting::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -39,9 +40,6 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Claim {} => {
-            commands::claim(deps, env, info)
-        }
         ExecuteMsg::UpdateConfig {
             owner,
             bro_token,
@@ -55,7 +53,10 @@ pub fn execute(
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::register_vesting_accounts(deps, vesting_accounts)
-        }
+        },
+        ExecuteMsg::Claim {} => {
+            commands::claim(deps, env, info)
+        },
     }
 }
 

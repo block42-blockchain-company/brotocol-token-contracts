@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InstantiateMsg",
+  "type": "object",
+  "required": [
+    "bbro_minter_contract",
+    "bro_token",
+    "epoch_manager_contract",
+    "rewards_pool_contract",
+    "unbond_period_blocks"
+  ],
+  "properties": {
+    "bbro_minter_contract": {
+      "type": "string"
+    },
+    "bro_token": {
+      "type": "string"
+    },
+    "epoch_manager_contract": {
+      "type": "string"
+    },
+    "rewards_pool_contract": {
+      "type": "string"
+    },
+    "unbond_period_blocks": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    }
+  }
+}

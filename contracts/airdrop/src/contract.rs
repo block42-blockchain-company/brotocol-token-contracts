@@ -44,9 +44,10 @@ pub fn execute(
     match msg {
         ExecuteMsg::UpdateConfig {
             owner,
+            bro_token,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, owner)
+            commands::update_config(deps, owner, bro_token)
         },
         ExecuteMsg::RegisterMerkleRoot {
             merkle_root,

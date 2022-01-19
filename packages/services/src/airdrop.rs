@@ -13,6 +13,7 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     UpdateConfig {
         owner: Option<String>,
+        bro_token: Option<String>,
     },
     RegisterMerkleRoot {
         merkle_root: String,

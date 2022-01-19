@@ -11,11 +11,15 @@ use crate::{
     },
 };
 
-pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, ContractError> {
+pub fn update_config(deps: DepsMut, owner: Option<String>, bro_token: Option<String>) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+    }
+
+    if let Some(bro_token) = bro_token {
+        config.bro_token = deps.api.addr_canonicalize(&bro_token)?;
     }
 
     store_config(deps.storage, &config)?;

@@ -11,6 +11,12 @@
         "update_config": {
           "type": "object",
           "properties": {
+            "bro_token": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "owner": {
               "type": [
                 "string",

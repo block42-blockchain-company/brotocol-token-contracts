@@ -1,0 +1,64 @@
+use cosmwasm_std::{DepsMut, Response, Env, Uint128, CosmosMsg, WasmMsg, to_binary};
+
+use crate::{
+    error::ContractError, state::{load_config, load_state, store_state},
+};
+
+use services::{
+    bonding::Cw20HookMsg as BondingHookMsg,
+    rewards::ExecuteMsg as RewardsMsg,
+    staking::Cw20HookMsg as StakingHookMsg,
+    querier::query_epoch_info,
+};
+
+
+pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
+    let config = load_config(deps.storage)?;
+    let mut state = load_state(deps.storage)?;
+
+    let current_block = env.block.height;
+    let blocks_since_last_distribution = current_block - state.last_distribution_block;
+
+    // query epoch from epoch_manager contract
+    let epoch_blocks = query_epoch_info(
+        &deps.querier, 
+        deps.api.addr_humanize(&config.epoch_manager_contract)?
+    )?.epoch;
+
+    // distribute rewards only for passed epochs
+    let passed_epochs = blocks_since_last_distribution / epoch_blocks;
+    if passed_epochs == 0 {
+        return Err(ContractError::NoRewards {});
+    }
+
+    let staking_distribution_amount = config.staking_distribution_amount.checked_mul(Uint128::from(passed_epochs))?;
+    let bonding_distribution_amount = config.bonding_distribution_amount.checked_mul(Uint128::from(passed_epochs))?;
+
+    state.last_distribution_block = state.last_distribution_block + (epoch_blocks * passed_epochs);
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new()
+        .add_messages(vec![
+            CosmosMsg::Wasm(WasmMsg::Execute {
+                contract_addr: deps.api.addr_humanize(&config.rewards_contract)?.to_string(),
+                funds: vec![],
+                msg: to_binary(&RewardsMsg::Reward {
+                    contract: deps.api.addr_humanize(&config.staking_contract)?.to_string(),
+                    amount: staking_distribution_amount,
+                    msg: to_binary(&StakingHookMsg::DistributeReward {
+                        distributed_at_block: env.block.height,
+                    })?
+                })?,
+            }),
+            CosmosMsg::Wasm(WasmMsg::Execute {
+                contract_addr: deps.api.addr_humanize(&config.rewards_contract)?.to_string(),
+                funds: vec![],
+                msg: to_binary(&RewardsMsg::Reward {
+                    contract: deps.api.addr_humanize(&config.bonding_contract)?.to_string(),
+                    amount: bonding_distribution_amount,
+                    msg: to_binary(&BondingHookMsg::DistributeReward {})?
+                })?,
+            }),
+        ])
+    )
+}

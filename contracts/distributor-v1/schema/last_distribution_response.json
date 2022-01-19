@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LastDistributionResponse",
+  "type": "object",
+  "required": [
+    "last_distribution_block"
+  ],
+  "properties": {
+    "last_distribution_block": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    }
+  }
+}

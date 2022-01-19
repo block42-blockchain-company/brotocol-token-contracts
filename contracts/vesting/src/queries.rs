@@ -1,6 +1,7 @@
 use cosmwasm_std::{Deps, StdResult, Env};
 
 use crate::state::{load_config, load_vesting_info, read_vesting_infos};
+
 use services::{
     common::OrderBy,
     vesting::{

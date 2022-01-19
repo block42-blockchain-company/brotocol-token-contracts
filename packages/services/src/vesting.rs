@@ -14,7 +14,6 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Claim {},
     UpdateConfig {
         owner: Option<String>,
         bro_token: Option<String>,
@@ -23,6 +22,7 @@ pub enum ExecuteMsg {
     RegisterVestingAccounts {
         vesting_accounts: Vec<VestingAccount>,
     },
+    Claim {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

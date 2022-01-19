@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cw20HookMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "distribute_reward"
+      ],
+      "properties": {
+        "distribute_reward": {
+          "type": "object",
+          "required": [
+            "distributed_at_block"
+          ],
+          "properties": {
+            "distributed_at_block": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "bond"
+      ],
+      "properties": {
+        "bond": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 use cosmwasm_std::{Deps, StdResult};
 
 use crate::state::{load_config, load_stage, load_merkle_root, read_claimed};
-use services::airdrop::{ConfigResponse, LatestStageResponse, MerkleRootResponse, IsClaimedResponse};
+
+use services::airdrop::{
+    ConfigResponse, LatestStageResponse, MerkleRootResponse, IsClaimedResponse
+};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;

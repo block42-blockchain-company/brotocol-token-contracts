@@ -82,6 +82,14 @@ pub fn lp_bond(
     store_claims(deps.storage, &sender_raw, &claims)?;
 
     Ok(Response::new()
+        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: deps.api.addr_humanize(&config.lp_token)?.to_string(),
+            funds: vec![],
+            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                recipient: deps.api.addr_humanize(&config.treasury_contract)?.to_string(),
+                amount: lp_amount,
+            })?,
+        })])
         .add_attributes(vec![
             ("action", "lp_bond"),
         ])
@@ -123,7 +131,16 @@ pub fn ust_bond(
 
     store_claims(deps.storage, &sender_raw, &claims)?;
 
+    let ust_transfer = Asset {
+        info: AssetInfo::NativeToken { denom: "uusd".to_string() },
+        amount: bond_amount,
+    };
+
     Ok(Response::new()
+        .add_messages(vec![
+            ust_transfer
+                .into_msg(&deps.querier, deps.api.addr_humanize(&config.treasury_contract)?)?,
+        ])
         .add_attributes(vec![
             ("action", "ust_bond"),
         ])

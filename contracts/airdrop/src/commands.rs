@@ -102,7 +102,7 @@ pub fn claim(
             funds: vec![],
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: user.to_string(),
-                amount: amount,
+                amount,
             })?,
         })])
         .add_attributes(vec![

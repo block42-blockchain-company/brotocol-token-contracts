@@ -23,8 +23,8 @@ pub fn query_latest_stage(deps: Deps) -> StdResult<LatestStageResponse> {
 pub fn query_merkle_root(deps: Deps, stage: u8) -> StdResult<MerkleRootResponse> {
     let merkle_root = load_merkle_root(deps.storage, stage)?;
     let resp = MerkleRootResponse {
-        stage: stage,
-        merkle_root: merkle_root,
+        stage,
+        merkle_root,
     };
 
     Ok(resp)

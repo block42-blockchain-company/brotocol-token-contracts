@@ -31,6 +31,7 @@ pub fn load_stage(storage: &dyn Storage) -> StdResult<u8> {
     STAGE.load(storage)
 }
 
+#[allow(clippy::ptr_arg)]
 pub fn store_merkle_root(
     storage: &mut dyn Storage,
     stage: u8,

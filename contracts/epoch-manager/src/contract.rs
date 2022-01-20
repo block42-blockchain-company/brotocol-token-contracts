@@ -1,16 +1,17 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Storage, Api, Addr};
+use cosmwasm_std::{
+    to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Storage,
+};
 
 use crate::{
-    error::ContractError, state::{store_config, Config, store_state, State, load_config},
     commands,
+    error::ContractError,
     queries,
+    state::{load_config, store_config, store_state, Config, State},
 };
 
-use services::epoch_manager::{
-    InstantiateMsg, ExecuteMsg, QueryMsg,
-};
+use services::epoch_manager::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -32,7 +33,7 @@ pub fn instantiate(
             epoch: msg.epoch,
             blocks_per_year: msg.blocks_per_year,
             bbro_emission_rate: msg.bbro_emission_rate,
-        }
+        },
     )?;
 
     Ok(Response::default())
@@ -46,12 +47,10 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig {
-            owner,
-        } => {
+        ExecuteMsg::UpdateConfig { owner } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(deps, owner)
-        },
+        }
         ExecuteMsg::UpdateState {
             epoch,
             blocks_per_year,
@@ -67,7 +66,7 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
     if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
         return Err(ContractError::Unauthorized {});
     }
-    
+
     Ok(())
 }
 
@@ -78,4 +77,3 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::EpochInfo {} => to_binary(&queries::query_epoch_info(deps)?),
     }
 }
-

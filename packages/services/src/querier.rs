@@ -1,15 +1,11 @@
-use cosmwasm_std::{StdResult, QueryRequest, QuerierWrapper, WasmQuery, Addr, to_binary};
+use cosmwasm_std::{to_binary, Addr, QuerierWrapper, QueryRequest, StdResult, WasmQuery};
+
 use astroport::{
     asset::{Asset, AssetInfo},
     querier::query_pair_info,
 };
 
-use crate::{
-    epoch_manager::{
-        QueryMsg as EpochManagerQuery,
-        EpochInfoResponse,
-    },
-};
+use crate::epoch_manager::{EpochInfoResponse, QueryMsg as EpochManagerQuery};
 
 pub fn query_epoch_info(
     querier: &QuerierWrapper,
@@ -26,11 +22,7 @@ pub fn query_pools(
     astro_factory: Addr,
     asset_info: &[AssetInfo; 2],
 ) -> StdResult<[Asset; 2]> {
-    let pair_info = query_pair_info(
-        querier, 
-        astro_factory,
-        asset_info,
-    )?;
+    let pair_info = query_pair_info(querier, astro_factory, asset_info)?;
 
     let pair_addr = pair_info.contract_addr.clone();
     let pools = pair_info.query_pools(querier, pair_addr)?;

@@ -1,22 +1,19 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, StdError};
+use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult};
 
 use cw20_base::{
-    ContractError,
-    msg::{InstantiateMsg, ExecuteMsg, QueryMsg},
     allowances::{
+        execute_burn_from as cw20_burn_from, execute_decrease_allowance as cw20_decrease_allowance,
         execute_increase_allowance as cw20_increase_allowance,
-        execute_decrease_allowance as cw20_decrease_allowance,
-        execute_burn_from as cw20_burn_from,
     },
     contract::{
-        instantiate as cw20_instantiate,
-        execute_mint as cw20_mint,
-        execute_update_marketing as cw20_update_marketing,
-        execute_upload_logo as cw20_upload_logo,
+        execute_mint as cw20_mint, execute_update_marketing as cw20_update_marketing,
+        execute_upload_logo as cw20_upload_logo, instantiate as cw20_instantiate,
         query as cw20_query,
     },
+    msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
+    ContractError,
 };
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -47,14 +44,8 @@ pub fn execute(
             amount,
             expires,
         } => cw20_decrease_allowance(deps, env, info, spender, amount, expires),
-        ExecuteMsg::Mint {
-            recipient,
-            amount,
-        } => cw20_mint(deps, env, info, recipient, amount),
-        ExecuteMsg::BurnFrom {
-            owner,
-            amount,
-        } => cw20_burn_from(deps, env, info, owner, amount),
+        ExecuteMsg::Mint { recipient, amount } => cw20_mint(deps, env, info, recipient, amount),
+        ExecuteMsg::BurnFrom { owner, amount } => cw20_burn_from(deps, env, info, owner, amount),
         ExecuteMsg::UpdateMarketing {
             project,
             description,

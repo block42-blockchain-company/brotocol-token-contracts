@@ -1,7 +1,7 @@
-use cosmwasm_std::{Uint128, Decimal};
+use cosmwasm_std::{Decimal, Uint128};
+use cw20::{Cw20ReceiveMsg, Expiration};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cw20::{Cw20ReceiveMsg, Expiration};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
@@ -16,9 +16,7 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     Receive(Cw20ReceiveMsg),
-    Unbond {
-        amount: Uint128,
-    },
+    Unbond { amount: Uint128 },
     Withdraw {},
     ClaimRewards {},
 }
@@ -26,9 +24,7 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Cw20HookMsg {
-    DistributeReward {
-        distributed_at_block: u64,
-    },
+    DistributeReward { distributed_at_block: u64 },
     Bond {},
 }
 
@@ -37,15 +33,9 @@ pub enum Cw20HookMsg {
 pub enum QueryMsg {
     Config {},
     State {},
-    StakerInfo {
-        staker: String,
-    },
-    StakerAccruedRewards {
-        staker: String,
-    },
-    Withdrawals {
-        staker: String,
-    },
+    StakerInfo { staker: String },
+    StakerAccruedRewards { staker: String },
+    Withdrawals { staker: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

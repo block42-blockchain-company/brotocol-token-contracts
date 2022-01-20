@@ -2,9 +2,7 @@ use std::env::current_dir;
 use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
-use cw20_base::{
-    msg::{InstantiateMsg, ExecuteMsg, QueryMsg},
-};
+use cw20_base::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 fn main() {
     let mut out_dir = current_dir().unwrap();

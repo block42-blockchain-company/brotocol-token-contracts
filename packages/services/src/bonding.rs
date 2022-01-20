@@ -1,7 +1,7 @@
 use cosmwasm_std::{Decimal, Uint128};
+use cw20::{Cw20ReceiveMsg, Expiration};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cw20::{Cw20ReceiveMsg, Expiration};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
@@ -35,9 +35,7 @@ pub enum Cw20HookMsg {
 pub enum QueryMsg {
     Config {},
     State {},
-    Claims {
-        address: String,
-    },
+    Claims { address: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

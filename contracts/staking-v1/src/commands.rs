@@ -1,25 +1,22 @@
 use cosmwasm_std::{
-    DepsMut, MessageInfo, Uint128, Response, CosmosMsg, WasmMsg, to_binary, 
-    Env, StdResult, Decimal, Addr, QuerierWrapper,
+    to_binary, Addr, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, QuerierWrapper, Response,
+    StdResult, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Expiration};
 
 use crate::{
     error::ContractError,
     state::{
-        load_config, load_state, read_staker_info, remove_staker_info, 
-        store_staker_info, store_state, load_withdrawals, WithdrawalInfo, store_withdrawals, StakerInfo, State,
+        load_config, load_state, load_withdrawals, read_staker_info, remove_staker_info,
+        store_staker_info, store_state, store_withdrawals, StakerInfo, State, WithdrawalInfo,
     },
 };
 
-use services::{
-    bbro_minter::ExecuteMsg as BbroMintMsg,
-    querier::query_epoch_info
-};
+use services::{bbro_minter::ExecuteMsg as BbroMintMsg, querier::query_epoch_info};
 
 pub fn distribute_reward(
-    deps: DepsMut, 
-    reward_amount: Uint128, 
+    deps: DepsMut,
+    reward_amount: Uint128,
     distributed_at_block: u64,
 ) -> Result<Response, ContractError> {
     let mut state = load_state(deps.storage)?;
@@ -30,17 +27,15 @@ pub fn distribute_reward(
     }
 
     state.last_distribution_block = distributed_at_block;
-    state.global_reward_index = state.global_reward_index
-        + Decimal::from_ratio(reward_amount, state.total_bond_amount);
+    state.global_reward_index =
+        state.global_reward_index + Decimal::from_ratio(reward_amount, state.total_bond_amount);
 
     store_state(deps.storage, &state)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "compute_reward"),
-            ("distributed_reward", &reward_amount.to_string()),
-        ])
-    )
+    Ok(Response::new().add_attributes(vec![
+        ("action", "compute_reward"),
+        ("distributed_reward", &reward_amount.to_string()),
+    ]))
 }
 
 pub fn bond(
@@ -72,7 +67,10 @@ pub fn bond(
     let mut msgs: Vec<CosmosMsg> = vec![];
     if !bbro_staking_reward.is_zero() {
         msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: deps.api.addr_humanize(&config.bbro_minter_contract)?.to_string(),
+            contract_addr: deps
+                .api
+                .addr_humanize(&config.bbro_minter_contract)?
+                .to_string(),
             funds: vec![],
             msg: to_binary(&BbroMintMsg::Mint {
                 recipient: sender_addr.to_string(),
@@ -80,15 +78,12 @@ pub fn bond(
             })?,
         }))
     }
-    
-    Ok(Response::new()
-        .add_messages(msgs)
-        .add_attributes(vec![
-            ("action", "bond"),
-            ("staker", &sender_addr.to_string()),
-            ("amount", &amount.to_string()),
-        ])
-    )
+
+    Ok(Response::new().add_messages(msgs).add_attributes(vec![
+        ("action", "bond"),
+        ("staker", &sender_addr.to_string()),
+        ("amount", &amount.to_string()),
+    ]))
 }
 
 pub fn unbond(
@@ -130,16 +125,19 @@ pub fn unbond(
     let claimable_at = Expiration::AtHeight(env.block.height + config.unbond_period_blocks);
     let mut staker_withdrawals = load_withdrawals(deps.storage, &sender_addr_raw)?;
     staker_withdrawals.push(WithdrawalInfo {
-        amount: amount,
-        claimable_at: claimable_at,
+        amount,
+        claimable_at,
     });
-    
+
     store_withdrawals(deps.storage, &sender_addr_raw, &staker_withdrawals)?;
 
     let mut msgs: Vec<CosmosMsg> = vec![];
     if !bbro_staking_reward.is_zero() {
         msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: deps.api.addr_humanize(&config.bbro_minter_contract)?.to_string(),
+            contract_addr: deps
+                .api
+                .addr_humanize(&config.bbro_minter_contract)?
+                .to_string(),
             funds: vec![],
             msg: to_binary(&BbroMintMsg::Mint {
                 recipient: info.sender.to_string(),
@@ -148,21 +146,14 @@ pub fn unbond(
         }))
     }
 
-    Ok(Response::new()
-        .add_messages(msgs)
-        .add_attributes(vec![
-            ("action", "unbond"),
-            ("staker", &info.sender.to_string()),
-            ("amount", &amount.to_string()),
-        ])
-    )
+    Ok(Response::new().add_messages(msgs).add_attributes(vec![
+        ("action", "unbond"),
+        ("staker", &info.sender.to_string()),
+        ("amount", &amount.to_string()),
+    ]))
 }
 
-pub fn withdraw(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-) -> Result<Response, ContractError> {
+pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
 
@@ -199,14 +190,17 @@ pub fn withdraw(
             ("action", "withdraw"),
             ("staker", &info.sender.to_string()),
             ("amount", &amount.to_string()),
-        ])
-    )
+        ]))
 }
 
-pub fn claim_rewards(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
+pub fn claim_rewards(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let state = load_state(deps.storage)?;
-    
+
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
 
@@ -220,24 +214,21 @@ pub fn claim_rewards(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Respo
     } else {
         store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
     }
-    
+
     Ok(Response::new()
-        .add_messages(vec![
-            CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
-                funds: vec![],
-                msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                    recipient: info.sender.to_string(),
-                    amount,
-                })?,
-            }),
-        ])
+        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
+            funds: vec![],
+            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                recipient: info.sender.to_string(),
+                amount,
+            })?,
+        })])
         .add_attributes(vec![
             ("action", "withdraw"),
             ("staker", &info.sender.to_string()),
             ("amount", &amount.to_string()),
-        ])
-    )
+        ]))
 }
 
 fn compute_staker_bbro_reward(
@@ -250,16 +241,16 @@ fn compute_staker_bbro_reward(
         return Ok(Uint128::zero());
     }
 
-    let epoch_info = query_epoch_info(
-        querier, 
-        epoch_manager_contract,
-    )?;
+    let epoch_info = query_epoch_info(querier, epoch_manager_contract)?;
 
-    let epochs_staked = Uint128::from(state.last_distribution_block - staker_info.last_balance_update)
-        .checked_div(Uint128::from(epoch_info.epoch))?;
+    let epochs_staked =
+        Uint128::from(state.last_distribution_block - staker_info.last_balance_update)
+            .checked_div(Uint128::from(epoch_info.epoch))?;
 
-    let bbro_per_epoch_reward = staker_info.bond_amount
-        .checked_div(epoch_info.epochs_per_year())? * epoch_info.bbro_emission_rate;
+    let bbro_per_epoch_reward = staker_info
+        .bond_amount
+        .checked_div(epoch_info.epochs_per_year())?
+        * epoch_info.bbro_emission_rate;
 
     let bbro_reward = bbro_per_epoch_reward.checked_mul(epochs_staked)?;
 

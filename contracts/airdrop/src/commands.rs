@@ -11,7 +11,11 @@ use crate::{
     },
 };
 
-pub fn update_config(deps: DepsMut, owner: Option<String>, bro_token: Option<String>) -> Result<Response, ContractError> {
+pub fn update_config(
+    deps: DepsMut,
+    owner: Option<String>,
+    bro_token: Option<String>,
+) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     if let Some(owner) = owner {

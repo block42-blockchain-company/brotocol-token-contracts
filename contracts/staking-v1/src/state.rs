@@ -1,8 +1,8 @@
+use cosmwasm_std::{CanonicalAddr, Decimal, StdResult, Storage, Uint128};
 use cw20::Expiration;
+use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cosmwasm_std::{Storage, StdResult, CanonicalAddr, Decimal, Uint128};
-use cw_storage_plus::{Item, Map};
 
 static CONFIG: Item<Config> = Item::new("config");
 static STATE: Item<State> = Item::new("state");
@@ -27,8 +27,8 @@ pub struct State {
 
 impl State {
     pub fn increase_bond_amount(
-        &mut self, 
-        staker_info: &mut StakerInfo, 
+        &mut self,
+        staker_info: &mut StakerInfo,
         amount: Uint128,
         current_block: u64,
     ) {
@@ -38,8 +38,8 @@ impl State {
     }
 
     pub fn decrease_bond_amount(
-        &mut self, 
-        staker_info: &mut StakerInfo, 
+        &mut self,
+        staker_info: &mut StakerInfo,
         amount: Uint128,
         current_block: u64,
     ) -> StdResult<()> {
@@ -63,7 +63,7 @@ impl StakerInfo {
     pub fn compute_staker_reward(&mut self, state: &State) -> StdResult<()> {
         let pending_reward = (self.bond_amount * state.global_reward_index)
             .checked_sub(self.bond_amount * self.reward_index)?;
-    
+
         self.reward_index = state.global_reward_index;
         self.pending_reward += pending_reward;
         Ok(())
@@ -92,11 +92,19 @@ pub fn load_state(storage: &dyn Storage) -> StdResult<State> {
     STATE.load(storage)
 }
 
-pub fn store_staker_info(storage: &mut dyn Storage, staker: &CanonicalAddr, info: &StakerInfo) -> StdResult<()> {
+pub fn store_staker_info(
+    storage: &mut dyn Storage,
+    staker: &CanonicalAddr,
+    info: &StakerInfo,
+) -> StdResult<()> {
     STAKERS.save(storage, staker.as_slice(), info)
 }
 
-pub fn read_staker_info(storage: &dyn Storage, staker: &CanonicalAddr, current_block: u64) -> StdResult<StakerInfo> {
+pub fn read_staker_info(
+    storage: &dyn Storage,
+    staker: &CanonicalAddr,
+    current_block: u64,
+) -> StdResult<StakerInfo> {
     let res: Option<StakerInfo> = STAKERS.may_load(storage, staker.as_slice())?;
 
     match res {
@@ -106,7 +114,7 @@ pub fn read_staker_info(storage: &dyn Storage, staker: &CanonicalAddr, current_b
             bond_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: current_block,
-        })
+        }),
     }
 }
 
@@ -114,10 +122,20 @@ pub fn remove_staker_info(storage: &mut dyn Storage, staker: &CanonicalAddr) {
     STAKERS.remove(storage, staker.as_slice())
 }
 
-pub fn store_withdrawals(storage: &mut dyn Storage, staker: &CanonicalAddr, claims: &Vec<WithdrawalInfo>) -> StdResult<()> {
+#[allow(clippy::ptr_arg)]
+pub fn store_withdrawals(
+    storage: &mut dyn Storage,
+    staker: &CanonicalAddr,
+    claims: &Vec<WithdrawalInfo>,
+) -> StdResult<()> {
     WITHDRAWALS.save(storage, staker.as_slice(), claims)
 }
 
-pub fn load_withdrawals(storage: &dyn Storage, staker: &CanonicalAddr) -> StdResult<Vec<WithdrawalInfo>> {
-    WITHDRAWALS.may_load(storage, staker.as_slice()).map(|res| res.unwrap_or_default())
+pub fn load_withdrawals(
+    storage: &dyn Storage,
+    staker: &CanonicalAddr,
+) -> StdResult<Vec<WithdrawalInfo>> {
+    WITHDRAWALS
+        .may_load(storage, staker.as_slice())
+        .map(|res| res.unwrap_or_default())
 }

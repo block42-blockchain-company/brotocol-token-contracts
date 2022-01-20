@@ -1,18 +1,19 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, from_binary, Decimal, Uint128};
+use cosmwasm_std::{
+    from_binary, to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    Uint128,
+};
 use cw20::Cw20ReceiveMsg;
 
 use crate::{
-    error::ContractError,
-    state::{load_config, store_config, Config, store_state, State},
     commands,
+    error::ContractError,
     queries,
+    state::{load_config, store_config, store_state, Config, State},
 };
 
-use services::staking::{
-    Cw20HookMsg, ExecuteMsg, InstantiateMsg, QueryMsg,
-};
+use services::staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -53,9 +54,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
-        ExecuteMsg::Unbond {
-            amount,
-        } => commands::unbond(deps, env, info, amount),
+        ExecuteMsg::Unbond { amount } => commands::unbond(deps, env, info, amount),
         ExecuteMsg::Withdraw {} => commands::withdraw(deps, env, info),
         ExecuteMsg::ClaimRewards {} => commands::claim_rewards(deps, env, info),
     }
@@ -82,11 +81,11 @@ pub fn receive_cw20(
             }
 
             commands::distribute_reward(deps, cw20_msg.amount, distributed_at_block)
-        },
+        }
         Ok(Cw20HookMsg::Bond {}) => {
             let cw20_sender = deps.api.addr_validate(&cw20_msg.sender)?;
             commands::bond(deps, env, cw20_sender, cw20_msg.amount)
-        },
+        }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }
 }
@@ -96,14 +95,12 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
-        QueryMsg::StakerInfo {
-            staker,
-        } => to_binary(&queries::query_staker_info(deps, env, staker)?),
-        QueryMsg::StakerAccruedRewards {
-            staker,
-        } => to_binary(&queries::query_staker_accrued_rewards(deps, env, staker)?),
-        QueryMsg::Withdrawals {
-            staker,
-        } => to_binary(&queries::query_withdrawals(deps, staker)?),
+        QueryMsg::StakerInfo { staker } => {
+            to_binary(&queries::query_staker_info(deps, env, staker)?)
+        }
+        QueryMsg::StakerAccruedRewards { staker } => {
+            to_binary(&queries::query_staker_accrued_rewards(deps, env, staker)?)
+        }
+        QueryMsg::Withdrawals { staker } => to_binary(&queries::query_withdrawals(deps, staker)?),
     }
 }

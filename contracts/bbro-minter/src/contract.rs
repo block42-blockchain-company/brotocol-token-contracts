@@ -1,19 +1,18 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, 
-    Response, StdResult, CanonicalAddr, Storage, Api, Addr,
+    to_binary, Addr, Api, Binary, CanonicalAddr, Deps, DepsMut, Env, MessageInfo, Response,
+    StdResult, Storage,
 };
 
 use crate::{
-    error::ContractError, state::{store_config, Config, load_config},
     commands,
+    error::ContractError,
     queries,
+    state::{load_config, store_config, Config},
 };
 
-use services::bbro_minter::{
-    ExecuteMsg, InstantiateMsg, QueryMsg,
-};
+use services::bbro_minter::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -22,7 +21,8 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let whitelist = msg.whitelist
+    let whitelist = msg
+        .whitelist
         .into_iter()
         .map(|w| deps.api.addr_canonicalize(&w))
         .collect::<StdResult<Vec<CanonicalAddr>>>()?;
@@ -32,7 +32,7 @@ pub fn instantiate(
         &Config {
             gov_contract: deps.api.addr_canonicalize(&msg.gov_contract)?,
             bbro_token: deps.api.addr_canonicalize(&msg.bbro_token)?,
-            whitelist: whitelist,
+            whitelist,
         },
     )?;
 
@@ -53,27 +53,17 @@ pub fn execute(
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(deps, new_gov_contract, bbro_token)
-        },
-        ExecuteMsg::AddMinter {
-            minter,
-        } => {
+        }
+        ExecuteMsg::AddMinter { minter } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::add_minter(deps, minter)
-        },
-        ExecuteMsg::RemoveMinter {
-            minter,
-        } => {
+        }
+        ExecuteMsg::RemoveMinter { minter } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::remove_minter(deps, minter)
-        },
-        ExecuteMsg::Mint {
-            recipient,
-            amount,
-        } => commands::mint(deps, info, recipient, amount),
-        ExecuteMsg::Burn {
-            owner,
-            amount,
-        } => commands::burn(deps, info, owner, amount),
+        }
+        ExecuteMsg::Mint { recipient, amount } => commands::mint(deps, info, recipient, amount),
+        ExecuteMsg::Burn { owner, amount } => commands::burn(deps, info, owner, amount),
     }
 }
 
@@ -81,7 +71,7 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
     if load_config(storage)?.gov_contract != api.addr_canonicalize(sender.as_str())? {
         return Err(ContractError::Unauthorized {});
     }
-    
+
     Ok(())
 }
 

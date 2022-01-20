@@ -1,22 +1,21 @@
 use cosmwasm_std::{
-    DepsMut, Uint128, Response, CanonicalAddr, MessageInfo, Coin, CosmosMsg, 
-    WasmMsg, to_binary, Decimal, StdResult, QuerierWrapper, Addr, Env,
+    to_binary, Addr, CanonicalAddr, Coin, CosmosMsg, Decimal, DepsMut, Env, MessageInfo,
+    QuerierWrapper, Response, StdResult, Uint128, WasmMsg,
 };
-use std::str::FromStr;
 use cw20::{Cw20ExecuteMsg, Expiration};
+use std::str::FromStr;
+
 use astroport::{
     asset::{Asset, AssetInfo},
     querier::query_supply,
 };
 
 use crate::{
-    error::ContractError, 
-    state::{load_config, load_state, store_state, load_claims, ClaimInfo, store_claims, BondType},
+    error::ContractError,
+    state::{load_claims, load_config, load_state, store_claims, store_state, BondType, ClaimInfo},
 };
 
-use services::{
-    querier::query_pools,
-};
+use services::querier::query_pools;
 
 pub fn distribute_reward(deps: DepsMut, amount: Uint128) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
@@ -30,13 +29,11 @@ pub fn distribute_reward(deps: DepsMut, amount: Uint128) -> Result<Response, Con
 
     store_state(deps.storage, &state)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "distribute_reward"),
-            ("ust_bond_amount", &ust_bond_amount.to_string()),
-            ("lp_bond_amount", &lp_bond_amount.to_string()),
-        ])
-    )
+    Ok(Response::new().add_attributes(vec![
+        ("action", "distribute_reward"),
+        ("ust_bond_amount", &ust_bond_amount.to_string()),
+        ("lp_bond_amount", &lp_bond_amount.to_string()),
+    ]))
 }
 
 pub fn lp_bond(
@@ -49,15 +46,15 @@ pub fn lp_bond(
     let mut state = load_state(deps.storage)?;
 
     let pools = query_bro_ust_pool(
-        &deps.querier, 
-        deps.api.addr_humanize(&config.astroport_factory)?, 
+        &deps.querier,
+        deps.api.addr_humanize(&config.astroport_factory)?,
         deps.api.addr_humanize(&config.bro_token)?,
     )?;
-    
+
     let (bro_amount, ust_amount) = convert_lp_into_amounts(
-        &deps.querier, 
-        &pools, 
-        lp_amount, 
+        &deps.querier,
+        &pools,
+        lp_amount,
         deps.api.addr_humanize(&config.lp_token)?,
     )?;
 
@@ -86,27 +83,23 @@ pub fn lp_bond(
             contract_addr: deps.api.addr_humanize(&config.lp_token)?.to_string(),
             funds: vec![],
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                recipient: deps.api.addr_humanize(&config.treasury_contract)?.to_string(),
+                recipient: deps
+                    .api
+                    .addr_humanize(&config.treasury_contract)?
+                    .to_string(),
                 amount: lp_amount,
             })?,
         })])
-        .add_attributes(vec![
-            ("action", "lp_bond"),
-        ])
-    )
+        .add_attributes(vec![("action", "lp_bond")]))
 }
 
-pub fn ust_bond(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-) -> Result<Response, ContractError> {
+pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
     let pools = query_bro_ust_pool(
-        &deps.querier, 
-        deps.api.addr_humanize(&config.astroport_factory)?, 
+        &deps.querier,
+        deps.api.addr_humanize(&config.astroport_factory)?,
         deps.api.addr_humanize(&config.bro_token)?,
     )?;
 
@@ -132,26 +125,21 @@ pub fn ust_bond(
     store_claims(deps.storage, &sender_raw, &claims)?;
 
     let ust_transfer = Asset {
-        info: AssetInfo::NativeToken { denom: "uusd".to_string() },
+        info: AssetInfo::NativeToken {
+            denom: "uusd".to_string(),
+        },
         amount: bond_amount,
     };
 
     Ok(Response::new()
-        .add_messages(vec![
-            ust_transfer
-                .into_msg(&deps.querier, deps.api.addr_humanize(&config.treasury_contract)?)?,
-        ])
-        .add_attributes(vec![
-            ("action", "ust_bond"),
-        ])
-    )
+        .add_messages(vec![ust_transfer.into_msg(
+            &deps.querier,
+            deps.api.addr_humanize(&config.treasury_contract)?,
+        )?])
+        .add_attributes(vec![("action", "ust_bond")]))
 }
 
-pub fn claim(
-    deps: DepsMut, 
-    env: Env, 
-    info: MessageInfo,
-) -> Result<Response, ContractError> {
+pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
 
     let sender_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
@@ -175,7 +163,7 @@ pub fn claim(
     }
 
     store_claims(deps.storage, &sender_raw, &claims)?;
-    
+
     Ok(Response::new()
         .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
@@ -185,13 +173,10 @@ pub fn claim(
                 amount,
             })?,
         })])
-        .add_attributes(vec![
-            ("action", "claim"),
-        ])
-    )
+        .add_attributes(vec![("action", "claim")]))
 }
 
-fn extract_ust_amount(funds: &Vec<Coin>) -> Result<Uint128, ContractError> {
+fn extract_ust_amount(funds: &[Coin]) -> Result<Uint128, ContractError> {
     if funds.len() != 1 || funds[0].denom != "uusd" || funds[0].amount.is_zero() {
         return Err(ContractError::InvalidFundsInput {});
     }
@@ -199,22 +184,18 @@ fn extract_ust_amount(funds: &Vec<Coin>) -> Result<Uint128, ContractError> {
     Ok(funds[0].amount)
 }
 
-fn convert_ust_into_bro(
-    ust_amount: Uint128,
-    pools: &[Asset; 2],
-) -> StdResult<Uint128> {
-    let bro_amount = pools[0].amount
+fn convert_ust_into_bro(ust_amount: Uint128, pools: &[Asset; 2]) -> StdResult<Uint128> {
+    let bro_amount = pools[0]
+        .amount
         .checked_div(pools[1].amount)?
         .checked_mul(ust_amount)?;
 
     Ok(bro_amount)
 }
 
-fn convert_bro_into_ust(
-    bro_amount: Uint128,
-    pools: &[Asset; 2],
-) -> StdResult<Uint128> {
-    let ust_amount = pools[1].amount
+fn convert_bro_into_ust(bro_amount: Uint128, pools: &[Asset; 2]) -> StdResult<Uint128> {
+    let ust_amount = pools[1]
+        .amount
         .checked_div(pools[0].amount)?
         .checked_mul(bro_amount)?;
 
@@ -228,13 +209,19 @@ fn query_bro_ust_pool(
     astro_factory: Addr,
     bro_token: Addr,
 ) -> StdResult<[Asset; 2]> {
-    let asset_info = 
-        [AssetInfo::NativeToken { denom: "uusd".to_string() }, AssetInfo::Token { contract_addr: bro_token }];
+    let asset_info = [
+        AssetInfo::NativeToken {
+            denom: "uusd".to_string(),
+        },
+        AssetInfo::Token {
+            contract_addr: bro_token,
+        },
+    ];
 
     let pools = query_pools(querier, astro_factory, &asset_info)?;
     match &pools[0].info {
         AssetInfo::Token { .. } => Ok(pools),
-        AssetInfo::NativeToken { .. } => Ok([pools[1].clone(), pools[0].clone()])
+        AssetInfo::NativeToken { .. } => Ok([pools[1].clone(), pools[0].clone()]),
     }
 }
 

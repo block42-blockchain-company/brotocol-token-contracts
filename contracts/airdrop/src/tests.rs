@@ -63,9 +63,9 @@ fn update_config() {
 
     // Unauthorzied err
     let info = mock_info("owner0000", &[]);
-    let msg = ExecuteMsg::UpdateConfig { 
+    let msg = ExecuteMsg::UpdateConfig {
         owner: None,
-        bro_token: None, 
+        bro_token: None,
     };
 
     let res = execute(deps.as_mut(), mock_env(), info, msg);

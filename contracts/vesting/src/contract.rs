@@ -52,9 +52,7 @@ pub fn execute(
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::register_vesting_accounts(deps, vesting_accounts)
         }
-        ExecuteMsg::Claim {} => {
-            commands::claim(deps, env, info)
-        }
+        ExecuteMsg::Claim {} => commands::claim(deps, env, info),
     }
 }
 

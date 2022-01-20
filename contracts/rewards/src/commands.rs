@@ -1,4 +1,6 @@
-use cosmwasm_std::{DepsMut, Uint128, Response, CosmosMsg, WasmMsg, to_binary, MessageInfo, CanonicalAddr, Binary,};
+use cosmwasm_std::{
+    to_binary, Binary, CanonicalAddr, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg,
+};
 use cw20::Cw20ExecuteMsg;
 
 use crate::{
@@ -21,7 +23,7 @@ pub fn update_config(
     if let Some(bro_token) = bro_token {
         config.bro_token = deps.api.addr_canonicalize(&bro_token)?;
     }
-    
+
     if let Some(spend_limit) = spend_limit {
         config.spend_limit = spend_limit;
     }
@@ -35,19 +37,22 @@ pub fn add_distributor(deps: DepsMut, distributor: String) -> Result<Response, C
     let mut config = load_config(deps.storage)?;
 
     let distributor_raw = deps.api.addr_canonicalize(&distributor)?;
-    if config.whitelist.clone().into_iter().any(|w| w == distributor_raw) {
+    if config
+        .whitelist
+        .clone()
+        .into_iter()
+        .any(|w| w == distributor_raw)
+    {
         return Err(ContractError::DistributorAlreadyRegistered {});
     }
 
     config.whitelist.push(distributor_raw);
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "add_distributor"),
-            ("distributor", distributor.as_str()),
-        ])
-    )
+    Ok(Response::new().add_attributes(vec![
+        ("action", "add_distributor"),
+        ("distributor", distributor.as_str()),
+    ]))
 }
 
 pub fn remove_distributor(deps: DepsMut, distributor: String) -> Result<Response, ContractError> {
@@ -55,7 +60,8 @@ pub fn remove_distributor(deps: DepsMut, distributor: String) -> Result<Response
 
     let distributor_raw = deps.api.addr_canonicalize(&distributor)?;
     let whitelist_len = config.whitelist.len();
-    let whitelist: Vec<CanonicalAddr> = config.whitelist
+    let whitelist: Vec<CanonicalAddr> = config
+        .whitelist
         .into_iter()
         .filter(|w| *w != distributor_raw)
         .collect();
@@ -67,12 +73,10 @@ pub fn remove_distributor(deps: DepsMut, distributor: String) -> Result<Response
     config.whitelist = whitelist;
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "remove_distributor"),
-            ("distributor", distributor.as_str()),
-        ])
-    )
+    Ok(Response::new().add_attributes(vec![
+        ("action", "remove_distributor"),
+        ("distributor", distributor.as_str()),
+    ]))
 }
 
 pub fn reward(
@@ -102,12 +106,11 @@ pub fn reward(
                 contract: contract.clone(),
                 amount,
                 msg,
-            })?
+            })?,
         })])
         .add_attributes(vec![
             ("action", "spend"),
             ("receive_contract", contract.as_str()),
             ("amount", &amount.to_string()),
-        ])
-    )
+        ]))
 }

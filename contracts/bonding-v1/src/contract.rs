@@ -3,21 +3,19 @@ use std::str::FromStr;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, 
-    StdResult, Uint128, from_binary, Decimal,
+    from_binary, to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    Uint128,
 };
 use cw20::Cw20ReceiveMsg;
 
 use crate::{
-    error::ContractError, 
-    state::{store_config, Config, store_state, State, load_config},
     commands,
+    error::ContractError,
     queries,
+    state::{load_config, store_config, store_state, Config, State},
 };
 
-use services::bonding::{
-    ExecuteMsg, InstantiateMsg, QueryMsg, Cw20HookMsg,
-};
+use services::bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -26,9 +24,10 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    if msg.ust_bonding_reward_ratio > Decimal::from_str("1.0")? ||
-        msg.ust_bonding_reward_ratio < Decimal::zero() {
-        return Err(ContractError::InvalidUstBondRatio {})
+    if msg.ust_bonding_reward_ratio > Decimal::from_str("1.0")?
+        || msg.ust_bonding_reward_ratio < Decimal::zero()
+    {
+        return Err(ContractError::InvalidUstBondRatio {});
     }
 
     store_config(
@@ -86,7 +85,7 @@ pub fn receive_cw20(
             }
 
             commands::distribute_reward(deps, cw20_msg.amount)
-        },
+        }
         Ok(Cw20HookMsg::LpBond {}) => {
             if info.sender != deps.api.addr_humanize(&config.lp_token)? {
                 return Err(ContractError::Unauthorized {});
@@ -94,7 +93,7 @@ pub fn receive_cw20(
 
             let sender_raw = deps.api.addr_canonicalize(&cw20_msg.sender)?;
             commands::lp_bond(deps, env, sender_raw, cw20_msg.amount)
-        },
+        }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }
 }
@@ -104,8 +103,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
-        QueryMsg::Claims {
-            address,
-        } => to_binary(&queries::query_claims(deps, address)?),
+        QueryMsg::Claims { address } => to_binary(&queries::query_claims(deps, address)?),
     }
 }

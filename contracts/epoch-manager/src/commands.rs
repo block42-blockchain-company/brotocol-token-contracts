@@ -1,7 +1,8 @@
-use cosmwasm_std::{DepsMut, Response, Decimal};
+use cosmwasm_std::{Decimal, DepsMut, Response};
 
 use crate::{
-    error::ContractError, state::{load_config, store_config, load_state, store_state},
+    error::ContractError,
+    state::{load_config, load_state, store_config, store_state},
 };
 
 pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, ContractError> {

@@ -4,8 +4,8 @@ use std::fs::create_dir_all;
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use services::bonding::{
-    ClaimsResponse, ClaimInfoResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, 
-    StateResponse, QueryMsg,
+    ClaimInfoResponse, ClaimsResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg,
+    QueryMsg, StateResponse,
 };
 
 fn main() {

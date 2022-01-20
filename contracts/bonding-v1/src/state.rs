@@ -1,8 +1,8 @@
-use cosmwasm_std::{Storage, StdResult, CanonicalAddr, Uint128, Decimal};
+use cosmwasm_std::{CanonicalAddr, Decimal, StdResult, Storage, Uint128};
 use cw20::Expiration;
+use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cw_storage_plus::{Item, Map};
 
 static CONFIG: Item<Config> = Item::new("config");
 static STATE: Item<State> = Item::new("state");
@@ -66,10 +66,17 @@ pub fn load_state(storage: &dyn Storage) -> StdResult<State> {
     STATE.load(storage)
 }
 
-pub fn store_claims(storage: &mut dyn Storage, account: &CanonicalAddr, claims: &Vec<ClaimInfo>) -> StdResult<()> {
-    CLAIMS.save(storage, &account.as_slice(), claims)
+#[allow(clippy::ptr_arg)]
+pub fn store_claims(
+    storage: &mut dyn Storage,
+    account: &CanonicalAddr,
+    claims: &Vec<ClaimInfo>,
+) -> StdResult<()> {
+    CLAIMS.save(storage, account.as_slice(), claims)
 }
 
 pub fn load_claims(storage: &dyn Storage, account: &CanonicalAddr) -> StdResult<Vec<ClaimInfo>> {
-    CLAIMS.may_load(storage, account.as_slice()).map(|res| res.unwrap_or_default())
+    CLAIMS
+        .may_load(storage, account.as_slice())
+        .map(|res| res.unwrap_or_default())
 }

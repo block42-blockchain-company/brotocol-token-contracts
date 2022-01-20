@@ -1,7 +1,7 @@
+use cosmwasm_std::{CanonicalAddr, Decimal, StdResult, Storage};
+use cw_storage_plus::Item;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cosmwasm_std::{Storage, StdResult, CanonicalAddr, Decimal};
-use cw_storage_plus::Item;
 
 static CONFIG: Item<Config> = Item::new("config");
 static STATE: Item<State> = Item::new("state");

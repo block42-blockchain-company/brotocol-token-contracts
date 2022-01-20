@@ -4,7 +4,7 @@ use std::fs::create_dir_all;
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use services::epoch_manager::{
-    ConfigResponse, EpochInfoResponse, InstantiateMsg, ExecuteMsg, QueryMsg,
+    ConfigResponse, EpochInfoResponse, ExecuteMsg, InstantiateMsg, QueryMsg,
 };
 
 fn main() {

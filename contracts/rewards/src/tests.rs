@@ -192,7 +192,10 @@ fn test_reward() {
 
     let info = mock_info("addr0000", &[]);
 
-    let execute_msg = to_binary(&Cw20ExecuteMsg::Burn { amount: Uint128::from(1u128) }).unwrap();
+    let execute_msg = to_binary(&Cw20ExecuteMsg::Burn {
+        amount: Uint128::from(1u128),
+    })
+    .unwrap();
 
     // we can just call .unwrap() to assert this was a success
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();

@@ -1,8 +1,11 @@
-use cosmwasm_std::{DepsMut, Response, Uint128, CanonicalAddr, MessageInfo, CosmosMsg, WasmMsg, to_binary};
+use cosmwasm_std::{
+    to_binary, CanonicalAddr, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg,
+};
 use cw20::Cw20ExecuteMsg;
 
 use crate::{
-    error::ContractError, state::{load_config, store_config},
+    error::ContractError,
+    state::{load_config, store_config},
 };
 
 pub fn update_config(
@@ -22,30 +25,26 @@ pub fn update_config(
 
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "update_config"),
-        ])
-    )
+    Ok(Response::new().add_attributes(vec![("action", "update_config")]))
 }
 
 pub fn add_minter(deps: DepsMut, minter: String) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     let minter_raw = deps.api.addr_canonicalize(&minter)?;
-    if config.whitelist.clone().into_iter().any(|w| w == minter_raw) {
+    if config
+        .whitelist
+        .clone()
+        .into_iter()
+        .any(|w| w == minter_raw)
+    {
         return Err(ContractError::MinterAlreadyRegistered {});
     }
 
     config.whitelist.push(minter_raw);
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "add_minter"),
-            ("minter", minter.as_str()),
-        ])
-    )
+    Ok(Response::new().add_attributes(vec![("action", "add_minter"), ("minter", minter.as_str())]))
 }
 
 pub fn remove_minter(deps: DepsMut, minter: String) -> Result<Response, ContractError> {
@@ -53,7 +52,8 @@ pub fn remove_minter(deps: DepsMut, minter: String) -> Result<Response, Contract
 
     let minter_raw = deps.api.addr_canonicalize(&minter)?;
     let whitelist_len = config.whitelist.len();
-    let whitelist: Vec<CanonicalAddr> = config.whitelist
+    let whitelist: Vec<CanonicalAddr> = config
+        .whitelist
         .into_iter()
         .filter(|w| *w != minter_raw)
         .collect();
@@ -65,12 +65,7 @@ pub fn remove_minter(deps: DepsMut, minter: String) -> Result<Response, Contract
     config.whitelist = whitelist;
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "remove_minter"),
-            ("minter", &minter.to_string()),
-        ])
-    )
+    Ok(Response::new().add_attributes(vec![("action", "remove_minter"), ("minter", &minter)]))
 }
 
 pub fn mint(
@@ -101,8 +96,7 @@ pub fn mint(
             ("minter", &info.sender.to_string()),
             ("recipient", &recipient),
             ("amount", &amount.to_string()),
-        ])
-    )
+        ]))
 }
 
 pub fn burn(
@@ -133,6 +127,5 @@ pub fn burn(
             ("minter", &info.sender.to_string()),
             ("recipient", &owner),
             ("amount", &amount.to_string()),
-        ])
-    )
+        ]))
 }

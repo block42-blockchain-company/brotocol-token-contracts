@@ -1,7 +1,7 @@
 use cosmwasm_std::{Deps, StdResult};
-use services::epoch_manager::{EpochInfoResponse, ConfigResponse};
+use services::epoch_manager::{ConfigResponse, EpochInfoResponse};
 
-use crate::state::{load_state, load_config};
+use crate::state::{load_config, load_state};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;

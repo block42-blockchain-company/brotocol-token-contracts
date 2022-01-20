@@ -8,7 +8,7 @@ pub enum ContractError {
 
     #[error("Unauthorized")]
     Unauthorized {},
-    
+
     #[error("Cannot spend more than spend_limit")]
     SpendLimitReached {},
 

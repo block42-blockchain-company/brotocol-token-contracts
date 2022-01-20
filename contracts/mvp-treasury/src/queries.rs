@@ -1,18 +1,12 @@
-use cosmwasm_std::{Deps, StdResult, Env};
+use cosmwasm_std::{Deps, Env, StdResult};
 use terraswap::{
     asset::AssetInfo,
     querier::{query_balance, query_token_balance},
 };
 
-use crate::{
-    state::load_config
-};
+use crate::state::load_config;
 
-use services::treasury::{
-    BalanceResponse,
-    ConfigResponse,
-};
-
+use services::treasury::{BalanceResponse, ConfigResponse};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
@@ -23,18 +17,20 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     Ok(resp)
 }
 
-pub fn query_asset_balance(deps: Deps, env: Env, asset_info: AssetInfo) -> StdResult<BalanceResponse> {
+pub fn query_asset_balance(
+    deps: Deps,
+    env: Env,
+    asset_info: AssetInfo,
+) -> StdResult<BalanceResponse> {
     let amount = match asset_info {
         AssetInfo::NativeToken { denom } => {
-            query_balance(&deps.querier, env.contract.address.clone(), denom)?
-        },
-        AssetInfo::Token { contract_addr } => {
-            query_token_balance(
-                &deps.querier, 
-                deps.api.addr_validate(&contract_addr)?, 
-                env.contract.address.clone()
-            )?
+            query_balance(&deps.querier, env.contract.address, denom)?
         }
+        AssetInfo::Token { contract_addr } => query_token_balance(
+            &deps.querier,
+            deps.api.addr_validate(&contract_addr)?,
+            env.contract.address,
+        )?,
     };
     let resp = BalanceResponse { amount };
 

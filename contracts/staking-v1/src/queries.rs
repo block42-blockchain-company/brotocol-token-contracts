@@ -1,11 +1,11 @@
-use cosmwasm_std::{Deps, StdResult, Env};
+use cosmwasm_std::{Deps, Env, StdResult};
 
 use services::staking::{
-    ConfigResponse, StateResponse, StakerInfoResponse, StakerAccruedRewardsResponse, 
-    WithdrawalsResponse, WithdrawalInfoResponse,
+    ConfigResponse, StakerAccruedRewardsResponse, StakerInfoResponse, StateResponse,
+    WithdrawalInfoResponse, WithdrawalsResponse,
 };
 
-use crate::state::{load_config, load_state, read_staker_info, load_withdrawals};
+use crate::state::{load_config, load_state, load_withdrawals, read_staker_info};
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
@@ -30,7 +30,7 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
     let staker_raw = deps.api.addr_canonicalize(&staker)?;
     let staker_info = read_staker_info(deps.storage, &staker_raw, env.block.height)?;
     let resp = StakerInfoResponse {
-        staker: staker,
+        staker,
         reward_index: staker_info.reward_index,
         bond_amount: staker_info.bond_amount,
         pending_reward: staker_info.pending_reward,
@@ -40,7 +40,11 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
     Ok(resp)
 }
 
-pub fn query_staker_accrued_rewards(deps: Deps, env: Env, staker: String) -> StdResult<StakerAccruedRewardsResponse> {
+pub fn query_staker_accrued_rewards(
+    deps: Deps,
+    env: Env,
+    staker: String,
+) -> StdResult<StakerAccruedRewardsResponse> {
     let staker_addr_raw = deps.api.addr_canonicalize(&staker)?;
     let state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &staker_addr_raw, env.block.height)?;
@@ -57,14 +61,12 @@ pub fn query_withdrawals(deps: Deps, staker: String) -> StdResult<WithdrawalsRes
     let staker_addr_raw = deps.api.addr_canonicalize(&staker)?;
     let claims: Vec<WithdrawalInfoResponse> = load_withdrawals(deps.storage, &staker_addr_raw)?
         .into_iter()
-        .map(|c| {
-            WithdrawalInfoResponse {
-                amount: c.amount.clone(),
-                claimable_at: c.claimable_at.clone(),
-            }
+        .map(|c| WithdrawalInfoResponse {
+            amount: c.amount,
+            claimable_at: c.claimable_at,
         })
         .collect();
-    
+
     let resp = WithdrawalsResponse { claims };
     Ok(resp)
 }

@@ -3,14 +3,13 @@ use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
 use crate::{
-    error::ContractError, state::{store_config, Config, store_state, State},
     commands,
+    error::ContractError,
     queries,
+    state::{store_config, store_state, Config, State},
 };
 
-use services::distributor::{
-    ExecuteMsg, InstantiateMsg, QueryMsg,
-};
+use services::distributor::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -20,7 +19,7 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     store_config(
-        deps.storage, 
+        deps.storage,
         &Config {
             epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
             rewards_contract: deps.api.addr_canonicalize(&msg.rewards_contract)?,
@@ -32,7 +31,7 @@ pub fn instantiate(
     )?;
 
     store_state(
-        deps.storage, 
+        deps.storage,
         &State {
             last_distribution_block: env.block.height,
         },

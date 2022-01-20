@@ -192,6 +192,7 @@ fn test_reward() {
 
     let info = mock_info("addr0000", &[]);
 
+    // binary message receive from distributor
     let execute_msg = to_binary(&Cw20ExecuteMsg::Burn {
         amount: Uint128::from(1u128),
     })

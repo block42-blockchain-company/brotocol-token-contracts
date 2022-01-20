@@ -1,9 +1,9 @@
+use cosmwasm_std::{Addr, CanonicalAddr, StdResult, Storage};
+use cw_storage_plus::{Bound, Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cosmwasm_std::{Addr, CanonicalAddr, Storage, StdResult};
-use cw_storage_plus::{Item, Map, Bound};
 
-use services::{vesting::VestingInfo, common::OrderBy};
+use services::{common::OrderBy, vesting::VestingInfo};
 
 static CONFIG: Item<Config> = Item::new("config");
 static VESTING_INFO: Map<&Addr, VestingInfo> = Map::new("vesting_info");
@@ -23,7 +23,11 @@ pub fn load_config(storage: &dyn Storage) -> StdResult<Config> {
     CONFIG.load(storage)
 }
 
-pub fn store_vesting_info(storage: &mut dyn Storage, addr: &Addr, vesting_info: &VestingInfo) -> StdResult<()> {
+pub fn store_vesting_info(
+    storage: &mut dyn Storage,
+    addr: &Addr,
+    vesting_info: &VestingInfo,
+) -> StdResult<()> {
     VESTING_INFO.save(storage, addr, vesting_info)
 }
 
@@ -41,8 +45,16 @@ pub fn read_vesting_infos(
 ) -> StdResult<Vec<(Addr, VestingInfo)>> {
     let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
     let (start, end, order_by) = match order_by {
-        Some(OrderBy::Asc) => (calc_range_start_addr(start_after).map(Bound::exclusive), None, OrderBy::Asc),
-        _ => (None, calc_range_end_addr(start_after).map(Bound::exclusive), OrderBy::Desc),
+        Some(OrderBy::Asc) => (
+            calc_range_start_addr(start_after).map(Bound::exclusive),
+            None,
+            OrderBy::Asc,
+        ),
+        _ => (
+            None,
+            calc_range_end_addr(start_after).map(Bound::exclusive),
+            OrderBy::Desc,
+        ),
     };
 
     VESTING_INFO

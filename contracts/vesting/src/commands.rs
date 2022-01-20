@@ -1,21 +1,16 @@
-use cosmwasm_std::{DepsMut, Response, StdResult, StdError, MessageInfo, Env, SubMsg, CosmosMsg, WasmMsg, to_binary};
+use cosmwasm_std::{
+    to_binary, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult, SubMsg, WasmMsg,
+};
 use cw20::Cw20ExecuteMsg;
 
 use crate::{
-    error::ContractError, 
-    state::{
-        load_config, 
-        store_config, 
-        store_vesting_info, load_vesting_info,
-    }
+    error::ContractError,
+    state::{load_config, load_vesting_info, store_config, store_vesting_info},
 };
-use services::vesting::{VestingAccount, VestingSchedule, VestingInfo};
 
-pub fn claim(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-) -> Result<Response, ContractError> {
+use services::vesting::{VestingAccount, VestingInfo, VestingSchedule};
+
+pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let current_time = env.block.time.seconds();
     let address = info.sender;
 
@@ -39,22 +34,19 @@ pub fn claim(
     vesting_info.last_claim_time = current_time;
     store_vesting_info(deps.storage, &address, &vesting_info)?;
 
-    Ok(Response::new()
-        .add_submessages(msgs)
-        .add_attributes(vec![
-            ("action", "claim"),
-            ("address", &address.to_string()),
-            ("claim_amount", &claim_amount.to_string()),
-            ("last_claim_time", &current_time.to_string()),
-        ])
-    )
+    Ok(Response::new().add_submessages(msgs).add_attributes(vec![
+        ("action", "claim"),
+        ("address", &address.to_string()),
+        ("claim_amount", &claim_amount.to_string()),
+        ("last_claim_time", &current_time.to_string()),
+    ]))
 }
 
 pub fn update_config(
     deps: DepsMut,
     owner: Option<String>,
     bro_token: Option<String>,
-    genesis_time: Option<u64>
+    genesis_time: Option<u64>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
     if let Some(owner) = owner {
@@ -84,12 +76,12 @@ pub fn register_vesting_accounts(
 
         let vesting_addr = deps.api.addr_validate(&vesting_account.address)?;
         store_vesting_info(
-            deps.storage, 
-            &vesting_addr, 
+            deps.storage,
+            &vesting_addr,
             &VestingInfo {
                 last_claim_time: config.genesis_time,
                 schedules: vesting_account.schedules.clone(),
-            }
+            },
         )?;
     }
 
@@ -100,8 +92,8 @@ fn validate_vesting_schedules(vesting_schedules: &[VestingSchedule]) -> StdResul
     for schedule in vesting_schedules.iter() {
         if schedule.start_time >= schedule.end_time {
             return Err(StdError::generic_err(
-                "end_time must be bigger than start_time"
-            ))
+                "end_time must be bigger than start_time",
+            ));
         }
     }
 

@@ -4,16 +4,8 @@ use std::fs::create_dir_all;
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use services::vesting::{
-    ClaimableAmountResponse,
-    ConfigResponse,
-    ExecuteMsg, 
-    InstantiateMsg, 
-    QueryMsg,
-    VestingAccount,
-    VestingAccountResponse,
-    VestingAccountsResponse,
-    VestingInfo,
-    VestingSchedule,
+    ClaimableAmountResponse, ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg, VestingAccount,
+    VestingAccountResponse, VestingAccountsResponse, VestingInfo, VestingSchedule,
 };
 
 fn main() {

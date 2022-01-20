@@ -1,11 +1,11 @@
-use cosmwasm_std::{Deps, StdResult, Env};
+use cosmwasm_std::{Deps, Env, StdResult};
 
 use crate::state::{load_config, load_vesting_info, read_vesting_infos};
 
 use services::{
     common::OrderBy,
     vesting::{
-        ConfigResponse, VestingAccountResponse, ClaimableAmountResponse, VestingAccountsResponse
+        ClaimableAmountResponse, ConfigResponse, VestingAccountResponse, VestingAccountsResponse,
     },
 };
 
@@ -50,9 +50,9 @@ pub fn query_vesting_accounts(
         })
         .collect();
 
-    Ok(VestingAccountsResponse { 
+    Ok(VestingAccountsResponse {
         vesting_accounts: vesting_accounts_response?,
-     })
+    })
 }
 
 pub fn query_claimable_amount(
@@ -63,7 +63,10 @@ pub fn query_claimable_amount(
     let current_time = env.block.time.seconds();
     let info = load_vesting_info(deps.storage, &deps.api.addr_validate(&address)?)?;
     let claimable_amount = info.compute_claim_amount(current_time);
-    let resp = ClaimableAmountResponse { address, claimable_amount };
+    let resp = ClaimableAmountResponse {
+        address,
+        claimable_amount,
+    };
 
     Ok(resp)
 }

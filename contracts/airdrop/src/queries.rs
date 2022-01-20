@@ -1,9 +1,9 @@
 use cosmwasm_std::{Deps, StdResult};
 
-use crate::state::{load_config, load_stage, load_merkle_root, read_claimed};
+use crate::state::{load_config, load_merkle_root, load_stage, read_claimed};
 
 use services::airdrop::{
-    ConfigResponse, LatestStageResponse, MerkleRootResponse, IsClaimedResponse
+    ConfigResponse, IsClaimedResponse, LatestStageResponse, MerkleRootResponse,
 };
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
@@ -25,10 +25,7 @@ pub fn query_latest_stage(deps: Deps) -> StdResult<LatestStageResponse> {
 
 pub fn query_merkle_root(deps: Deps, stage: u8) -> StdResult<MerkleRootResponse> {
     let merkle_root = load_merkle_root(deps.storage, stage)?;
-    let resp = MerkleRootResponse {
-        stage: stage,
-        merkle_root: merkle_root,
-    };
+    let resp = MerkleRootResponse { stage, merkle_root };
 
     Ok(resp)
 }

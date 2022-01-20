@@ -1,14 +1,14 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Storage, Api, Addr};
+use cosmwasm_std::{
+    to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Storage,
+};
 
 use crate::{
-    error::ContractError,
-    state::{
-        store_config, load_config, Config,
-    },
     commands,
+    error::ContractError,
     queries,
+    state::{load_config, store_config, Config},
 };
 
 use services::vesting::{ExecuteMsg, InstantiateMsg, QueryMsg};
@@ -26,7 +26,7 @@ pub fn instantiate(
             owner: deps.api.addr_canonicalize(&msg.owner)?,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
             genesis_time: msg.genesis_time,
-        } 
+        },
     )?;
 
     Ok(Response::default())
@@ -47,16 +47,14 @@ pub fn execute(
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(deps, owner, bro_token, genesis_time)
-        },
-        ExecuteMsg::RegisterVestingAccounts {
-            vesting_accounts,
-        } => {
+        }
+        ExecuteMsg::RegisterVestingAccounts { vesting_accounts } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::register_vesting_accounts(deps, vesting_accounts)
-        },
+        }
         ExecuteMsg::Claim {} => {
             commands::claim(deps, env, info)
-        },
+        }
     }
 }
 
@@ -64,7 +62,7 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
     if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
         return Err(ContractError::Unauthorized {});
     }
-    
+
     Ok(())
 }
 
@@ -72,22 +70,21 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
-        QueryMsg::VestingAccount { 
-            address,
-        } => {
+        QueryMsg::VestingAccount { address } => {
             to_binary(&queries::query_vesting_account(deps, address)?)
-        },
+        }
         QueryMsg::VestingAccounts {
             start_after,
             limit,
             order_by,
-        } => {
-            to_binary(&queries::query_vesting_accounts(deps, start_after, limit, order_by)?)
-        }
-        QueryMsg::Claimable { 
-            address,
-        } => {
+        } => to_binary(&queries::query_vesting_accounts(
+            deps,
+            start_after,
+            limit,
+            order_by,
+        )?),
+        QueryMsg::Claimable { address } => {
             to_binary(&queries::query_claimable_amount(deps, env, address)?)
-        },
+        }
     }
 }

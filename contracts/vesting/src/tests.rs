@@ -1,15 +1,13 @@
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-use cosmwasm_std::{
-    attr, from_binary, to_binary, CosmosMsg, SubMsg, Timestamp, Uint128, WasmMsg,
-};
+use cosmwasm_std::{attr, from_binary, to_binary, CosmosMsg, SubMsg, Timestamp, Uint128, WasmMsg};
 use cw20::Cw20ExecuteMsg;
 
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use services::common::OrderBy;
 use services::vesting::{
-    ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg, VestingAccount,
-    VestingAccountResponse, VestingAccountsResponse, VestingInfo, VestingSchedule,
+    ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg, VestingAccount, VestingAccountResponse,
+    VestingAccountsResponse, VestingInfo, VestingSchedule,
 };
 
 #[test]
@@ -126,9 +124,21 @@ fn register_vesting_accounts() {
             VestingAccount {
                 address: acct1.clone(),
                 schedules: vec![
-                    VestingSchedule { start_time: 100u64, end_time: 101u64, bro_amount: Uint128::from(100u128) },
-                    VestingSchedule { start_time: 100u64, end_time: 110u64, bro_amount: Uint128::from(100u128) },
-                    VestingSchedule { start_time: 100u64, end_time: 200u64, bro_amount: Uint128::from(100u128) },
+                    VestingSchedule {
+                        start_time: 100u64,
+                        end_time: 101u64,
+                        bro_amount: Uint128::from(100u128),
+                    },
+                    VestingSchedule {
+                        start_time: 100u64,
+                        end_time: 110u64,
+                        bro_amount: Uint128::from(100u128),
+                    },
+                    VestingSchedule {
+                        start_time: 100u64,
+                        end_time: 200u64,
+                        bro_amount: Uint128::from(100u128),
+                    },
                 ],
             },
             VestingAccount {
@@ -175,9 +185,21 @@ fn register_vesting_accounts() {
             info: VestingInfo {
                 last_claim_time: 100u64,
                 schedules: vec![
-                    VestingSchedule { start_time: 100u64, end_time: 101u64, bro_amount: Uint128::from(100u128) },
-                    VestingSchedule { start_time: 100u64, end_time: 110u64, bro_amount: Uint128::from(100u128) },
-                    VestingSchedule { start_time: 100u64, end_time: 200u64, bro_amount: Uint128::from(100u128) },
+                    VestingSchedule {
+                        start_time: 100u64,
+                        end_time: 101u64,
+                        bro_amount: Uint128::from(100u128),
+                    },
+                    VestingSchedule {
+                        start_time: 100u64,
+                        end_time: 110u64,
+                        bro_amount: Uint128::from(100u128),
+                    },
+                    VestingSchedule {
+                        start_time: 100u64,
+                        end_time: 200u64,
+                        bro_amount: Uint128::from(100u128),
+                    },
                 ],
             }
         }
@@ -204,9 +226,21 @@ fn register_vesting_accounts() {
                     info: VestingInfo {
                         last_claim_time: 100u64,
                         schedules: vec![
-                            VestingSchedule { start_time: 100u64, end_time: 101u64, bro_amount: Uint128::from(100u128) },
-                            VestingSchedule { start_time: 100u64, end_time: 110u64, bro_amount: Uint128::from(100u128) },
-                            VestingSchedule { start_time: 100u64, end_time: 200u64, bro_amount: Uint128::from(100u128) },
+                            VestingSchedule {
+                                start_time: 100u64,
+                                end_time: 101u64,
+                                bro_amount: Uint128::from(100u128),
+                            },
+                            VestingSchedule {
+                                start_time: 100u64,
+                                end_time: 110u64,
+                                bro_amount: Uint128::from(100u128),
+                            },
+                            VestingSchedule {
+                                start_time: 100u64,
+                                end_time: 200u64,
+                                bro_amount: Uint128::from(100u128),
+                            },
                         ],
                     }
                 },
@@ -251,17 +285,31 @@ fn claim() {
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     let msg = ExecuteMsg::RegisterVestingAccounts {
-        vesting_accounts: vec![
-            VestingAccount {
-                address: "addr0000".to_string(),
-                schedules: vec![
-                    VestingSchedule { start_time: 100u64, end_time: 110u64, bro_amount: Uint128::from(100u128) },
-                    VestingSchedule { start_time: 100u64, end_time: 150u64, bro_amount: Uint128::from(110u128) },
-                    VestingSchedule { start_time: 140u64, end_time: 160u64, bro_amount: Uint128::from(105u128) },
-                    VestingSchedule { start_time: 180u64, end_time: 200u64, bro_amount: Uint128::from(120u128) },
-                ],
-            },
-        ],
+        vesting_accounts: vec![VestingAccount {
+            address: "addr0000".to_string(),
+            schedules: vec![
+                VestingSchedule {
+                    start_time: 100u64,
+                    end_time: 110u64,
+                    bro_amount: Uint128::from(100u128),
+                },
+                VestingSchedule {
+                    start_time: 100u64,
+                    end_time: 150u64,
+                    bro_amount: Uint128::from(110u128),
+                },
+                VestingSchedule {
+                    start_time: 140u64,
+                    end_time: 160u64,
+                    bro_amount: Uint128::from(105u128),
+                },
+                VestingSchedule {
+                    start_time: 180u64,
+                    end_time: 200u64,
+                    bro_amount: Uint128::from(120u128),
+                },
+            ],
+        }],
     };
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -308,7 +356,7 @@ fn claim() {
         ]
     );
     assert_eq!(
-        res.messages, 
+        res.messages,
         vec![SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: "bro_token".to_string(),
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
@@ -345,7 +393,7 @@ fn claim() {
         ]
     );
     assert_eq!(
-        res.messages, 
+        res.messages,
         vec![SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: "bro_token".to_string(),
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
@@ -369,7 +417,7 @@ fn claim() {
         ]
     );
     assert_eq!(
-        res.messages, 
+        res.messages,
         vec![SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: "bro_token".to_string(),
             msg: to_binary(&Cw20ExecuteMsg::Transfer {

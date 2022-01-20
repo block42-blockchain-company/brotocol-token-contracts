@@ -1,15 +1,13 @@
-# Build results
-/target
-
-# Cargo+Git helper file (https://github.com/rust-lang/cargo/blob/0.44.1/src/cargo/sources/git/utils.rs#L320-L327)
-.cargo-ok
-
-# Text file backups
-**/*.rs.bk
-
-# macOS
 .DS_Store
 
-# IDEs
+**/*.rs.bk
+
+Cargo.lock
+
+target/
+
+.vscode/
+.idea/
 *.iml
-.idea
+
+.cargo-ok

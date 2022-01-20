@@ -1,7 +1,8 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cosmwasm_std::{CanonicalAddr, Storage, StdResult, Addr};
-use cw_storage_plus::{Item, U8Key, Map};
+
+use cosmwasm_std::{Addr, CanonicalAddr, StdResult, Storage};
+use cw_storage_plus::{Item, Map, U8Key};
 
 static CONFIG: Item<Config> = Item::new("config");
 static STAGE: Item<u8> = Item::new("stage");
@@ -30,7 +31,12 @@ pub fn load_stage(storage: &dyn Storage) -> StdResult<u8> {
     STAGE.load(storage)
 }
 
-pub fn store_merkle_root(storage: &mut dyn Storage, stage: u8, merkle_root: &String) -> StdResult<()> {
+#[allow(clippy::ptr_arg)]
+pub fn store_merkle_root(
+    storage: &mut dyn Storage,
+    stage: u8,
+    merkle_root: &String,
+) -> StdResult<()> {
     MERKLE_ROOT.save(storage, U8Key::from(stage), merkle_root)
 }
 

@@ -29,13 +29,8 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     Config {},
     LatestStage {},
-    MerkleRoot {
-        stage: u8,
-    },
-    IsClaimed {
-        stage: u8,
-        address: String,
-    },
+    MerkleRoot { stage: u8 },
+    IsClaimed { stage: u8, address: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

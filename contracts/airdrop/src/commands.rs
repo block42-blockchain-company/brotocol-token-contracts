@@ -1,4 +1,4 @@
-use cosmwasm_std::{DepsMut, Response, MessageInfo, Uint128, CosmosMsg, WasmMsg, to_binary};
+use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg};
 use cw20::Cw20ExecuteMsg;
 use sha3::Digest;
 use std::convert::TryInto;
@@ -6,8 +6,8 @@ use std::convert::TryInto;
 use crate::{
     error::ContractError,
     state::{
-        store_config, load_config, store_latest_stage, load_stage, 
-        store_merkle_root, load_merkle_root, store_claimed, read_claimed
+        load_config, load_merkle_root, load_stage, read_claimed, store_claimed, store_config,
+        store_latest_stage, store_merkle_root,
     },
 };
 
@@ -22,10 +22,7 @@ pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, C
     Ok(Response::new().add_attribute("action", "update_config"))
 }
 
-pub fn register_merkle_root(
-    deps: DepsMut,
-    merkle_root: String,
-) -> Result<Response, ContractError> {
+pub fn register_merkle_root(deps: DepsMut, merkle_root: String) -> Result<Response, ContractError> {
     let mut root_buf: [u8; 32] = [0; 32];
     match hex::decode_to_slice(merkle_root.to_string(), &mut root_buf) {
         Ok(()) => {}
@@ -37,14 +34,12 @@ pub fn register_merkle_root(
 
     store_merkle_root(deps.storage, stage, &merkle_root)?;
     store_latest_stage(deps.storage, stage)?;
-    
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "register_merkle_root"),
-            ("stage", &stage.to_string()),
-            ("merkle_root", &merkle_root),
-        ])
-    )
+
+    Ok(Response::new().add_attributes(vec![
+        ("action", "register_merkle_root"),
+        ("stage", &stage.to_string()),
+        ("merkle_root", &merkle_root),
+    ]))
 }
 
 pub fn claim(
@@ -102,7 +97,7 @@ pub fn claim(
             funds: vec![],
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: user.to_string(),
-                amount: amount,
+                amount,
             })?,
         })])
         .add_attributes(vec![
@@ -110,8 +105,7 @@ pub fn claim(
             ("stage", &stage.to_string()),
             ("address", &user.to_string()),
             ("amount", &amount.to_string()),
-        ])
-    )
+        ]))
 }
 
 fn bytes_cmp(a: [u8; 32], b: [u8; 32]) -> std::cmp::Ordering {

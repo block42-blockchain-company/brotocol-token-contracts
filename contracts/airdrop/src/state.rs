@@ -1,8 +1,7 @@
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-
 use cosmwasm_std::{Addr, CanonicalAddr, StdResult, Storage};
 use cw_storage_plus::{Item, Map, U8Key};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 static CONFIG: Item<Config> = Item::new("config");
 static STAGE: Item<u8> = Item::new("stage");

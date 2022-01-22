@@ -64,11 +64,9 @@ pub fn execute(
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::remove_distributor(deps, distributor)
         }
-        ExecuteMsg::Reward {
-            contract,
-            amount,
-            msg,
-        } => commands::reward(deps, info, contract, amount, msg),
+        ExecuteMsg::DistributeRewards { distributions } => {
+            commands::distribute_reward(deps, info, distributions)
+        }
     }
 }
 

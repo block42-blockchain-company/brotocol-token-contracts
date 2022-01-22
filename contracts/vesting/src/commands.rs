@@ -10,6 +10,16 @@ use crate::{
 
 use services::vesting::{VestingAccount, VestingInfo, VestingSchedule};
 
+/// ## Description
+/// Claims availalble amount for message sender.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **info** is an object of type [`MessageInfo`]
 pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let current_time = env.block.time.seconds();
     let address = info.sender;
@@ -42,6 +52,18 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
     ]))
 }
 
+/// ## Description
+/// Updates contract settings.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
+///
+/// * **bro_token** is an [`Option`] field of type [`String`]. Sets new bro token address
+///
+/// * **genesis_time** is an [`Option`] field of type [`u64`]. Sets new genesis time frame
 pub fn update_config(
     deps: DepsMut,
     owner: Option<String>,
@@ -66,6 +88,14 @@ pub fn update_config(
     Ok(Response::new().add_attribute("action", "update_config"))
 }
 
+/// ## Description
+/// Registers vesting accounts for future distribution
+/// /// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **vesting_accounts** is a [`Vec`] of type [`VestingAccount`]
 pub fn register_vesting_accounts(
     deps: DepsMut,
     vesting_accounts: Vec<VestingAccount>,
@@ -88,6 +118,8 @@ pub fn register_vesting_accounts(
     Ok(Response::new().add_attribute("action", "register_vesting_accounts"))
 }
 
+/// ## Description
+/// Validates provided vesting schedules
 fn validate_vesting_schedules(vesting_schedules: &[VestingSchedule]) -> StdResult<()> {
     for schedule in vesting_schedules.iter() {
         if schedule.start_time >= schedule.end_time {

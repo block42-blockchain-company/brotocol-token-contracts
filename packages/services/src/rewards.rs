@@ -24,10 +24,8 @@ pub enum ExecuteMsg {
     RemoveDistributor {
         distributor: String,
     },
-    Reward {
-        contract: String,
-        amount: Uint128,
-        msg: Binary,
+    DistributeRewards {
+        distributions: Vec<DistributeRewardMsg>,
     },
 }
 
@@ -35,6 +33,13 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     Config {},
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct DistributeRewardMsg {
+    pub contract: String,
+    pub amount: Uint128,
+    pub msg: Binary,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

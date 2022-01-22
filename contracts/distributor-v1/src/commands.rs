@@ -6,8 +6,10 @@ use crate::{
 };
 
 use services::{
-    bonding::Cw20HookMsg as BondingHookMsg, querier::query_epoch_info,
-    rewards::ExecuteMsg as RewardsMsg, staking::Cw20HookMsg as StakingHookMsg,
+    bonding::Cw20HookMsg as BondingHookMsg,
+    querier::query_epoch_info,
+    rewards::{DistributeRewardMsg, ExecuteMsg as RewardsMsg},
+    staking::Cw20HookMsg as StakingHookMsg,
 };
 
 pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
@@ -41,39 +43,34 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
     store_state(deps.storage, &state)?;
 
     Ok(Response::new()
-        .add_messages(vec![
-            CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: deps
-                    .api
-                    .addr_humanize(&config.rewards_contract)?
-                    .to_string(),
-                funds: vec![],
-                msg: to_binary(&RewardsMsg::Reward {
-                    contract: deps
-                        .api
-                        .addr_humanize(&config.staking_contract)?
-                        .to_string(),
-                    amount: staking_distribution_amount,
-                    msg: to_binary(&StakingHookMsg::DistributeReward {
-                        distributed_at_block: env.block.height,
-                    })?,
-                })?,
-            }),
-            CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: deps
-                    .api
-                    .addr_humanize(&config.rewards_contract)?
-                    .to_string(),
-                funds: vec![],
-                msg: to_binary(&RewardsMsg::Reward {
-                    contract: deps
-                        .api
-                        .addr_humanize(&config.bonding_contract)?
-                        .to_string(),
-                    amount: bonding_distribution_amount,
-                    msg: to_binary(&BondingHookMsg::DistributeReward {})?,
-                })?,
-            }),
-        ])
+        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: deps
+                .api
+                .addr_humanize(&config.rewards_contract)?
+                .to_string(),
+            funds: vec![],
+            msg: to_binary(&RewardsMsg::DistributeRewards {
+                distributions: vec![
+                    DistributeRewardMsg {
+                        contract: deps
+                            .api
+                            .addr_humanize(&config.staking_contract)?
+                            .to_string(),
+                        amount: staking_distribution_amount,
+                        msg: to_binary(&StakingHookMsg::DistributeReward {
+                            distributed_at_block: env.block.height,
+                        })?,
+                    },
+                    DistributeRewardMsg {
+                        contract: deps
+                            .api
+                            .addr_humanize(&config.bonding_contract)?
+                            .to_string(),
+                        amount: bonding_distribution_amount,
+                        msg: to_binary(&BondingHookMsg::DistributeReward {})?,
+                    },
+                ],
+            })?,
+        })])
         .add_attributes(vec![("action", "distribute")]))
 }

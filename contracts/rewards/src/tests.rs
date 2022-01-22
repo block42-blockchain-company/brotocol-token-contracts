@@ -4,7 +4,9 @@ use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 use cosmwasm_std::{from_binary, to_binary, CosmosMsg, SubMsg, Uint128, WasmMsg};
 use cw20::Cw20ExecuteMsg;
 
-use services::rewards::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
+use services::rewards::{
+    ConfigResponse, DistributeRewardMsg, ExecuteMsg, InstantiateMsg, QueryMsg,
+};
 
 #[test]
 fn proper_initialization() {
@@ -202,10 +204,12 @@ fn test_reward() {
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     // permission failed
-    let msg = ExecuteMsg::Reward {
-        contract: "staking0000".to_string(),
-        amount: Uint128::from(1000000u128),
-        msg: execute_msg.clone(),
+    let msg = ExecuteMsg::DistributeRewards {
+        distributions: vec![DistributeRewardMsg {
+            contract: "staking0000".to_string(),
+            amount: Uint128::from(1000000u128),
+            msg: execute_msg.clone(),
+        }],
     };
 
     let info = mock_info("addr0000", &[]);
@@ -216,10 +220,12 @@ fn test_reward() {
     }
 
     // failed due to spend limit
-    let msg = ExecuteMsg::Reward {
-        contract: "staking0000".to_string(),
-        amount: Uint128::from(2000000u128),
-        msg: execute_msg.clone(),
+    let msg = ExecuteMsg::DistributeRewards {
+        distributions: vec![DistributeRewardMsg {
+            contract: "staking0000".to_string(),
+            amount: Uint128::from(2000000u128),
+            msg: execute_msg.clone(),
+        }],
     };
 
     let info = mock_info("distr0000", &[]);
@@ -229,10 +235,12 @@ fn test_reward() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    let msg = ExecuteMsg::Reward {
-        contract: "staking0000".to_string(),
-        amount: Uint128::from(1000000u128),
-        msg: execute_msg.clone(),
+    let msg = ExecuteMsg::DistributeRewards {
+        distributions: vec![DistributeRewardMsg {
+            contract: "staking0000".to_string(),
+            amount: Uint128::from(1000000u128),
+            msg: execute_msg.clone(),
+        }],
     };
 
     let info = mock_info("distr0000", &[]);

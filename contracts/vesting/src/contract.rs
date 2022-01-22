@@ -13,6 +13,18 @@ use crate::{
 
 use services::vesting::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
+/// ## Description
+/// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
+/// Returns the default [`Response`] object if the operation was successful, otherwise returns
+/// the [`ContractError`] if the contract was not created.
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`].
+///
+/// * **_env** is an object of type [`Env`].
+///
+/// * **_info** is an object of type [`MessageInfo`].
+///
+/// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -32,6 +44,29 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
+/// ## Description
+/// Available execute messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **info** is the object of type [`MessageInfo`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Messages
+///
+/// * **ExecuteMsg::UpdateConfig {
+///         owner,
+///         bro_token,
+///         genesis_time,
+///     }** Updates contract settings
+///
+/// * **RegisterVestingAccounts { vesting_accounts }** Registers vesting accounts
+/// for future distribution
+///
+/// * **ExecuteMsg::Claim {}** Claims availalble amount for message sender
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -56,6 +91,15 @@ pub fn execute(
     }
 }
 
+/// ## Description
+/// Verifies that message sender is a contract owner.
+/// Returns [`Ok`] if address is valid, otherwise returns [`ContractError`]
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+///
+/// * **api** is an object of type [`Api`]
+///
+/// * **sender** is an object of type [`Addr`]
 fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
     if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
         return Err(ContractError::Unauthorized {});
@@ -64,6 +108,28 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
     Ok(())
 }
 
+/// ## Description
+/// Available query messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Queries
+///
+/// * **QueryMsg::Config {}** Returns vesting contract config
+///
+/// * **QueryMsg::VestingAccount { address }** Returns vesting schedules for specified account
+///
+/// * **QueryMsg::VestingAccounts {
+///         start_after,
+///         limit,
+///         order_by,
+///     }** Returns a list of accounts for given input params
+///
+/// * **QueryMsg::Claimable { address }** Returns available amount to claim for specified account
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {

@@ -1,7 +1,8 @@
 use cosmwasm_std::{
-    to_binary, Binary, CanonicalAddr, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg,
+    to_binary, CanonicalAddr, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
+use services::rewards::DistributeRewardMsg;
 
 use crate::{
     error::ContractError,
@@ -79,38 +80,37 @@ pub fn remove_distributor(deps: DepsMut, distributor: String) -> Result<Response
     ]))
 }
 
-pub fn reward(
+pub fn distribute_reward(
     deps: DepsMut,
     info: MessageInfo,
-    contract: String,
-    amount: Uint128,
-    msg: Binary,
+    distributions: Vec<DistributeRewardMsg>,
 ) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
+    let bro_token = deps.api.addr_humanize(&config.bro_token)?.to_string();
 
     let distributor_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     if !config.whitelist.into_iter().any(|w| w == distributor_raw) {
         return Err(ContractError::Unauthorized {});
     }
 
-    if config.spend_limit < amount {
-        return Err(ContractError::SpendLimitReached {});
-    }
+    let mut msgs: Vec<CosmosMsg> = vec![];
+    for distribution in distributions {
+        if config.spend_limit < distribution.amount {
+            return Err(ContractError::SpendLimitReached {});
+        }
 
-    let bro_token = deps.api.addr_humanize(&config.bro_token)?.to_string();
-    Ok(Response::new()
-        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: bro_token,
+        msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: bro_token.clone(),
             funds: vec![],
             msg: to_binary(&Cw20ExecuteMsg::Send {
-                contract: contract.clone(),
-                amount,
-                msg,
+                contract: distribution.contract,
+                amount: distribution.amount,
+                msg: distribution.msg,
             })?,
-        })])
-        .add_attributes(vec![
-            ("action", "spend"),
-            ("receive_contract", contract.as_str()),
-            ("amount", &amount.to_string()),
-        ]))
+        }));
+    }
+
+    Ok(Response::new()
+        .add_messages(msgs)
+        .add_attributes(vec![("action", "spend")]))
 }

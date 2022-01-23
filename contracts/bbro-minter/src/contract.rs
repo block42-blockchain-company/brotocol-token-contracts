@@ -14,6 +14,18 @@ use crate::{
 
 use services::bbro_minter::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
+/// ## Description
+/// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
+/// Returns the default [`Response`] object if the operation was successful, otherwise returns
+/// the [`ContractError`] if the contract was not created.
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`].
+///
+/// * **_env** is an object of type [`Env`].
+///
+/// * **_info** is an object of type [`MessageInfo`].
+///
+/// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -31,7 +43,7 @@ pub fn instantiate(
         deps.storage,
         &Config {
             gov_contract: deps.api.addr_canonicalize(&msg.gov_contract)?,
-            bbro_token: deps.api.addr_canonicalize(&msg.bbro_token)?,
+            bbro_token: None,
             whitelist,
         },
     )?;
@@ -39,14 +51,51 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
+/// ## Description
+/// Available execute messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **info** is the object of type [`MessageInfo`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Messages
+///
+/// * **ExecuteMsg::InstantiateToken {
+///         code_id,
+///         token_instantiate_msg,
+///     }** Creates new token contract
+///
+/// * **ExecuteMsg::UpdateConfig {
+///         new_gov_contract,
+///         bbro_token,
+///     }** Updates contract settings
+///
+/// * **ExecuteMsg::AddMinter { minter }** Adds new minter address into whitelist
+///
+/// * **ExecuteMsg::RemoveMinter { minter }** Removes minter from whitelist
+///
+/// * **ExecuteMsg::Mint { recipient, amount }** Mints specified amount for specified address
+///
+/// * **ExecuteMsg::Burn { owner, amount }** Burns specified amount from specified address balance
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
+        ExecuteMsg::InstantiateToken {
+            code_id,
+            token_instantiate_msg,
+        } => {
+            assert_owner(deps.storage, deps.api, info.sender)?;
+            commands::instantiate_token(env, code_id, token_instantiate_msg)
+        }
         ExecuteMsg::UpdateConfig {
             new_gov_contract,
             bbro_token,
@@ -67,6 +116,15 @@ pub fn execute(
     }
 }
 
+/// ## Description
+/// Verifies that message sender is a contract owner.
+/// Returns [`Ok`] if address is valid, otherwise returns [`ContractError`]
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+///
+/// * **api** is an object of type [`Api`]
+///
+/// * **sender** is an object of type [`Addr`]
 fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
     if load_config(storage)?.gov_contract != api.addr_canonicalize(sender.as_str())? {
         return Err(ContractError::Unauthorized {});
@@ -75,6 +133,18 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
     Ok(())
 }
 
+/// ## Description
+/// Available query messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Queries
+///
+/// * **QueryMsg::Config {}** Returns bbro-minter contract config
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {

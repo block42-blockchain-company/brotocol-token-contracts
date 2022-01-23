@@ -1,20 +1,19 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "InstantiateMsg",
+  "description": "This structure describes the basic settings for creating a contract.",
   "type": "object",
   "required": [
-    "bbro_token",
     "gov_contract",
     "whitelist"
   ],
   "properties": {
-    "bbro_token": {
-      "type": "string"
-    },
     "gov_contract": {
+      "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     },
     "whitelist": {
+      "description": "list of whitelisted addresses allowed to execute mint/burn functions",
       "type": "array",
       "items": {
         "type": "string"

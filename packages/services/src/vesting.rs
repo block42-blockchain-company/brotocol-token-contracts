@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::OrderBy;
 
-/// ## Description
+/// ## InstantiateMsg
 /// This structure describes the basic settings for creating a contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
@@ -16,7 +16,7 @@ pub struct InstantiateMsg {
     pub genesis_time: u64,
 }
 
-/// ## Description
+/// ## ExecuteMsg
 /// This structure describes the execute messages of the contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -46,8 +46,8 @@ pub enum ExecuteMsg {
     Claim {},
 }
 
-/// ## Description
-/// This structure describes the query messages of the contract.
+/// ## QueryMsg
+/// This structure describes the query messages of the contract
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
@@ -69,7 +69,7 @@ pub enum QueryMsg {
     Claimable { address: String },
 }
 
-/// ## Description
+/// ## VestingAccount
 /// This structure describes the basic settings for vesting account.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VestingAccount {
@@ -79,7 +79,7 @@ pub struct VestingAccount {
     pub schedules: Vec<VestingSchedule>,
 }
 
-/// ## Description
+/// ## VestingInfo
 /// This structure describes the basic settings for vesting information.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VestingInfo {
@@ -103,7 +103,7 @@ impl VestingInfo {
     }
 }
 
-/// ## Description
+/// ## VestingSchedule
 /// This structure describes the basic settings for vesting schedule.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VestingSchedule {
@@ -115,7 +115,7 @@ pub struct VestingSchedule {
     pub bro_amount: Uint128,
 }
 
-/// ## Description
+/// ## ConfigResponse
 /// This structure describes the fields for config response message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ConfigResponse {
@@ -127,7 +127,7 @@ pub struct ConfigResponse {
     pub genesis_time: u64,
 }
 
-/// ## Description
+/// ## VestingAccountResponse
 /// This structure describes the fields for vesting account response message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VestingAccountResponse {
@@ -137,7 +137,7 @@ pub struct VestingAccountResponse {
     pub info: VestingInfo,
 }
 
-/// ## Description
+/// ## VestingAccountsResponse
 /// This structure describes the fields for vesting accounts response message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VestingAccountsResponse {
@@ -145,7 +145,7 @@ pub struct VestingAccountsResponse {
     pub vesting_accounts: Vec<VestingAccountResponse>,
 }
 
-/// ## Description
+/// ## ClaimableAmountResponse
 /// This structure describes the fields for available amount to claim response message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ClaimableAmountResponse {

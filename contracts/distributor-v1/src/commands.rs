@@ -7,7 +7,7 @@ use crate::{
 
 use services::{
     bonding::Cw20HookMsg as BondingHookMsg,
-    querier::query_epoch_info,
+    querier::{query_epoch_info, query_rewards_pool_balance},
     rewards::{DistributeRewardMsg, ExecuteMsg as RewardsMsg},
     staking::Cw20HookMsg as StakingHookMsg,
 };
@@ -39,15 +39,23 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
         .bonding_distribution_amount
         .checked_mul(Uint128::from(passed_epochs))?;
 
+    // check that rewards pool balance is greater than distribution amount
+    let rewards_pool_contract = deps.api.addr_humanize(&config.rewards_contract)?;
+    let rewards_pool_balance =
+        query_rewards_pool_balance(&deps.querier, rewards_pool_contract.clone())?.balance;
+
+    let total_distribution_amount =
+        staking_distribution_amount.checked_add(bonding_distribution_amount)?;
+    if total_distribution_amount > rewards_pool_balance {
+        return Err(ContractError::NotEnoughBalanceForRewards {});
+    }
+
     state.last_distribution_block += epoch_blocks * passed_epochs;
     store_state(deps.storage, &state)?;
 
     Ok(Response::new()
         .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: deps
-                .api
-                .addr_humanize(&config.rewards_contract)?
-                .to_string(),
+            contract_addr: rewards_pool_contract.to_string(),
             funds: vec![],
             msg: to_binary(&RewardsMsg::DistributeRewards {
                 distributions: vec![

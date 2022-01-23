@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "DistributeRewardMsg",
+  "description": "This structure describes the fields for rewards distribution message.",
   "type": "object",
   "required": [
     "amount",
@@ -9,13 +10,24 @@
   ],
   "properties": {
     "amount": {
-      "$ref": "#/definitions/Uint128"
+      "description": "distribution amount",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "contract": {
+      "description": "receiver contract address",
       "type": "string"
     },
     "msg": {
-      "$ref": "#/definitions/Binary"
+      "description": "binary msg to execute on receiver contract",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Binary"
+        }
+      ]
     }
   },
   "definitions": {

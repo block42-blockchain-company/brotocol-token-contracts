@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Description",
+  "title": "VestingSchedule",
   "description": "This structure describes the basic settings for vesting schedule.",
   "type": "object",
   "required": [

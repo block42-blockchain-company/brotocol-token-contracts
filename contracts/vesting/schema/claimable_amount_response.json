@@ -1,37 +1,24 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "InstantiateMsg",
-  "description": "This structure describes the basic settings for creating a contract.",
+  "title": "ClaimableAmountResponse",
+  "description": "This structure describes the fields for available amount to claim response message.",
   "type": "object",
   "required": [
-    "bro_token",
-    "gov_contract",
-    "spend_limit",
-    "whitelist"
+    "address",
+    "claimable_amount"
   ],
   "properties": {
-    "bro_token": {
-      "description": "bro token address",
+    "address": {
+      "description": "vesting account address",
       "type": "string"
     },
-    "gov_contract": {
-      "description": "contract/multisig address that allowed to control settings",
-      "type": "string"
-    },
-    "spend_limit": {
-      "description": "max allowed amount to spend per distribution",
+    "claimable_amount": {
+      "description": "available amount to claim",
       "allOf": [
         {
           "$ref": "#/definitions/Uint128"
         }
       ]
-    },
-    "whitelist": {
-      "description": "list of whitelisted addresses allowed to execute rewards distribution function",
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
     }
   },
   "definitions": {

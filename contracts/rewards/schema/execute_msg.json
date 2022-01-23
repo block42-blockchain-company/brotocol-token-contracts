@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
+  "description": "This structure describes the execute messages of the contract.",
   "oneOf": [
     {
+      "title": "Description",
+      "description": "Updates contract settings ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "update_config"
@@ -12,18 +15,21 @@
           "type": "object",
           "properties": {
             "bro_token": {
+              "description": "new bro token address",
               "type": [
                 "string",
                 "null"
               ]
             },
             "new_gov_contract": {
+              "description": "new contract owner",
               "type": [
                 "string",
                 "null"
               ]
             },
             "spend_limit": {
+              "description": "max allowed amount to spend per distribution",
               "anyOf": [
                 {
                   "$ref": "#/definitions/Uint128"
@@ -39,6 +45,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Adds new distributor address into whitelist ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "add_distributor"
@@ -51,6 +59,7 @@
           ],
           "properties": {
             "distributor": {
+              "description": "distributor address",
               "type": "string"
             }
           }
@@ -59,6 +68,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Removes distributor from whitelist ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "remove_distributor"
@@ -71,6 +82,7 @@
           ],
           "properties": {
             "distributor": {
+              "description": "distributor address",
               "type": "string"
             }
           }
@@ -79,6 +91,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Distributes rewards to specified contracts ## Executor Only whitelisted address can execute this function",
       "type": "object",
       "required": [
         "distribute_rewards"
@@ -91,6 +105,7 @@
           ],
           "properties": {
             "distributions": {
+              "description": "a list of distribution messages",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/DistributeRewardMsg"
@@ -108,6 +123,8 @@
       "type": "string"
     },
     "DistributeRewardMsg": {
+      "title": "DistributeRewardMsg",
+      "description": "This structure describes the fields for rewards distribution message.",
       "type": "object",
       "required": [
         "amount",
@@ -116,13 +133,24 @@
       ],
       "properties": {
         "amount": {
-          "$ref": "#/definitions/Uint128"
+          "description": "distribution amount",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            }
+          ]
         },
         "contract": {
+          "description": "receiver contract address",
           "type": "string"
         },
         "msg": {
-          "$ref": "#/definitions/Binary"
+          "description": "binary msg to execute on receiver contract",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
         }
       }
     },

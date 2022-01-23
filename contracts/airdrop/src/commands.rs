@@ -11,6 +11,16 @@ use crate::{
     },
 };
 
+/// ## Description
+/// Updates contract settings.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
+///
+/// * **bro_token** is an [`Option`] field of type [`String`]. Sets new bro token address
 pub fn update_config(
     deps: DepsMut,
     owner: Option<String>,
@@ -30,6 +40,14 @@ pub fn update_config(
     Ok(Response::new().add_attribute("action", "update_config"))
 }
 
+/// ## Description
+/// Registers merkle root hash.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **merkle_root** is field of type [`String`]
 pub fn register_merkle_root(deps: DepsMut, merkle_root: String) -> Result<Response, ContractError> {
     let mut root_buf: [u8; 32] = [0; 32];
     match hex::decode_to_slice(merkle_root.to_string(), &mut root_buf) {
@@ -50,6 +68,20 @@ pub fn register_merkle_root(deps: DepsMut, merkle_root: String) -> Result<Respon
     ]))
 }
 
+/// ## Description
+/// Claims availalble amount for message sender at specified airdrop round.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **info** is an object of type [`MessageInfo`]
+///
+/// * **stage** is a field of type [`u8`]
+///
+/// * **amount** is an object of type [`Uint128`]
+///
+/// * **proof** is a [`Vec`] of type [`String`]
 pub fn claim(
     deps: DepsMut,
     info: MessageInfo,
@@ -116,6 +148,8 @@ pub fn claim(
         ]))
 }
 
+/// ## Description
+/// Compares byte slices
 fn bytes_cmp(a: [u8; 32], b: [u8; 32]) -> std::cmp::Ordering {
     let mut i = 0;
     while i < 32 {

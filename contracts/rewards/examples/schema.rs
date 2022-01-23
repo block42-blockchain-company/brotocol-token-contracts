@@ -5,6 +5,7 @@ use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use services::rewards::{
     ConfigResponse, DistributeRewardMsg, ExecuteMsg, InstantiateMsg, QueryMsg,
+    RewardsPoolBalanceResponse,
 };
 
 fn main() {
@@ -18,4 +19,5 @@ fn main() {
     export_schema(&schema_for!(QueryMsg), &out_dir);
     export_schema(&schema_for!(DistributeRewardMsg), &out_dir);
     export_schema(&schema_for!(ConfigResponse), &out_dir);
+    export_schema(&schema_for!(RewardsPoolBalanceResponse), &out_dir);
 }

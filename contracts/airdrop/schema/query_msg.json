@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryMsg",
+  "description": "This structure describes the query messages of the contract",
   "oneOf": [
     {
+      "title": "Description",
+      "description": "Returns airdrop contract config in the [`ConfigResponse`] object",
       "type": "object",
       "required": [
         "config"
@@ -15,6 +18,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns the number of latest stage in the [`LatestStageResponse`] object",
       "type": "object",
       "required": [
         "latest_stage"
@@ -27,6 +32,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns merkle root information by specified stage in the [`MerkleRootResponse`] object",
       "type": "object",
       "required": [
         "merkle_root"
@@ -39,6 +46,7 @@
           ],
           "properties": {
             "stage": {
+              "description": "airdrop stage",
               "type": "integer",
               "format": "uint8",
               "minimum": 0.0
@@ -49,6 +57,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns claim information by specified stage and address in the [`IsClaimedResponse`] object",
       "type": "object",
       "required": [
         "is_claimed"
@@ -62,9 +72,11 @@
           ],
           "properties": {
             "address": {
+              "description": "account address",
               "type": "string"
             },
             "stage": {
+              "description": "airdrop stage",
               "type": "integer",
               "format": "uint8",
               "minimum": 0.0

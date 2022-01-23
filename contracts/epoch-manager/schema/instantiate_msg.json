@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "InstantiateMsg",
+  "description": "This structure describes the basic settings for creating a contract.",
   "type": "object",
   "required": [
     "bbro_emission_rate",
@@ -9,14 +10,21 @@
   ],
   "properties": {
     "bbro_emission_rate": {
-      "$ref": "#/definitions/Decimal"
+      "description": "bbro emission rate",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Decimal"
+        }
+      ]
     },
     "blocks_per_year": {
+      "description": "amount of blocks per one year",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
     },
     "epoch": {
+      "description": "amount of blocks per epoch",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0

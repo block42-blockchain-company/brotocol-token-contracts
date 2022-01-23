@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
+  "description": "This structure describes the execute messages of the contract.",
   "oneOf": [
     {
+      "title": "Description",
+      "description": "Updates contract settings ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "update_config"
@@ -12,6 +15,7 @@
           "type": "object",
           "properties": {
             "owner": {
+              "description": "new contract owner",
               "type": [
                 "string",
                 "null"
@@ -23,6 +27,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Updates contract state ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "update_state"
@@ -32,6 +38,7 @@
           "type": "object",
           "properties": {
             "bbro_emission_rate": {
+              "description": "bbro emission rate",
               "anyOf": [
                 {
                   "$ref": "#/definitions/Decimal"
@@ -42,6 +49,7 @@
               ]
             },
             "blocks_per_year": {
+              "description": "amount of blocks per one year",
               "type": [
                 "integer",
                 "null"
@@ -50,6 +58,7 @@
               "minimum": 0.0
             },
             "epoch": {
+              "description": "amount of blocks per epoch",
               "type": [
                 "integer",
                 "null"

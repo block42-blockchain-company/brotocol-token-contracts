@@ -14,4 +14,7 @@ pub enum ContractError {
 
     #[error("No rewards, epoch didn't pass yet")]
     NoRewards {},
+
+    #[error("Rewards pool balance is lower than distribution amount")]
+    NotEnoughBalanceForRewards {},
 }

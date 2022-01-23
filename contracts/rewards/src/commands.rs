@@ -9,6 +9,18 @@ use crate::{
     state::{load_config, store_config},
 };
 
+/// ## Description
+/// Updates contract settings.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **new_gov_contract** is an [`Option`] field of type [`String`]. Sets new contract owner address
+///
+/// * **bro_token** is an [`Option`] field of type [`String`]. Sets new bbro token address
+///
+/// * **spend_limit** is an [`Option`] field of type [`Uint128`]. Sets new spend limit
 pub fn update_config(
     deps: DepsMut,
     new_gov_contract: Option<String>,
@@ -34,6 +46,14 @@ pub fn update_config(
     Ok(Response::new().add_attribute("action", "update_config"))
 }
 
+/// ## Description
+/// Adds new distributor address into whitelist.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **distributor** is a field of type [`String`]
 pub fn add_distributor(deps: DepsMut, distributor: String) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
@@ -56,6 +76,14 @@ pub fn add_distributor(deps: DepsMut, distributor: String) -> Result<Response, C
     ]))
 }
 
+/// ## Description
+/// Removes distributor from whitelist.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **distributor** is a field of type [`String`]
 pub fn remove_distributor(deps: DepsMut, distributor: String) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
@@ -80,6 +108,16 @@ pub fn remove_distributor(deps: DepsMut, distributor: String) -> Result<Response
     ]))
 }
 
+/// ## Description
+/// Distributes rewards to specified contracts.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **info** is an object of type [`MessageInfo`]
+///
+/// * **distributions** is a [`Vec`] of type [`DistributeRewardMsg`]
 pub fn distribute_reward(
     deps: DepsMut,
     info: MessageInfo,

@@ -4,25 +4,24 @@
   "description": "This structure describes the fields for config response message.",
   "type": "object",
   "required": [
-    "bbro_token",
-    "gov_contract",
-    "whitelist"
+    "bro_token",
+    "genesis_time",
+    "owner"
   ],
   "properties": {
-    "bbro_token": {
-      "description": "bbro token address",
+    "bro_token": {
+      "description": "bro token address",
       "type": "string"
     },
-    "gov_contract": {
+    "genesis_time": {
+      "description": "genesis time frame for vesting schedules",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "owner": {
       "description": "contract/multisig address that allowed to control settings",
       "type": "string"
-    },
-    "whitelist": {
-      "description": "list of whitelisted addresses allowed to execute mint/burn functions",
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
     }
   }
 }

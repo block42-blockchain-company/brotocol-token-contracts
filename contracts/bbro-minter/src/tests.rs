@@ -30,7 +30,7 @@ fn proper_initialization() {
             gov_contract: "owner".to_string(),
             bbro_token: "".to_string(),
             whitelist: vec!["minter0000".to_string()],
-        }
+        },
     );
 }
 
@@ -402,7 +402,7 @@ fn mint() {
                 amount: Uint128::from(100u128),
             })
             .unwrap(),
-        }))
+        })),
     )
 }
 
@@ -473,6 +473,6 @@ fn burn() {
                 amount: Uint128::from(100u128),
             })
             .unwrap(),
-        }))
+        })),
     )
 }

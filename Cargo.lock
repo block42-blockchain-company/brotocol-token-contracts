@@ -116,9 +116,11 @@ dependencies = [
  "cosmwasm-storage",
  "cw-storage-plus",
  "cw2",
+ "cw20",
  "schemars",
  "serde",
  "services",
+ "terra-cosmwasm",
  "thiserror",
 ]
 
@@ -146,9 +148,11 @@ dependencies = [
  "cosmwasm-storage",
  "cw-storage-plus",
  "cw2",
+ "cw20",
  "schemars",
  "serde",
  "services",
+ "terra-cosmwasm",
  "terraswap",
  "thiserror",
 ]

@@ -30,7 +30,7 @@ pub fn instantiate_token(
         return Err(ContractError::InitialBalancesMustBeEmpty {});
     }
 
-    if let Some(_) = token_instantiate_msg.mint {
+    if token_instantiate_msg.mint.is_some() {
         return Err(ContractError::InitialMinterInfoMustBeEmpty {});
     }
 

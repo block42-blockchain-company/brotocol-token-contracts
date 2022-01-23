@@ -3,9 +3,14 @@ use services::distributor::{ConfigResponse, LastDistributionResponse};
 
 use crate::state::{load_config, load_state};
 
+/// ## Description
+/// Returns distributor contract config in the [`ConfigResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
+        owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         epoch_manager_contract: deps
             .api
             .addr_humanize(&config.epoch_manager_contract)?
@@ -29,6 +34,10 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     Ok(resp)
 }
 
+/// ## Description
+/// Returns information about last distribution in the [`LastDistributionResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
 pub fn query_last_distribution_block(deps: Deps) -> StdResult<LastDistributionResponse> {
     let resp = LastDistributionResponse {
         last_distribution_block: load_state(deps.storage)?.last_distribution_block,

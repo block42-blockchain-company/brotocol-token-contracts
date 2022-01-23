@@ -16,6 +16,18 @@ use cw20_base::{
     ContractError,
 };
 
+/// ## Description
+/// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
+/// Returns the default [`Response`] object if the operation was successful, otherwise returns
+/// the [`ContractError`] if the contract was not created.
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`].
+///
+/// * **_env** is an object of type [`Env`].
+///
+/// * **_info** is an object of type [`MessageInfo`].
+///
+/// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -26,6 +38,20 @@ pub fn instantiate(
     cw20_instantiate(deps, env, info, msg)
 }
 
+/// ## Description
+/// Available execute messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **info** is the object of type [`MessageInfo`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Messages
+///
+/// Proxy for cw20-base contract ExecuteMsg
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -56,6 +82,18 @@ pub fn execute(
     }
 }
 
+/// ## Description
+/// Available query messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Queries
+///
+/// Proxy for cw20-base contract QueryMsg
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     cw20_query(deps, env, msg)

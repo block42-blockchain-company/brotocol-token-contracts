@@ -8,3 +8,6 @@ pub use crate::error::ContractError;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod mock_querier;

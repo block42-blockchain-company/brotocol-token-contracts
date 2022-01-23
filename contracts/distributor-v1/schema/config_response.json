@@ -1,33 +1,53 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ConfigResponse",
+  "description": "This structure describes the fields for config response message.",
   "type": "object",
   "required": [
     "bonding_contract",
     "bonding_distribution_amount",
     "epoch_manager_contract",
+    "owner",
     "rewards_contract",
     "staking_contract",
     "staking_distribution_amount"
   ],
   "properties": {
     "bonding_contract": {
+      "description": "bonding contract address",
       "type": "string"
     },
     "bonding_distribution_amount": {
-      "$ref": "#/definitions/Uint128"
+      "description": "amount per epoch to distribute for bonding",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "epoch_manager_contract": {
+      "description": "epoch manager contract addresss",
+      "type": "string"
+    },
+    "owner": {
+      "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     },
     "rewards_contract": {
+      "description": "rewards pool contract address",
       "type": "string"
     },
     "staking_contract": {
+      "description": "staking contract address",
       "type": "string"
     },
     "staking_distribution_amount": {
-      "$ref": "#/definitions/Uint128"
+      "description": "amount per epoch to distribute for staking",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     }
   },
   "definitions": {

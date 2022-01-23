@@ -4,6 +4,18 @@ use terraswap::asset::{Asset, AssetInfo};
 
 use crate::{error::ContractError, queries};
 
+/// ## Description
+/// Sends whole treasury balance of specified asset to recipient.
+/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **asset_info** is an object of type [`AssetInfo`]
+///
+/// * **recipient** is a field of type [`String`]
 pub fn spend(
     deps: DepsMut,
     env: Env,

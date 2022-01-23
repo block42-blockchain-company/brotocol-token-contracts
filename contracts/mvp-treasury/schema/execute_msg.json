@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
+  "description": "This structure describes the execute messages of the contract.",
   "oneOf": [
     {
+      "title": "Description",
+      "description": "Sends whole treasury balance of specified asset to recipient ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "spend"
@@ -16,9 +19,15 @@
           ],
           "properties": {
             "asset_info": {
-              "$ref": "#/definitions/AssetInfo"
+              "description": "asset info to send",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/AssetInfo"
+                }
+              ]
             },
             "recipient": {
+              "description": "recipient address",
               "type": "string"
             }
           }

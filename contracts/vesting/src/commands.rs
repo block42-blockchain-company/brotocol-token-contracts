@@ -61,22 +61,15 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 ///
 /// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
 ///
-/// * **bro_token** is an [`Option`] field of type [`String`]. Sets new bro token address
-///
 /// * **genesis_time** is an [`Option`] field of type [`u64`]. Sets new genesis time frame
 pub fn update_config(
     deps: DepsMut,
     owner: Option<String>,
-    bro_token: Option<String>,
     genesis_time: Option<u64>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
-    }
-
-    if let Some(bro_token) = bro_token {
-        config.bro_token = deps.api.addr_canonicalize(&bro_token)?;
     }
 
     if let Some(genesis_time) = genesis_time {

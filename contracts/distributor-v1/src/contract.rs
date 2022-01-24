@@ -28,7 +28,7 @@ use services::distributor::{ExecuteMsg, InstantiateMsg, QueryMsg};
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
@@ -36,6 +36,7 @@ pub fn instantiate(
         deps.storage,
         &Config {
             owner: deps.api.addr_canonicalize(&msg.owner)?,
+            distribution_genesis_block: msg.distribution_genesis_block,
             epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
             rewards_contract: deps.api.addr_canonicalize(&msg.rewards_contract)?,
             staking_contract: deps.api.addr_canonicalize(&msg.staking_contract)?,
@@ -48,7 +49,7 @@ pub fn instantiate(
     store_state(
         deps.storage,
         &State {
-            last_distribution_block: env.block.height,
+            last_distribution_block: msg.distribution_genesis_block,
         },
     )?;
 

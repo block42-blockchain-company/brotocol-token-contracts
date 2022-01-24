@@ -24,6 +24,10 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
+    if config.distribution_genesis_block > env.block.height {
+        return Err(ContractError::DistributionIsNotStartedYet {});
+    }
+
     let blocks_since_last_distribution = env.block.height - state.last_distribution_block;
 
     // query epoch from epoch_manager contract

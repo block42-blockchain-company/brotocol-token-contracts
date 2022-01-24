@@ -21,6 +21,16 @@ pub enum ExecuteMsg {
     Receive(Cw20ReceiveMsg),
     UstBond {},
     Claim {},
+    UpdateConfig {
+        owner: Option<String>,
+        lp_token: Option<String>,
+        treasury_contract: Option<String>,
+        astroport_factory: Option<String>,
+        ust_bonding_reward_ratio: Option<Decimal>,
+        ust_bonding_discount: Option<Decimal>,
+        lp_bonding_discount: Option<Decimal>,
+        vesting_period_blocks: Option<u64>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -40,10 +50,15 @@ pub enum QueryMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ConfigResponse {
+    pub owner: String,
     pub bro_token: String,
     pub lp_token: String,
     pub treasury_contract: String,
+    pub astroport_factory: String,
     pub ust_bonding_reward_ratio: Decimal,
+    pub ust_bonding_discount: Decimal,
+    pub lp_bonding_discount: Decimal,
+    pub vesting_period_blocks: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

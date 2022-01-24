@@ -6,13 +6,21 @@ use crate::state::{load_claims, load_config, load_state};
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
+        owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         bro_token: deps.api.addr_humanize(&config.bro_token)?.to_string(),
         lp_token: deps.api.addr_humanize(&config.lp_token)?.to_string(),
         treasury_contract: deps
             .api
             .addr_humanize(&config.treasury_contract)?
             .to_string(),
+        astroport_factory: deps
+            .api
+            .addr_humanize(&config.astroport_factory)?
+            .to_string(),
         ust_bonding_reward_ratio: config.ust_bonding_reward_ratio,
+        ust_bonding_discount: config.ust_bonding_discount,
+        lp_bonding_discount: config.lp_bonding_discount,
+        vesting_period_blocks: config.vesting_period_blocks,
     };
 
     Ok(resp)

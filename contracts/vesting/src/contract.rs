@@ -59,7 +59,6 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::UpdateConfig {
 ///         owner,
-///         bro_token,
 ///         genesis_time,
 ///     }** Updates contract settings
 ///
@@ -77,11 +76,10 @@ pub fn execute(
     match msg {
         ExecuteMsg::UpdateConfig {
             owner,
-            bro_token,
             genesis_time,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, owner, bro_token, genesis_time)
+            commands::update_config(deps, owner, genesis_time)
         }
         ExecuteMsg::RegisterVestingAccounts { vesting_accounts } => {
             assert_owner(deps.storage, deps.api, info.sender)?;

@@ -11,6 +11,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
         owner: deps.api.addr_humanize(&config.owner)?.to_string(),
+        distribution_genesis_block: config.distribution_genesis_block,
         epoch_manager_contract: deps
             .api
             .addr_humanize(&config.epoch_manager_contract)?

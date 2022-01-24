@@ -14,6 +14,9 @@ pub enum ContractError {
     #[error("Unauthorized")]
     Unauthorized {},
 
+    #[error("Distribution is not started yet")]
+    DistributionIsNotStartedYet {},
+
     #[error("No rewards, epoch didn't pass yet")]
     NoRewards {},
 

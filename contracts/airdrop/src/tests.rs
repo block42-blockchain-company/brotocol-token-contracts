@@ -50,7 +50,6 @@ fn update_config() {
     let info = mock_info("owner0000", &[]);
     let msg = ExecuteMsg::UpdateConfig {
         owner: Some("owner0001".to_string()),
-        bro_token: None,
     };
 
     let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -63,10 +62,7 @@ fn update_config() {
 
     // Unauthorzied err
     let info = mock_info("owner0000", &[]);
-    let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
-        bro_token: None,
-    };
+    let msg = ExecuteMsg::UpdateConfig { owner: None };
 
     let res = execute(deps.as_mut(), mock_env(), info, msg);
     match res {

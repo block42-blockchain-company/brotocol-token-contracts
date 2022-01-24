@@ -24,8 +24,6 @@ pub enum ExecuteMsg {
     UpdateConfig {
         /// new contract owner
         owner: Option<String>,
-        /// new bro token address
-        bro_token: Option<String>,
     },
     /// ## Description
     /// Registers merkle root hash

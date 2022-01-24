@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 pub struct InstantiateMsg {
     /// contract/multisig address that allowed to control settings
     pub owner: String,
+    /// genesis block for destribution start
+    pub distribution_genesis_block: u64,
     /// epoch manager contract addresss
     pub epoch_manager_contract: String,
     /// rewards pool contract address
@@ -71,6 +73,8 @@ pub enum QueryMsg {
 pub struct ConfigResponse {
     /// contract/multisig address that allowed to control settings
     pub owner: String,
+    /// genesis block for destribution start
+    pub distribution_genesis_block: u64,
     /// epoch manager contract addresss
     pub epoch_manager_contract: String,
     /// rewards pool contract address

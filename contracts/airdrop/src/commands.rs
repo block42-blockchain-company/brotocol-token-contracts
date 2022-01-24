@@ -19,21 +19,11 @@ use crate::{
 /// * **deps** is an object of type [`DepsMut`]
 ///
 /// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
-///
-/// * **bro_token** is an [`Option`] field of type [`String`]. Sets new bro token address
-pub fn update_config(
-    deps: DepsMut,
-    owner: Option<String>,
-    bro_token: Option<String>,
-) -> Result<Response, ContractError> {
+pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
-    }
-
-    if let Some(bro_token) = bro_token {
-        config.bro_token = deps.api.addr_canonicalize(&bro_token)?;
     }
 
     store_config(deps.storage, &config)?;

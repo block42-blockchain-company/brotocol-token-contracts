@@ -67,7 +67,6 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::UpdateConfig {
 ///         new_gov_contract,
-///         bro_token,
 ///         spend_limit,
 ///     }** Updates contract settings
 ///
@@ -86,11 +85,10 @@ pub fn execute(
     match msg {
         ExecuteMsg::UpdateConfig {
             new_gov_contract,
-            bro_token,
             spend_limit,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, new_gov_contract, bro_token, spend_limit)
+            commands::update_config(deps, new_gov_contract, spend_limit)
         }
         ExecuteMsg::AddDistributor { distributor } => {
             assert_owner(deps.storage, deps.api, info.sender)?;

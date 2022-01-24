@@ -27,7 +27,6 @@ Message params are optional.
 ```json
 {
     "new_gov_contract": "terra1...",
-    "bro_token": "terra1...",
     "spend_limit": "1001"
 }
 ```

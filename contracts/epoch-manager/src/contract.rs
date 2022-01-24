@@ -22,7 +22,7 @@ use services::epoch_manager::{ExecuteMsg, InstantiateMsg, QueryMsg};
 ///
 /// * **_env** is an object of type [`Env`].
 ///
-/// * **_info** is an object of type [`MessageInfo`].
+/// * **info** is an object of type [`MessageInfo`].
 ///
 /// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]

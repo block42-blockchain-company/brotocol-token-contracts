@@ -6,6 +6,7 @@
   "required": [
     "bonding_contract",
     "bonding_distribution_amount",
+    "distribution_genesis_block",
     "epoch_manager_contract",
     "owner",
     "rewards_contract",
@@ -24,6 +25,12 @@
           "$ref": "#/definitions/Uint128"
         }
       ]
+    },
+    "distribution_genesis_block": {
+      "description": "genesis block for destribution start",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     },
     "epoch_manager_contract": {
       "description": "epoch manager contract addresss",

@@ -22,8 +22,7 @@ Message params are optional.
 
 ```json
 {
-    "owner": "terra1...",
-    "bro_token": "terra1..."
+    "owner": "terra1..."
 }
 ```
 

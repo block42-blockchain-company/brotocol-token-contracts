@@ -3,8 +3,8 @@ use std::str::FromStr;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
-    Uint128,
+    from_binary, to_binary, Addr, Api, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response,
+    StdResult, Storage, Uint128,
 };
 use cw20::Cw20ReceiveMsg;
 
@@ -67,6 +67,29 @@ pub fn execute(
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
         ExecuteMsg::UstBond {} => commands::ust_bond(deps, env, info),
         ExecuteMsg::Claim {} => commands::claim(deps, env, info),
+        ExecuteMsg::UpdateConfig {
+            owner,
+            lp_token,
+            treasury_contract,
+            astroport_factory,
+            ust_bonding_reward_ratio,
+            ust_bonding_discount,
+            lp_bonding_discount,
+            vesting_period_blocks,
+        } => {
+            assert_owner(deps.storage, deps.api, info.sender)?;
+            commands::update_config(
+                deps,
+                owner,
+                lp_token,
+                treasury_contract,
+                astroport_factory,
+                ust_bonding_reward_ratio,
+                ust_bonding_discount,
+                lp_bonding_discount,
+                vesting_period_blocks,
+            )
+        }
     }
 }
 
@@ -96,6 +119,23 @@ pub fn receive_cw20(
         }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }
+}
+
+/// ## Description
+/// Verifies that message sender is a contract owner.
+/// Returns [`Ok`] if address is valid, otherwise returns [`ContractError`]
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+///
+/// * **api** is an object of type [`Api`]
+///
+/// * **sender** is an object of type [`Addr`]
+fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
+    if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    Ok(())
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

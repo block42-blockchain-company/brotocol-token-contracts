@@ -28,8 +28,6 @@ pub enum ExecuteMsg {
     UpdateConfig {
         /// new contract owner
         owner: Option<String>,
-        /// new bro token address
-        bro_token: Option<String>,
         /// new genesis time frame
         genesis_time: Option<u64>,
     },

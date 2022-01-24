@@ -10,6 +10,7 @@ and bonding.
 ```json
 {
     "owner": "terra1...",
+    "distribution_genesis_block": 12500,
     "epoch_manager_contract": "terra1...",
     "rewards_contract": "terra1...",
     "staking_contract": "terra1...",
@@ -39,6 +40,7 @@ Message params are optional.
 ```json
 {
     "owner": "terra1...",
+    "distribution_genesis_block": 12500,
     "epoch_manager_contract": "terra1...",
     "rewards_contract": "terra1...",
     "staking_contract": "terra1...",

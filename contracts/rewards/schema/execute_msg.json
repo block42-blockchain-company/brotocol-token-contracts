@@ -14,13 +14,6 @@
         "update_config": {
           "type": "object",
           "properties": {
-            "bro_token": {
-              "description": "new bro token address",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
             "new_gov_contract": {
               "description": "new contract owner",
               "type": [

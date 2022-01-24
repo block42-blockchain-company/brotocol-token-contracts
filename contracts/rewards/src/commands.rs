@@ -18,23 +18,16 @@ use crate::{
 ///
 /// * **new_gov_contract** is an [`Option`] field of type [`String`]. Sets new contract owner address
 ///
-/// * **bro_token** is an [`Option`] field of type [`String`]. Sets new bbro token address
-///
 /// * **spend_limit** is an [`Option`] field of type [`Uint128`]. Sets new spend limit
 pub fn update_config(
     deps: DepsMut,
     new_gov_contract: Option<String>,
-    bro_token: Option<String>,
     spend_limit: Option<Uint128>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     if let Some(new_gov_contract) = new_gov_contract {
         config.gov_contract = deps.api.addr_canonicalize(&new_gov_contract)?;
-    }
-
-    if let Some(bro_token) = bro_token {
-        config.bro_token = deps.api.addr_canonicalize(&bro_token)?;
     }
 
     if let Some(spend_limit) = spend_limit {

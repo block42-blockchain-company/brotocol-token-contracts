@@ -59,7 +59,6 @@ fn update_config() {
     // update spend_limit and gov_contract addr
     let msg = ExecuteMsg::UpdateConfig {
         new_gov_contract: Some("new_gov".to_string()),
-        bro_token: None,
         spend_limit: Some(Uint128::from(500000u128)),
     };
     let info = mock_info("addr0000", &[]);

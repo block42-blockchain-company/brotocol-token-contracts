@@ -19,11 +19,28 @@ pub fn distribute_reward(
     reward_amount: Uint128,
     distributed_at_block: u64,
 ) -> Result<Response, ContractError> {
+    let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    // TODO: what to do when receiving reward, but zero tokens was staked
+    // because total_bond_amount is zero and we cannot distribute received rewards
+    // we send it back to rewards pool
     if state.total_bond_amount.is_zero() {
-        return Ok(Response::default());
+        return Ok(Response::new()
+            .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
+                contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
+                funds: vec![],
+                msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                    recipient: deps
+                        .api
+                        .addr_humanize(&config.rewards_pool_contract)?
+                        .to_string(),
+                    amount: reward_amount,
+                })?,
+            })])
+            .add_attributes(vec![
+                ("action", "distribute_reward"),
+                ("reward_amount", &reward_amount.to_string()),
+            ]));
     }
 
     state.last_distribution_block = distributed_at_block;
@@ -33,8 +50,8 @@ pub fn distribute_reward(
     store_state(deps.storage, &state)?;
 
     Ok(Response::new().add_attributes(vec![
-        ("action", "compute_reward"),
-        ("distributed_reward", &reward_amount.to_string()),
+        ("action", "distribute_reward"),
+        ("reward_amount", &reward_amount.to_string()),
     ]))
 }
 
@@ -237,7 +254,9 @@ fn compute_staker_bbro_reward(
     state: &State,
     staker_info: &StakerInfo,
 ) -> StdResult<Uint128> {
-    if staker_info.bond_amount.is_zero() {
+    if staker_info.bond_amount.is_zero()
+        || state.last_distribution_block < staker_info.last_balance_update
+    {
         return Ok(Uint128::zero());
     }
 

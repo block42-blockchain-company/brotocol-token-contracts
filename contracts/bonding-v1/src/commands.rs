@@ -12,7 +12,10 @@ use astroport::{
 
 use crate::{
     error::ContractError,
-    state::{load_claims, load_config, load_state, store_claims, store_state, BondType, ClaimInfo},
+    state::{
+        load_claims, load_config, load_state, store_claims, store_config, store_state, BondType,
+        ClaimInfo,
+    },
 };
 
 use services::querier::query_pools;
@@ -174,6 +177,56 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
             })?,
         })])
         .add_attributes(vec![("action", "claim")]))
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn update_config(
+    deps: DepsMut,
+    owner: Option<String>,
+    lp_token: Option<String>,
+    treasury_contract: Option<String>,
+    astroport_factory: Option<String>,
+    ust_bonding_reward_ratio: Option<Decimal>,
+    ust_bonding_discount: Option<Decimal>,
+    lp_bonding_discount: Option<Decimal>,
+    vesting_period_blocks: Option<u64>,
+) -> Result<Response, ContractError> {
+    let mut config = load_config(deps.storage)?;
+
+    if let Some(owner) = owner {
+        config.owner = deps.api.addr_canonicalize(&owner)?;
+    }
+
+    if let Some(lp_token) = lp_token {
+        config.lp_token = deps.api.addr_canonicalize(&lp_token)?;
+    }
+
+    if let Some(treasury_contract) = treasury_contract {
+        config.treasury_contract = deps.api.addr_canonicalize(&treasury_contract)?;
+    }
+
+    if let Some(astroport_factory) = astroport_factory {
+        config.astroport_factory = deps.api.addr_canonicalize(&astroport_factory)?;
+    }
+
+    if let Some(ust_bonding_reward_ratio) = ust_bonding_reward_ratio {
+        config.ust_bonding_reward_ratio = ust_bonding_reward_ratio;
+    }
+
+    if let Some(ust_bonding_discount) = ust_bonding_discount {
+        config.ust_bonding_discount = ust_bonding_discount;
+    }
+
+    if let Some(lp_bonding_discount) = lp_bonding_discount {
+        config.lp_bonding_discount = lp_bonding_discount;
+    }
+
+    if let Some(vesting_period_blocks) = vesting_period_blocks {
+        config.vesting_period_blocks = vesting_period_blocks;
+    }
+
+    store_config(deps.storage, &config)?;
+    Ok(Response::new().add_attributes(vec![("action", "update_config")]))
 }
 
 fn extract_ust_amount(funds: &[Coin]) -> Result<Uint128, ContractError> {

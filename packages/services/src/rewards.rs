@@ -28,8 +28,6 @@ pub enum ExecuteMsg {
     UpdateConfig {
         /// new contract owner
         new_gov_contract: Option<String>,
-        /// new bro token address
-        bro_token: Option<String>,
         /// max allowed amount to spend per distribution
         spend_limit: Option<Uint128>,
     },

@@ -59,7 +59,7 @@ pub fn instantiate(
 ///
 /// ## Messages
 ///
-/// * **ExecuteMsg::UpdateConfig { owner, bro_token }** Updates contract settings
+/// * **ExecuteMsg::UpdateConfig { owner }** Updates contract settings
 ///
 /// * **ExecuteMsg::RegisterMerkleRoot { merkle_root }** Registers merkle root hash
 ///
@@ -76,9 +76,9 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { owner, bro_token } => {
+        ExecuteMsg::UpdateConfig { owner } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, owner, bro_token)
+            commands::update_config(deps, owner)
         }
         ExecuteMsg::RegisterMerkleRoot { merkle_root } => {
             assert_owner(deps.storage, deps.api, info.sender)?;

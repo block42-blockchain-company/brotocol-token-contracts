@@ -35,11 +35,11 @@ use services::{
 #[test]
 fn proper_initialization() {
     let mut deps = mock_dependencies(&[]);
-    let mut env = mock_env();
-    env.block.height = 12500;
+    let env = mock_env();
 
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
+        distribution_genesis_block: 12500,
         epoch_manager_contract: "epochmanager".to_string(),
         rewards_contract: "rewards".to_string(),
         staking_contract: "staking".to_string(),
@@ -58,6 +58,7 @@ fn proper_initialization() {
         .unwrap(),
         ConfigResponse {
             owner: "owner".to_string(),
+            distribution_genesis_block: 12500,
             epoch_manager_contract: "epochmanager".to_string(),
             rewards_contract: "rewards".to_string(),
             staking_contract: "staking".to_string(),
@@ -82,10 +83,10 @@ fn proper_initialization() {
 fn distribute() {
     let mut deps = mock_dependencies(&[]);
     let mut env = mock_env();
-    env.block.height = 12500;
 
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
+        distribution_genesis_block: 12500,
         epoch_manager_contract: "epochmanager".to_string(),
         rewards_contract: "rewards".to_string(),
         staking_contract: "staking".to_string(),
@@ -96,6 +97,16 @@ fn distribute() {
 
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    // error: distribution is not started yet
+    env.block.height = 12499;
+    let msg = ExecuteMsg::Distribute {};
+    let info = mock_info("addr0000", &[]);
+    let res = execute(deps.as_mut(), env.clone(), info, msg.clone());
+    match res {
+        Err(ContractError::DistributionIsNotStartedYet {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
 
     // error: 0 passed epochs since last distribution
     env.block.height = 12599;
@@ -167,11 +178,10 @@ fn distribute() {
 #[test]
 fn update_config() {
     let mut deps = mock_dependencies(&[]);
-    let mut env = mock_env();
-    env.block.height = 12500;
 
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
+        distribution_genesis_block: 12500,
         epoch_manager_contract: "epochmanager".to_string(),
         rewards_contract: "rewards".to_string(),
         staking_contract: "staking".to_string(),
@@ -212,6 +222,7 @@ fn update_config() {
         .unwrap(),
         ConfigResponse {
             owner: "new_owner".to_string(),
+            distribution_genesis_block: 12500,
             epoch_manager_contract: "new_epochmanager".to_string(),
             rewards_contract: "new_rewards".to_string(),
             staking_contract: "new_staking".to_string(),

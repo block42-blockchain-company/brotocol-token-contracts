@@ -26,7 +26,6 @@ Message params are optional.
 {
     "update_config": {
         "owner": "terra1...",
-        "bro_token": "terra1...",
         "genesis_time": 1642852083
     }
 }

@@ -1,8 +1,9 @@
-use cosmwasm_std::{CanonicalAddr, Decimal, StdResult, Storage, Uint128};
+use cosmwasm_std::{Addr, CanonicalAddr, Decimal, QuerierWrapper, StdResult, Storage, Uint128};
 use cw20::Expiration;
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use services::querier::query_epoch_info;
 
 static CONFIG: Item<Config> = Item::new("config");
 static STATE: Item<State> = Item::new("state");
@@ -67,6 +68,28 @@ impl StakerInfo {
         self.reward_index = state.global_reward_index;
         self.pending_reward += pending_reward;
         Ok(())
+    }
+
+    pub fn compute_staker_bbro_reward(
+        &self,
+        querier: &QuerierWrapper,
+        epoch_manager_contract: Addr,
+        state: &State,
+    ) -> StdResult<Uint128> {
+        if self.bond_amount.is_zero() || state.last_distribution_block < self.last_balance_update {
+            return Ok(Uint128::zero());
+        }
+
+        let epoch_info = query_epoch_info(querier, epoch_manager_contract)?;
+
+        let epochs_staked = Uint128::from(state.last_distribution_block - self.last_balance_update)
+            .checked_div(Uint128::from(epoch_info.epoch))?;
+
+        let bbro_per_epoch_reward = self.bond_amount.checked_div(epoch_info.epochs_per_year())?
+            * epoch_info.bbro_emission_rate;
+
+        let bbro_reward = bbro_per_epoch_reward.checked_mul(epochs_staked)?;
+        Ok(bbro_reward)
     }
 }
 

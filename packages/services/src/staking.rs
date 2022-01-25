@@ -41,12 +41,17 @@ pub enum QueryMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ConfigResponse {
     pub bro_token: String,
+    pub rewards_pool_contract: String,
+    pub bbro_minter_contract: String,
+    pub epoch_manager_contract: String,
+    pub unbond_period_blocks: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct StateResponse {
     pub global_reward_index: Decimal,
     pub total_bond_amount: Uint128,
+    pub last_distribution_block: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -61,6 +66,7 @@ pub struct StakerInfoResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct StakerAccruedRewardsResponse {
     pub rewards: Uint128,
+    pub bbro_staking_reward: Uint128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

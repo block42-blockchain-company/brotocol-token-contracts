@@ -28,8 +28,6 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
         return Err(ContractError::DistributionIsNotStartedYet {});
     }
 
-    let blocks_since_last_distribution = env.block.height - state.last_distribution_block;
-
     // query epoch from epoch_manager contract
     let epoch_blocks = query_epoch_info(
         &deps.querier,
@@ -38,6 +36,7 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
     .epoch;
 
     // distribute rewards only for passed epochs
+    let blocks_since_last_distribution = env.block.height - state.last_distribution_block;
     let passed_epochs = blocks_since_last_distribution / epoch_blocks;
     if passed_epochs == 0 {
         return Err(ContractError::NoRewards {});

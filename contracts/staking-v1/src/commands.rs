@@ -1,6 +1,5 @@
 use cosmwasm_std::{
-    to_binary, Addr, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, QuerierWrapper, Response,
-    StdResult, Uint128, WasmMsg,
+    to_binary, Addr, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Expiration};
 
@@ -8,11 +7,11 @@ use crate::{
     error::ContractError,
     state::{
         load_config, load_state, load_withdrawals, read_staker_info, remove_staker_info,
-        store_staker_info, store_state, store_withdrawals, StakerInfo, State, WithdrawalInfo,
+        store_staker_info, store_state, store_withdrawals, WithdrawalInfo,
     },
 };
 
-use services::{bbro_minter::ExecuteMsg as BbroMintMsg, querier::query_epoch_info};
+use services::bbro_minter::ExecuteMsg as BbroMintMsg;
 
 pub fn distribute_reward(
     deps: DepsMut,
@@ -68,11 +67,10 @@ pub fn bond(
     let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
 
     // calculate bbro reward using current bro staked amount
-    let bbro_staking_reward = compute_staker_bbro_reward(
+    let bbro_staking_reward = staker_info.compute_staker_bbro_reward(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
         &state,
-        &staker_info,
     )?;
 
     staker_info.compute_staker_reward(&state)?;
@@ -119,12 +117,11 @@ pub fn unbond(
         return Err(ContractError::ForbiddenToUnbondMoreThanBonded {});
     }
 
-    // calculate bbro reward with current bro staked amount
-    let bbro_staking_reward = compute_staker_bbro_reward(
+    // calculate bbro reward using current bro staked amount
+    let bbro_staking_reward = staker_info.compute_staker_bbro_reward(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
         &state,
-        &staker_info,
     )?;
 
     staker_info.compute_staker_reward(&state)?;
@@ -246,32 +243,4 @@ pub fn claim_rewards(
             ("staker", &info.sender.to_string()),
             ("amount", &amount.to_string()),
         ]))
-}
-
-fn compute_staker_bbro_reward(
-    querier: &QuerierWrapper,
-    epoch_manager_contract: Addr,
-    state: &State,
-    staker_info: &StakerInfo,
-) -> StdResult<Uint128> {
-    if staker_info.bond_amount.is_zero()
-        || state.last_distribution_block < staker_info.last_balance_update
-    {
-        return Ok(Uint128::zero());
-    }
-
-    let epoch_info = query_epoch_info(querier, epoch_manager_contract)?;
-
-    let epochs_staked =
-        Uint128::from(state.last_distribution_block - staker_info.last_balance_update)
-            .checked_div(Uint128::from(epoch_info.epoch))?;
-
-    let bbro_per_epoch_reward = staker_info
-        .bond_amount
-        .checked_div(epoch_info.epochs_per_year())?
-        * epoch_info.bbro_emission_rate;
-
-    let bbro_reward = bbro_per_epoch_reward.checked_mul(epochs_staked)?;
-
-    Ok(bbro_reward)
 }

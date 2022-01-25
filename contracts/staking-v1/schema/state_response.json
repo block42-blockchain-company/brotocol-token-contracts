@@ -4,11 +4,17 @@
   "type": "object",
   "required": [
     "global_reward_index",
+    "last_distribution_block",
     "total_bond_amount"
   ],
   "properties": {
     "global_reward_index": {
       "$ref": "#/definitions/Decimal"
+    },
+    "last_distribution_block": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     },
     "total_bond_amount": {
       "$ref": "#/definitions/Uint128"

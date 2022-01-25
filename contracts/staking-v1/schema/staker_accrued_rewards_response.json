@@ -3,9 +3,13 @@
   "title": "StakerAccruedRewardsResponse",
   "type": "object",
   "required": [
+    "bbro_staking_reward",
     "rewards"
   ],
   "properties": {
+    "bbro_staking_reward": {
+      "$ref": "#/definitions/Uint128"
+    },
     "rewards": {
       "$ref": "#/definitions/Uint128"
     }

@@ -49,7 +49,7 @@
                 "null"
               ]
             },
-            "new_gov_contract": {
+            "owner": {
               "description": "new contract owner",
               "type": [
                 "string",

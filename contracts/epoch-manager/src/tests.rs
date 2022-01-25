@@ -14,6 +14,7 @@ fn proper_initialization() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
+        owner: "addr0000".to_string(),
         epoch: 1000,
         blocks_per_year: 6_307_200,
         bbro_emission_rate: Decimal::from_str("1.0").unwrap(),
@@ -50,6 +51,7 @@ fn update_config() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
+        owner: "addr0000".to_string(),
         epoch: 1000,
         blocks_per_year: 6_307_200,
         bbro_emission_rate: Decimal::from_str("1.0").unwrap(),
@@ -98,6 +100,7 @@ fn update_state() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
+        owner: "addr0000".to_string(),
         epoch: 1000,
         blocks_per_year: 6_307_200,
         bbro_emission_rate: Decimal::from_str("1.0").unwrap(),

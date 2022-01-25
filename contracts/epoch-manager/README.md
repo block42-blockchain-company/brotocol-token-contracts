@@ -9,6 +9,7 @@ such as epoch info, blocks per year, bbro emission rate and etc.
 
 ```json
 {
+    "owner": "terra1...",
     "epoch": 10,
     "blocks_per_year": 1000,
     "bbro_emission_rate": "1.0"

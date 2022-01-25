@@ -42,7 +42,7 @@ pub fn instantiate(
     store_config(
         deps.storage,
         &Config {
-            gov_contract: deps.api.addr_canonicalize(&msg.gov_contract)?,
+            owner: deps.api.addr_canonicalize(&msg.owner)?,
             bbro_token: None,
             whitelist,
         },
@@ -70,7 +70,7 @@ pub fn instantiate(
 ///     }** Creates new token contract
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         new_gov_contract,
+///         owner,
 ///         bbro_token,
 ///     }** Updates contract settings
 ///
@@ -96,12 +96,9 @@ pub fn execute(
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::instantiate_token(env, code_id, token_instantiate_msg)
         }
-        ExecuteMsg::UpdateConfig {
-            new_gov_contract,
-            bbro_token,
-        } => {
+        ExecuteMsg::UpdateConfig { owner, bbro_token } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, new_gov_contract, bbro_token)
+            commands::update_config(deps, owner, bbro_token)
         }
         ExecuteMsg::AddMinter { minter } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
@@ -126,7 +123,7 @@ pub fn execute(
 ///
 /// * **sender** is an object of type [`Addr`]
 fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
-    if load_config(storage)?.gov_contract != api.addr_canonicalize(sender.as_str())? {
+    if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
         return Err(ContractError::Unauthorized {});
     }
 

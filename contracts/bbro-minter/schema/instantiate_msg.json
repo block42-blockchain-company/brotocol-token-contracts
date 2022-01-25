@@ -4,11 +4,11 @@
   "description": "This structure describes the basic settings for creating a contract.",
   "type": "object",
   "required": [
-    "gov_contract",
+    "owner",
     "whitelist"
   ],
   "properties": {
-    "gov_contract": {
+    "owner": {
       "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     },

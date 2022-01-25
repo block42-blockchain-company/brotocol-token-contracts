@@ -6,7 +6,8 @@
   "required": [
     "bbro_emission_rate",
     "blocks_per_year",
-    "epoch"
+    "epoch",
+    "owner"
   ],
   "properties": {
     "bbro_emission_rate": {
@@ -28,6 +29,10 @@
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
+    },
+    "owner": {
+      "description": "contract/multisig address that allowed to control settings",
+      "type": "string"
     }
   },
   "definitions": {

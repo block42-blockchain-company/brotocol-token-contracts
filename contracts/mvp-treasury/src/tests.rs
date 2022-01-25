@@ -13,7 +13,9 @@ use services::treasury::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
 fn proper_initialization() {
     let mut deps = mock_dependencies(&[]);
 
-    let msg = InstantiateMsg {};
+    let msg = InstantiateMsg {
+        owner: "addr0000".to_string(),
+    };
 
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -36,7 +38,9 @@ fn spend() {
         amount: Uint128::zero(),
     }]);
 
-    let msg = InstantiateMsg {};
+    let msg = InstantiateMsg {
+        owner: "addr0000".to_string(),
+    };
 
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -82,7 +86,9 @@ fn spend() {
         &[(&MOCK_CONTRACT_ADDR.to_string(), &Uint128::from(12300u128))],
     )]);
 
-    let msg = InstantiateMsg {};
+    let msg = InstantiateMsg {
+        owner: "addr0000".to_string(),
+    };
 
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();

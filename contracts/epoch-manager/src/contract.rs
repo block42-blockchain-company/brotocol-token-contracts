@@ -22,20 +22,20 @@ use services::epoch_manager::{ExecuteMsg, InstantiateMsg, QueryMsg};
 ///
 /// * **_env** is an object of type [`Env`].
 ///
-/// * **info** is an object of type [`MessageInfo`].
+/// * **_info** is an object of type [`MessageInfo`].
 ///
 /// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     store_config(
         deps.storage,
         &Config {
-            owner: deps.api.addr_canonicalize(&info.sender.to_string())?,
+            owner: deps.api.addr_canonicalize(&msg.owner)?,
         },
     )?;
 

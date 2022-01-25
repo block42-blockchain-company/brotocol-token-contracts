@@ -60,18 +60,18 @@ pub fn instantiate_token(
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **new_gov_contract** is an [`Option`] field of type [`String`]. Sets new contract owner address
+/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
 ///
 /// * **bbro_token** is an [`Option`] field of type [`String`]. Sets new bbro token address
 pub fn update_config(
     deps: DepsMut,
-    new_gov_contract: Option<String>,
+    owner: Option<String>,
     bbro_token: Option<String>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
-    if let Some(new_gov_contract) = new_gov_contract {
-        config.gov_contract = deps.api.addr_canonicalize(&new_gov_contract)?;
+    if let Some(owner) = owner {
+        config.owner = deps.api.addr_canonicalize(&owner)?;
     }
 
     if let Some(bbro_token) = bbro_token {

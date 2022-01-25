@@ -14,7 +14,7 @@
         "update_config": {
           "type": "object",
           "properties": {
-            "new_gov_contract": {
+            "owner": {
               "description": "new contract owner",
               "type": [
                 "string",

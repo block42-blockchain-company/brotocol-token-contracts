@@ -8,7 +8,7 @@ Right now for staking and bonding.
 
 ```json
 {
-    "gov_contract": "terra1...",
+    "owner": "terra1...",
     "bro_token": "terra1...",
     "spend_limit": "1000",
     "whitelist": [
@@ -26,7 +26,7 @@ Message params are optional.
 
 ```json
 {
-    "new_gov_contract": "terra1...",
+    "owner": "terra1...",
     "spend_limit": "1001"
 }
 ```

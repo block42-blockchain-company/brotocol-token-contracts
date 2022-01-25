@@ -18,10 +18,12 @@ Did you improve or fixed something out of the task's scope?
 ## PR author checklist
 Please write any comments you have regarding any of these points.
 #### Code
-- [ ] Before submitting this PR I self-reviewed the code as a whole once again
+Before submitting this PR I:
+- [ ] Self-reviewed the code as a whole once again
+- [ ] Updated code comments and README docs
+- [ ] Ran fmt and clippy linters
+- [ ] Updated schema using ./scripts/build_schema.sh script
+- [ ] Updated .wasm artifacts using ./build_release.sh script
 #### Testing (pick one)
 - [ ] I added necessary unit tests
 - [ ] My PR doesn't require new unit tests
-#### Comments (pick one)
- - [ ] There are no places where new comments are necessary
- - [ ] I have fully commented my code in hard-to-understand areas

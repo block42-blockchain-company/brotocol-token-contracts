@@ -16,7 +16,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     };
 
     let resp = ConfigResponse {
-        gov_contract: deps.api.addr_humanize(&config.gov_contract)?.to_string(),
+        owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         bbro_token,
         whitelist: config
             .whitelist

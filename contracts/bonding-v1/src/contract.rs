@@ -21,7 +21,7 @@ use services::bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     if msg.ust_bonding_reward_ratio > Decimal::from_str("1.0")?
@@ -33,7 +33,7 @@ pub fn instantiate(
     store_config(
         deps.storage,
         &Config {
-            owner: deps.api.addr_canonicalize(&info.sender.to_string())?,
+            owner: deps.api.addr_canonicalize(&msg.owner)?,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
             lp_token: deps.api.addr_canonicalize(&msg.lp_token)?,
             treasury_contract: deps.api.addr_canonicalize(&msg.treasury_contract)?,

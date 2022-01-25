@@ -14,7 +14,7 @@ fn proper_initialization() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "owner".to_string(),
+        owner: "owner".to_string(),
         whitelist: vec!["minter0000".to_string()],
     };
 
@@ -27,7 +27,7 @@ fn proper_initialization() {
         )
         .unwrap(),
         ConfigResponse {
-            gov_contract: "owner".to_string(),
+            owner: "owner".to_string(),
             bbro_token: "".to_string(),
             whitelist: vec!["minter0000".to_string()],
         },
@@ -39,7 +39,7 @@ fn instantiate_token() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "owner".to_string(),
+        owner: "owner".to_string(),
         whitelist: vec!["minter0000".to_string()],
     };
 
@@ -148,7 +148,7 @@ fn update_config() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "owner".to_string(),
+        owner: "owner".to_string(),
         whitelist: vec!["minter0000".to_string()],
     };
 
@@ -157,7 +157,7 @@ fn update_config() {
 
     // unauthorized: only owner allowed to execute
     let msg = ExecuteMsg::UpdateConfig {
-        new_gov_contract: None,
+        owner: None,
         bbro_token: None,
     };
 
@@ -171,7 +171,7 @@ fn update_config() {
     // proper execution
     // update bbro_token address
     let msg = ExecuteMsg::UpdateConfig {
-        new_gov_contract: None,
+        owner: None,
         bbro_token: Some("bbro_token".to_string()),
     };
 
@@ -184,15 +184,15 @@ fn update_config() {
         )
         .unwrap(),
         ConfigResponse {
-            gov_contract: "owner".to_string(),
+            owner: "owner".to_string(),
             bbro_token: "bbro_token".to_string(),
             whitelist: vec!["minter0000".to_string()],
         },
     );
 
-    // update gov_contract
+    // update owner
     let msg = ExecuteMsg::UpdateConfig {
-        new_gov_contract: Some("new_owner".to_string()),
+        owner: Some("new_owner".to_string()),
         bbro_token: None,
     };
 
@@ -205,7 +205,7 @@ fn update_config() {
         )
         .unwrap(),
         ConfigResponse {
-            gov_contract: "new_owner".to_string(),
+            owner: "new_owner".to_string(),
             bbro_token: "bbro_token".to_string(),
             whitelist: vec!["minter0000".to_string()],
         },
@@ -213,7 +213,7 @@ fn update_config() {
 
     // unauthorized: try update with old owner
     let msg = ExecuteMsg::UpdateConfig {
-        new_gov_contract: None,
+        owner: None,
         bbro_token: None,
     };
 
@@ -230,7 +230,7 @@ fn add_minter() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "owner".to_string(),
+        owner: "owner".to_string(),
         whitelist: vec!["minter0000".to_string()],
     };
 
@@ -271,7 +271,7 @@ fn add_minter() {
         )
         .unwrap(),
         ConfigResponse {
-            gov_contract: "owner".to_string(),
+            owner: "owner".to_string(),
             bbro_token: "".to_string(),
             whitelist: vec!["minter0000".to_string(), "minter0001".to_string()],
         },
@@ -283,7 +283,7 @@ fn remove_minter() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "owner".to_string(),
+        owner: "owner".to_string(),
         whitelist: vec!["minter0000".to_string()],
     };
 
@@ -328,7 +328,7 @@ fn remove_minter() {
         )
         .unwrap(),
         ConfigResponse {
-            gov_contract: "owner".to_string(),
+            owner: "owner".to_string(),
             bbro_token: "".to_string(),
             whitelist: vec![],
         },
@@ -340,7 +340,7 @@ fn mint() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "owner".to_string(),
+        owner: "owner".to_string(),
         whitelist: vec!["minter0000".to_string()],
     };
 
@@ -362,7 +362,7 @@ fn mint() {
 
     // set bbro_token address
     let msg = ExecuteMsg::UpdateConfig {
-        new_gov_contract: None,
+        owner: None,
         bbro_token: Some("bbro_token".to_string()),
     };
 
@@ -411,7 +411,7 @@ fn burn() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "owner".to_string(),
+        owner: "owner".to_string(),
         whitelist: vec!["minter0000".to_string()],
     };
 
@@ -433,7 +433,7 @@ fn burn() {
 
     // set bbro_token address
     let msg = ExecuteMsg::UpdateConfig {
-        new_gov_contract: None,
+        owner: None,
         bbro_token: Some("bbro_token".to_string()),
     };
 

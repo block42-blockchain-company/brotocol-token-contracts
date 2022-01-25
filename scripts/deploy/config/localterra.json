@@ -1,0 +1,14 @@
+{
+    "bro_token": {
+        "name": "Bro",
+        "symbol": "BRO",
+        "decimals": 6
+    },
+    "airdrop": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"
+    },
+    "vesting": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "genesis_time": 12350
+    }
+}

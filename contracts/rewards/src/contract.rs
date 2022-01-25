@@ -42,7 +42,7 @@ pub fn instantiate(
     store_config(
         deps.storage,
         &Config {
-            gov_contract: deps.api.addr_canonicalize(&msg.gov_contract)?,
+            owner: deps.api.addr_canonicalize(&msg.owner)?,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
             spend_limit: msg.spend_limit,
             whitelist,
@@ -66,7 +66,7 @@ pub fn instantiate(
 /// ## Messages
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         new_gov_contract,
+///         owner,
 ///         spend_limit,
 ///     }** Updates contract settings
 ///
@@ -83,12 +83,9 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig {
-            new_gov_contract,
-            spend_limit,
-        } => {
+        ExecuteMsg::UpdateConfig { owner, spend_limit } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, new_gov_contract, spend_limit)
+            commands::update_config(deps, owner, spend_limit)
         }
         ExecuteMsg::AddDistributor { distributor } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
@@ -114,7 +111,7 @@ pub fn execute(
 ///
 /// * **sender** is an object of type [`Addr`]
 fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
-    if load_config(storage)?.gov_contract != api.addr_canonicalize(sender.as_str())? {
+    if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
         return Err(ContractError::Unauthorized {});
     }
 

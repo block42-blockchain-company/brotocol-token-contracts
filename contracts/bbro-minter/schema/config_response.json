@@ -5,7 +5,7 @@
   "type": "object",
   "required": [
     "bbro_token",
-    "gov_contract",
+    "owner",
     "whitelist"
   ],
   "properties": {
@@ -13,7 +13,7 @@
       "description": "bbro token address",
       "type": "string"
     },
-    "gov_contract": {
+    "owner": {
       "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     },

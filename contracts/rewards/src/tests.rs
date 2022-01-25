@@ -13,7 +13,7 @@ fn proper_initialization() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "gov".to_string(),
+        owner: "gov".to_string(),
         bro_token: "bro".to_string(),
         spend_limit: Uint128::from(1000000u128),
         whitelist: vec!["distr0000".to_string()],
@@ -27,7 +27,7 @@ fn proper_initialization() {
     // it worked, let's query the state
     let config: ConfigResponse =
         from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()).unwrap();
-    assert_eq!("gov", config.gov_contract.as_str());
+    assert_eq!("gov", config.owner.as_str());
     assert_eq!("bro", config.bro_token.as_str());
     assert_eq!(Uint128::from(1000000u128), config.spend_limit);
     assert_eq!(vec!["distr0000".to_string()], config.whitelist);
@@ -38,7 +38,7 @@ fn update_config() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "gov".to_string(),
+        owner: "gov".to_string(),
         bro_token: "bro".to_string(),
         spend_limit: Uint128::from(1000000u128),
         whitelist: vec!["distr0000".to_string()],
@@ -52,13 +52,13 @@ fn update_config() {
     // it worked, let's query the state
     let config: ConfigResponse =
         from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()).unwrap();
-    assert_eq!("gov", config.gov_contract.as_str());
+    assert_eq!("gov", config.owner.as_str());
     assert_eq!("bro", config.bro_token.as_str());
     assert_eq!(Uint128::from(1000000u128), config.spend_limit);
 
-    // update spend_limit and gov_contract addr
+    // update spend_limit and owner addr
     let msg = ExecuteMsg::UpdateConfig {
-        new_gov_contract: Some("new_gov".to_string()),
+        owner: Some("new_gov".to_string()),
         spend_limit: Some(Uint128::from(500000u128)),
     };
     let info = mock_info("addr0000", &[]);
@@ -76,7 +76,7 @@ fn update_config() {
     assert_eq!(
         config,
         ConfigResponse {
-            gov_contract: "new_gov".to_string(),
+            owner: "new_gov".to_string(),
             bro_token: "bro".to_string(),
             spend_limit: Uint128::from(500000u128),
             whitelist: vec!["distr0000".to_string()],
@@ -89,7 +89,7 @@ fn add_distributor() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "gov".to_string(),
+        owner: "gov".to_string(),
         bro_token: "bro".to_string(),
         spend_limit: Uint128::from(1000000u128),
         whitelist: vec!["distr0000".to_string()],
@@ -124,7 +124,7 @@ fn add_distributor() {
     assert_eq!(
         config,
         ConfigResponse {
-            gov_contract: "gov".to_string(),
+            owner: "gov".to_string(),
             bro_token: "bro".to_string(),
             spend_limit: Uint128::from(1000000u128),
             whitelist: vec!["distr0000".to_string(), "distr0001".to_string()],
@@ -137,7 +137,7 @@ fn remove_distributor() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "gov".to_string(),
+        owner: "gov".to_string(),
         bro_token: "bro".to_string(),
         spend_limit: Uint128::from(1000000u128),
         whitelist: vec!["distr0000".to_string()],
@@ -172,7 +172,7 @@ fn remove_distributor() {
     assert_eq!(
         config,
         ConfigResponse {
-            gov_contract: "gov".to_string(),
+            owner: "gov".to_string(),
             bro_token: "bro".to_string(),
             spend_limit: Uint128::from(1000000u128),
             whitelist: vec![],
@@ -185,7 +185,7 @@ fn test_reward() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
-        gov_contract: "gov".to_string(),
+        owner: "gov".to_string(),
         bro_token: "bro".to_string(),
         spend_limit: Uint128::from(1000000u128),
         whitelist: vec!["distr0000".to_string()],

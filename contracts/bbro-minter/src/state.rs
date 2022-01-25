@@ -12,7 +12,7 @@ static CONFIG: Item<Config> = Item::new("config");
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Config {
     /// contract/multisig address that allowed to control settings
-    pub gov_contract: CanonicalAddr,
+    pub owner: CanonicalAddr,
     /// bbro token address
     pub bbro_token: Option<CanonicalAddr>,
     /// list of whitelisted addresses allowed to execute mint/burn functions

@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     /// contract/multisig address that allowed to control settings
-    pub gov_contract: String,
+    pub owner: String,
     /// list of whitelisted addresses allowed to execute mint/burn functions
     pub whitelist: Vec<String>,
 }
@@ -34,7 +34,7 @@ pub enum ExecuteMsg {
     /// Only owner can execute this function
     UpdateConfig {
         /// new contract owner
-        new_gov_contract: Option<String>,
+        owner: Option<String>,
         /// new bbro token address
         bbro_token: Option<String>,
     },
@@ -91,7 +91,7 @@ pub enum QueryMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ConfigResponse {
     /// contract/multisig address that allowed to control settings
-    pub gov_contract: String,
+    pub owner: String,
     /// bbro token address
     pub bbro_token: String,
     /// list of whitelisted addresses allowed to execute mint/burn functions

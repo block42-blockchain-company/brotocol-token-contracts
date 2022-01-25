@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 /// This structure describes the basic settings for creating a contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
+    /// contract/multisig address that allowed to control settings
+    pub owner: String,
     /// amount of blocks per epoch
     pub epoch: u64,
     /// amount of blocks per one year

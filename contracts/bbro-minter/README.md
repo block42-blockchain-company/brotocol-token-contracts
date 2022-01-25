@@ -9,7 +9,7 @@ This contract is set as a minter for bBro token.
 
 ```json
 {
-    "gov_contract": "terra1...",
+    "owner": "terra1...",
     "whitelist": [
         "terra1..."
     ]
@@ -44,7 +44,7 @@ Message params are optional.
 
 ```json
 {
-    "new_gov_contract": "terra1...",
+    "owner": "terra1...",
     "bbro_token": "terra1..."
 }
 ```

@@ -8,7 +8,9 @@ via bonding.
 ## InstantiateMsg
 
 ```json
-{}
+{
+    "owner": "terra1..."
+}
 ```
 
 ## ExecuteMsg
@@ -33,7 +35,7 @@ Can be executed only by owner.
 
 ### `config`
 
-Returns bbro-minter contract config.
+Returns mvp-treasury contract config.
 
 ```json
 {
@@ -43,7 +45,7 @@ Returns bbro-minter contract config.
 
 ### `balance`
 
-Returns mvp-treasuty contract balance of specified asset.
+Returns mvp-treasury contract balance of specified asset.
 
 ```json
 {

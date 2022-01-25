@@ -7,7 +7,10 @@ use terraswap::asset::AssetInfo;
 /// ## InstantiateMsg
 /// This structure describes the basic settings for creating a contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {}
+pub struct InstantiateMsg {
+    /// contract/multisig address that allowed to control settings
+    pub owner: String,
+}
 
 /// ## ExecuteMsg
 /// This structure describes the execute messages of the contract.

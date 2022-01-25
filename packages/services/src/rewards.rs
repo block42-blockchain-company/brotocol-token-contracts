@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     /// contract/multisig address that allowed to control settings
-    pub gov_contract: String,
+    pub owner: String,
     /// bro token address
     pub bro_token: String,
     /// max allowed amount to spend per distribution
@@ -27,7 +27,7 @@ pub enum ExecuteMsg {
     /// Only owner can execute this function
     UpdateConfig {
         /// new contract owner
-        new_gov_contract: Option<String>,
+        owner: Option<String>,
         /// max allowed amount to spend per distribution
         spend_limit: Option<Uint128>,
     },
@@ -87,7 +87,7 @@ pub struct DistributeRewardMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ConfigResponse {
     /// contract/multisig address that allowed to control settings
-    pub gov_contract: String,
+    pub owner: String,
     /// bro token address
     pub bro_token: String,
     /// max allowed amount to spend per distribution

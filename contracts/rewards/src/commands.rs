@@ -16,18 +16,18 @@ use crate::{
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **new_gov_contract** is an [`Option`] field of type [`String`]. Sets new contract owner address
+/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
 ///
 /// * **spend_limit** is an [`Option`] field of type [`Uint128`]. Sets new spend limit
 pub fn update_config(
     deps: DepsMut,
-    new_gov_contract: Option<String>,
+    owner: Option<String>,
     spend_limit: Option<Uint128>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
-    if let Some(new_gov_contract) = new_gov_contract {
-        config.gov_contract = deps.api.addr_canonicalize(&new_gov_contract)?;
+    if let Some(owner) = owner {
+        config.owner = deps.api.addr_canonicalize(&owner)?;
     }
 
     if let Some(spend_limit) = spend_limit {

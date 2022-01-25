@@ -5,7 +5,7 @@
   "type": "object",
   "required": [
     "bro_token",
-    "gov_contract",
+    "owner",
     "spend_limit",
     "whitelist"
   ],
@@ -14,7 +14,7 @@
       "description": "bro token address",
       "type": "string"
     },
-    "gov_contract": {
+    "owner": {
       "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     },

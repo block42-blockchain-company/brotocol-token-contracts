@@ -45,7 +45,7 @@ Registers a list of vesting accounts for future token distribution.
                     {
                         "start_time": 1642852083,
                         "end_time": 1642952083,
-                        "amount": "10"
+                        "bro_amount": "10"
                     }
                 ]
             }

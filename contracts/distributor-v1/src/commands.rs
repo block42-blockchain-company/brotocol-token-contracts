@@ -14,7 +14,7 @@ use services::{
 
 /// ## Description
 /// Performs token distribution.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -95,7 +95,7 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
 
 /// ## Description
 /// Updates contract settings.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]

@@ -11,7 +11,7 @@ use crate::{
 
 /// ## Description
 /// Creates new token contract.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **env** is an object of type [`Env`]
@@ -55,7 +55,7 @@ pub fn instantiate_token(
 
 /// ## Description
 /// Updates contract settings.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -85,7 +85,7 @@ pub fn update_config(
 
 /// ## Description
 /// Adds new minter address into whitelist.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -112,7 +112,7 @@ pub fn add_minter(deps: DepsMut, minter: String) -> Result<Response, ContractErr
 
 /// ## Description
 /// Removes minter from whitelist.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -141,7 +141,7 @@ pub fn remove_minter(deps: DepsMut, minter: String) -> Result<Response, Contract
 
 /// ## Description
 /// Mints specified amount for specified address.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -188,7 +188,7 @@ pub fn mint(
 
 /// ## Description
 /// Burns specified amount from specified address balance.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]

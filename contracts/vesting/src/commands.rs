@@ -12,7 +12,7 @@ use services::vesting::{VestingAccount, VestingInfo, VestingSchedule};
 
 /// ## Description
 /// Claims availalble amount for message sender.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -54,7 +54,7 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 
 /// ## Description
 /// Updates contract settings.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -83,7 +83,7 @@ pub fn update_config(
 
 /// ## Description
 /// Registers vesting accounts for future distribution
-/// /// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]

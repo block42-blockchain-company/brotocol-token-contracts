@@ -1,6 +1,6 @@
 # MVP Treasury
 
-The mvp-treasury contract is used for holding assets that was exchanged on BRO token
+The mvp-treasury contract is used for holding assets that were exchanged to BRO token
 via bonding.
 
 ---

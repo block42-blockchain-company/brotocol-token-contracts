@@ -11,7 +11,7 @@ use crate::{
 
 /// ## Description
 /// Updates contract settings.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -41,7 +41,7 @@ pub fn update_config(
 
 /// ## Description
 /// Adds new distributor address into whitelist.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -71,7 +71,7 @@ pub fn add_distributor(deps: DepsMut, distributor: String) -> Result<Response, C
 
 /// ## Description
 /// Removes distributor from whitelist.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -103,7 +103,7 @@ pub fn remove_distributor(deps: DepsMut, distributor: String) -> Result<Response
 
 /// ## Description
 /// Distributes rewards to specified contracts.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]

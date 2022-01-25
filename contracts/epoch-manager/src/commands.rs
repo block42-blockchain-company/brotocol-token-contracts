@@ -7,7 +7,7 @@ use crate::{
 
 /// ## Description
 /// Updates contract settings.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
@@ -27,7 +27,7 @@ pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, C
 
 /// ## Description
 /// Updates contract state.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]

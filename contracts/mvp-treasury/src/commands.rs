@@ -6,7 +6,7 @@ use crate::{error::ContractError, queries};
 
 /// ## Description
 /// Sends whole treasury balance of specified asset to recipient.
-/// Returns [`Response`] with specified attributes and messages if operation was succussful,
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]

@@ -1,57 +1,12 @@
 use cosmwasm_std::{
-    to_binary, CanonicalAddr, CosmosMsg, DepsMut, Env, MessageInfo, Response, Uint128, WasmMsg,
+    to_binary, CanonicalAddr, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg,
 };
-use cw20::{Cw20ExecuteMsg, MinterResponse};
-use cw20_base::msg::InstantiateMsg as TokenInstantiateMsg;
+use cw20::Cw20ExecuteMsg;
 
 use crate::{
     error::ContractError,
     state::{load_config, store_config},
 };
-
-/// ## Description
-/// Creates new token contract.
-/// Returns [`Response`] with specified attributes and messages if operation was successful,
-/// otherwise returns [`ContractError`]
-/// ## Params
-/// * **env** is an object of type [`Env`]
-///
-/// * **code_id** is a field of type [`u64`]
-///
-/// * **token_instantiate_msg** is an object of type [`TokenInstantiateMsg`]
-pub fn instantiate_token(
-    env: Env,
-    code_id: u64,
-    token_instantiate_msg: TokenInstantiateMsg,
-) -> Result<Response, ContractError> {
-    let mut token_instantiate_msg = token_instantiate_msg;
-
-    if !token_instantiate_msg.initial_balances.is_empty() {
-        return Err(ContractError::InitialBalancesMustBeEmpty {});
-    }
-
-    if token_instantiate_msg.mint.is_some() {
-        return Err(ContractError::InitialMinterInfoMustBeEmpty {});
-    }
-
-    token_instantiate_msg.mint = Some(MinterResponse {
-        minter: env.contract.address.to_string(),
-        cap: None,
-    });
-
-    Ok(Response::new()
-        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Instantiate {
-            admin: Some(env.contract.address.to_string()),
-            code_id,
-            msg: to_binary(&token_instantiate_msg)?,
-            funds: vec![],
-            label: "".to_string(),
-        })])
-        .add_attributes(vec![
-            ("action", "instantiate_token"),
-            ("code_id", &code_id.to_string()),
-        ]))
-}
 
 /// ## Description
 /// Updates contract settings.

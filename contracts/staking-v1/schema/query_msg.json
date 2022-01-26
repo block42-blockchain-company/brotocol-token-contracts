@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryMsg",
+  "description": "This structure describes the query messages of the contract",
   "oneOf": [
     {
+      "title": "Description",
+      "description": "Returns staking contract config in the [`ConfigResponse`] object",
       "type": "object",
       "required": [
         "config"
@@ -15,6 +18,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns staking contract state in the [`StateResponse`] object",
       "type": "object",
       "required": [
         "state"
@@ -27,6 +32,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns staker info by specified address in the [`StakerInfoResponse`] object",
       "type": "object",
       "required": [
         "staker_info"
@@ -39,6 +46,7 @@
           ],
           "properties": {
             "staker": {
+              "description": "staker address",
               "type": "string"
             }
           }
@@ -47,6 +55,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns available amount for staker to claim by specified address in the [`StakerAccruedRewardsResponse`] object",
       "type": "object",
       "required": [
         "staker_accrued_rewards"
@@ -59,6 +69,7 @@
           ],
           "properties": {
             "staker": {
+              "description": "staker address",
               "type": "string"
             }
           }
@@ -67,6 +78,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns available amount for staker to withdraw by specified address in the [`WithdrawalsResponse`] object",
       "type": "object",
       "required": [
         "withdrawals"
@@ -79,6 +92,7 @@
           ],
           "properties": {
             "staker": {
+              "description": "staker address",
               "type": "string"
             }
           }

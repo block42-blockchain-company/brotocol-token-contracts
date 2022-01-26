@@ -56,18 +56,13 @@ pub fn instantiate(
 /// ## Params
 /// * **deps** is the object of type [`Deps`].
 ///
-/// * **env** is the object of type [`Env`].
+/// * **_env** is the object of type [`Env`].
 ///
 /// * **info** is the object of type [`MessageInfo`].
 ///
 /// * **msg** is the object of type [`ExecuteMsg`].
 ///
 /// ## Messages
-///
-/// * **ExecuteMsg::InstantiateToken {
-///         code_id,
-///         token_instantiate_msg,
-///     }** Creates new token contract
 ///
 /// * **ExecuteMsg::UpdateConfig {
 ///         owner,
@@ -84,18 +79,11 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::InstantiateToken {
-            code_id,
-            token_instantiate_msg,
-        } => {
-            assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::instantiate_token(env, code_id, token_instantiate_msg)
-        }
         ExecuteMsg::UpdateConfig { owner, bbro_token } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(deps, owner, bbro_token)

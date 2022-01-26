@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "StakerInfoResponse",
+  "description": "This structure describes the fields for staker info response message.",
   "type": "object",
   "required": [
     "bond_amount",
@@ -11,20 +12,37 @@
   ],
   "properties": {
     "bond_amount": {
-      "$ref": "#/definitions/Uint128"
+      "description": "amount of BRO tokens bonded by staker",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "last_balance_update": {
+      "description": "last balance update(bond, unbond) block",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
     },
     "pending_reward": {
-      "$ref": "#/definitions/Uint128"
+      "description": "amount of pending rewards of staker",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "reward_index": {
-      "$ref": "#/definitions/Decimal"
+      "description": "reward index of staker",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Decimal"
+        }
+      ]
     },
     "staker": {
+      "description": "staker address",
       "type": "string"
     }
   },

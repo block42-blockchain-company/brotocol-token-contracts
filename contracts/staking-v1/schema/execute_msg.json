@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
+  "description": "This structure describes the execute messages of the contract.",
   "oneOf": [
     {
+      "title": "Description",
+      "description": "Receives a message of type [`Cw20ReceiveMsg`] and processes it depending on the received template.",
       "type": "object",
       "required": [
         "receive"
@@ -15,6 +18,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Unbond staked amount of tokens. Tokens will be claimable only after passing unbonding period.",
       "type": "object",
       "required": [
         "unbond"
@@ -27,7 +32,12 @@
           ],
           "properties": {
             "amount": {
-              "$ref": "#/definitions/Uint128"
+              "description": "amount of tokens to unbond",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Uint128"
+                }
+              ]
             }
           }
         }
@@ -35,6 +45,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Withdraw amount of tokens which have already passed unbonding period.",
       "type": "object",
       "required": [
         "withdraw"
@@ -47,6 +59,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Claim availalble reward amount",
       "type": "object",
       "required": [
         "claim_rewards"

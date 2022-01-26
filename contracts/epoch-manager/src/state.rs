@@ -54,7 +54,7 @@ pub fn load_config(storage: &dyn Storage) -> StdResult<Config> {
 /// ## Params
 /// * **storage** is an object of type [`Storage`]
 ///
-/// * **config** updated config struct of type [`Config`]
+/// * **state** updated config struct of type [`State`]
 pub fn store_state(storage: &mut dyn Storage, state: &State) -> StdResult<()> {
     STATE.save(storage, state)
 }

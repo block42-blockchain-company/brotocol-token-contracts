@@ -1,13 +1,10 @@
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 use cosmwasm_std::{from_binary, to_binary, CosmosMsg, SubMsg, Uint128, WasmMsg};
-use cw20::{Cw20Coin, Cw20ExecuteMsg, MinterResponse};
-use cw20_base::msg::InstantiateMsg as TokenInstantiateMsg;
+use cw20::Cw20ExecuteMsg;
 
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use services::bbro_minter::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-
-const MOCK_CONTRACT_ADDR: &str = "cosmos2contract";
 
 #[test]
 fn proper_initialization() {
@@ -32,115 +29,6 @@ fn proper_initialization() {
             whitelist: vec!["minter0000".to_string()],
         },
     );
-}
-
-#[test]
-fn instantiate_token() {
-    let mut deps = mock_dependencies(&[]);
-
-    let msg = InstantiateMsg {
-        owner: "owner".to_string(),
-        whitelist: vec!["minter0000".to_string()],
-    };
-
-    let info = mock_info("addr0000", &[]);
-    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-    let msg = ExecuteMsg::InstantiateToken {
-        code_id: 1,
-        token_instantiate_msg: TokenInstantiateMsg {
-            name: "test token".to_string(),
-            symbol: "TEST".to_string(),
-            decimals: 6,
-            initial_balances: vec![Cw20Coin {
-                address: "addr0001".to_string(),
-                amount: Uint128::from(100u128),
-            }],
-            mint: Some(MinterResponse {
-                minter: "minter0000".to_string(),
-                cap: None,
-            }),
-            marketing: None,
-        },
-    };
-
-    // unauthorized: only owner allowed to execute
-    let info = mock_info("addr0000", &[]);
-    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
-    match res {
-        Err(ContractError::Unauthorized {}) => assert_eq!(true, true),
-        _ => panic!("DO NOT ENTER HERE"),
-    }
-
-    // initial balance validation fail
-    let info = mock_info("owner", &[]);
-    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
-    match res {
-        Err(ContractError::InitialBalancesMustBeEmpty {}) => assert_eq!(true, true),
-        _ => panic!("DO NOT ENTER HERE"),
-    }
-
-    // minter info must be None
-    let msg = ExecuteMsg::InstantiateToken {
-        code_id: 1,
-        token_instantiate_msg: TokenInstantiateMsg {
-            name: "test token".to_string(),
-            symbol: "TEST".to_string(),
-            decimals: 6,
-            initial_balances: vec![],
-            mint: Some(MinterResponse {
-                minter: "minter0000".to_string(),
-                cap: None,
-            }),
-            marketing: None,
-        },
-    };
-
-    let info = mock_info("owner", &[]);
-    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
-    match res {
-        Err(ContractError::InitialMinterInfoMustBeEmpty {}) => assert_eq!(true, true),
-        _ => panic!("DO NOT ENTER HERE"),
-    }
-
-    // proper execution
-    let msg = ExecuteMsg::InstantiateToken {
-        code_id: 1,
-        token_instantiate_msg: TokenInstantiateMsg {
-            name: "test token".to_string(),
-            symbol: "TEST".to_string(),
-            decimals: 6,
-            initial_balances: vec![],
-            mint: None,
-            marketing: None,
-        },
-    };
-
-    let info = mock_info("owner", &[]);
-    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).expect("unhandled error");
-
-    let token_instantiate_msg = res.messages.get(0).expect("no message");
-    assert_eq!(
-        token_instantiate_msg,
-        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Instantiate {
-            admin: Some(MOCK_CONTRACT_ADDR.to_string()),
-            code_id: 1,
-            msg: to_binary(&TokenInstantiateMsg {
-                name: "test token".to_string(),
-                symbol: "TEST".to_string(),
-                decimals: 6,
-                initial_balances: vec![],
-                mint: Some(MinterResponse {
-                    minter: MOCK_CONTRACT_ADDR.to_string(),
-                    cap: None,
-                }),
-                marketing: None,
-            })
-            .unwrap(),
-            funds: vec![],
-            label: "".to_string(),
-        }))
-    )
 }
 
 #[test]

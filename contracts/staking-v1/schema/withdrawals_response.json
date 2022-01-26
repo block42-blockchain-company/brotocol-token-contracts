@@ -1,12 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "WithdrawalsResponse",
+  "description": "This structure describes the fields for withdrawals response message.",
   "type": "object",
   "required": [
     "claims"
   ],
   "properties": {
     "claims": {
+      "description": "a list of staker's withdrawals",
       "type": "array",
       "items": {
         "$ref": "#/definitions/WithdrawalInfoResponse"
@@ -77,6 +79,8 @@
       "type": "string"
     },
     "WithdrawalInfoResponse": {
+      "title": "WithdrawalInfoResponse",
+      "description": "This structure describes the fields for withdrawal info response message.",
       "type": "object",
       "required": [
         "amount",
@@ -84,10 +88,20 @@
       ],
       "properties": {
         "amount": {
-          "$ref": "#/definitions/Uint128"
+          "description": "amount to withdraw",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            }
+          ]
         },
         "claimable_at": {
-          "$ref": "#/definitions/Expiration"
+          "description": "block at which amount can be claimed",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Expiration"
+            }
+          ]
         }
       }
     }

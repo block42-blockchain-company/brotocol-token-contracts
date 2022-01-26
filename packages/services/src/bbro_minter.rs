@@ -1,5 +1,4 @@
 use cosmwasm_std::Uint128;
-use cw20_base::msg::InstantiateMsg as TokenInstantiateMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -18,16 +17,6 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    /// ## Description
-    /// Creates new token contract
-    /// ## Executor
-    /// Only owner can execute this function
-    InstantiateToken {
-        // code id of deployed wasm contract
-        code_id: u64,
-        // instantiate message of deployed wasm contract
-        token_instantiate_msg: TokenInstantiateMsg,
-    },
     /// ## Description
     /// Updates contract settings
     /// ## Executor

@@ -7,6 +7,10 @@ use services::staking::{
 
 use crate::state::{load_config, load_state, load_withdrawals, read_staker_info};
 
+/// ## Description
+/// Returns staking contract config in the [`ConfigResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
@@ -29,6 +33,10 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     Ok(resp)
 }
 
+/// ## Description
+/// Returns staking contract state in the [`StateResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
 pub fn query_state(deps: Deps) -> StdResult<StateResponse> {
     let state = load_state(deps.storage)?;
     let resp = StateResponse {
@@ -40,6 +48,14 @@ pub fn query_state(deps: Deps) -> StdResult<StateResponse> {
     Ok(resp)
 }
 
+/// ## Description
+/// Returns staker info by specified address in the [`StakerInfoResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **staker** is a field of type [`String`]
 pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<StakerInfoResponse> {
     let staker_raw = deps.api.addr_canonicalize(&staker)?;
     let state = load_state(deps.storage)?;
@@ -57,6 +73,14 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
     Ok(resp)
 }
 
+/// ## Description
+/// Returns available amount for staker to claim by specified address in the [`StakerAccruedRewardsResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **staker** is a field of type [`String`]
 pub fn query_staker_accrued_rewards(
     deps: Deps,
     env: Env,
@@ -83,6 +107,12 @@ pub fn query_staker_accrued_rewards(
     Ok(resp)
 }
 
+/// ## Description
+/// Returns available amount for staker to withdraw by specified address in the [`WithdrawalsResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **staker** is a field of type [`String`]
 pub fn query_withdrawals(deps: Deps, staker: String) -> StdResult<WithdrawalsResponse> {
     let staker_addr_raw = deps.api.addr_canonicalize(&staker)?;
     let claims: Vec<WithdrawalInfoResponse> = load_withdrawals(deps.storage, &staker_addr_raw)?

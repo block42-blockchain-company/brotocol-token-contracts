@@ -18,25 +18,6 @@ This contract is set as a minter for bBro token.
 
 ## ExecuteMsg
 
-### `instantiate_token`
-
-Creates new token contract using code_id and specified Cw20Instantiate msg.
-Can be executed only by owner.
-
-```json
-{
-    "code_id": 1,
-    "token_instantiate_msg": {
-        "name": "bBro token",
-        "symbol": "bBRO",
-        "decimals": 6,
-        "initial_balances": [],
-        "mint": null,
-        "marketing": null,
-    }
-}
-```
-
 ### `update_config`
 
 Updates bbro-minter contract config. Can be executed only by owner.

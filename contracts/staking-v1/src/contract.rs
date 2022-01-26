@@ -15,6 +15,18 @@ use crate::{
 
 use services::staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
 
+/// ## Description
+/// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
+/// Returns the default [`Response`] object if the operation was successful, otherwise returns
+/// the [`ContractError`] if the contract was not created.
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`].
+///
+/// * **env** is an object of type [`Env`].
+///
+/// * **_info** is an object of type [`MessageInfo`].
+///
+/// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -45,6 +57,27 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
+/// ## Description
+/// Available execute messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **info** is the object of type [`MessageInfo`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Messages
+///
+/// * **ExecuteMsg::Receive(msg)** Receives a message of type [`Cw20ReceiveMsg`]
+/// and processes it depending on the received template
+///
+/// * **ExecuteMsg::Unbond { amount }** Unbond staked amount of tokens
+///
+/// * **ExecuteMsg::Withdraw {}** Withdraw amount of tokens which have already passed unbonding period
+///
+/// * **ExecuteMsg::ClaimRewards {}** Claim availalble reward amount
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -60,6 +93,18 @@ pub fn execute(
     }
 }
 
+/// ## Description
+/// Receives a message of type [`Cw20ReceiveMsg`] and processes it depending on the received template.
+/// If the template is not found in the received message, then an [`ContractError`] is returned,
+/// otherwise returns the [`Response`] with the specified attributes if the operation was successful
+/// ## Params
+/// * **deps** is the object of type [`DepsMut`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **info** is the object of type [`MessageInfo`].
+///
+/// * **cw20_msg** is the object of type [`Cw20ReceiveMsg`].
 pub fn receive_cw20(
     deps: DepsMut,
     env: Env,
@@ -90,6 +135,26 @@ pub fn receive_cw20(
     }
 }
 
+/// ## Description
+/// Available query messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Queries
+///
+/// * **QueryMsg::Config {}** Returns staking contract config
+///
+/// * **QueryMsg::State {}** Returns staking contract state
+///
+/// * **QueryMsg::StakerInfo { staker }** Returns staker info by specified address
+///
+/// * **QueryMsg::StakerAccruedRewards { staker }** Returns available amount for staker to claim by specified address
+///
+/// * **QueryMsg::Withdrawals { staker }** Returns available amount for staker to withdraw by specified address
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {

@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "StateResponse",
+  "description": "This structure describes the fields for state response message.",
   "type": "object",
   "required": [
     "global_reward_index",
@@ -9,15 +10,26 @@
   ],
   "properties": {
     "global_reward_index": {
-      "$ref": "#/definitions/Decimal"
+      "description": "global reward index for BRO staking rewards",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Decimal"
+        }
+      ]
     },
     "last_distribution_block": {
+      "description": "last rewards distribution block",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
     },
     "total_bond_amount": {
-      "$ref": "#/definitions/Uint128"
+      "description": "total amount of bonded BRO tokens by all stakers",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     }
   },
   "definitions": {

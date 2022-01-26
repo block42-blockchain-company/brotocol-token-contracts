@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "InstantiateMsg",
+  "description": "This structure describes the basic settings for creating a contract.",
   "type": "object",
   "required": [
     "bbro_minter_contract",
@@ -11,18 +12,23 @@
   ],
   "properties": {
     "bbro_minter_contract": {
+      "description": "bbro minter address",
       "type": "string"
     },
     "bro_token": {
+      "description": "bro token address",
       "type": "string"
     },
     "epoch_manager_contract": {
+      "description": "epoch manager contract address",
       "type": "string"
     },
     "rewards_pool_contract": {
+      "description": "rewards pool address",
       "type": "string"
     },
     "unbond_period_blocks": {
+      "description": "vesting period for withdrawal",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0

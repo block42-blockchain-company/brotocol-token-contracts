@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "StakerAccruedRewardsResponse",
+  "description": "This structure describes the fields for staker accrued rewards response message.",
   "type": "object",
   "required": [
     "bbro_staking_reward",
@@ -8,10 +9,20 @@
   ],
   "properties": {
     "bbro_staking_reward": {
-      "$ref": "#/definitions/Uint128"
+      "description": "amount of bBRO reward from staking BRO tokens",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "rewards": {
-      "$ref": "#/definitions/Uint128"
+      "description": "amount of pending rewards of staker",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     }
   },
   "definitions": {

@@ -13,6 +13,16 @@ use crate::{
 
 use services::bbro_minter::ExecuteMsg as BbroMintMsg;
 
+/// ## Description
+/// Distributes received reward.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **reward_amount** is an object of type [`Uint128`]
+///
+/// * **distributed_at_block** is a field of type [`u64`]
 pub fn distribute_reward(
     deps: DepsMut,
     reward_amount: Uint128,
@@ -54,6 +64,18 @@ pub fn distribute_reward(
     ]))
 }
 
+/// ## Description
+/// Deposits specified amount of tokens to get reward shares.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **sender_addr** is an object of type [`Addr`]
+///
+/// * **amount** is an object of type [`Uint128`]
 pub fn bond(
     deps: DepsMut,
     env: Env,
@@ -101,6 +123,18 @@ pub fn bond(
     ]))
 }
 
+/// ## Description
+/// Unbond staked amount of tokens. Tokens will be claimable only after passing unbonding period.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **info** is an object of type [`MessageInfo`]
+///
+/// * **amount** is an object of type [`Uint128`]
 pub fn unbond(
     deps: DepsMut,
     env: Env,
@@ -167,6 +201,16 @@ pub fn unbond(
     ]))
 }
 
+/// ## Description
+/// Withdraw amount of tokens which have already passed unbonding period.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **info** is an object of type [`MessageInfo`]
 pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
@@ -207,6 +251,16 @@ pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
         ]))
 }
 
+/// ## Description
+/// Claim availalble reward amount.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **info** is an object of type [`MessageInfo`]
 pub fn claim_rewards(
     deps: DepsMut,
     env: Env,

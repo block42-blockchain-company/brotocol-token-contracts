@@ -10,5 +10,51 @@
     "vesting": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
         "genesis_time": 12350
+    },
+    "bbro_minter": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "whitelist": []
+    },
+    "bbro_token": {
+        "name": "bBro",
+        "symbol": "bBRO",
+        "decimals": 6
+    },
+    "rewards": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "spend_limit": "1000000000",
+        "whitelist": []
+    },
+    "treasury": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"
+    },
+    "epoch_manager": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "epoch": 30,
+        "blocks_per_year": 100,
+        "bbro_emission_rate": "1.0"
+    },
+    "stakingv1": {
+        "unbond_period_blocks": 30
+    },
+    "bondingv1": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "lp_token": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "astroport_factory": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "ust_bonding_reward_ratio": "0.6",
+        "ust_bonding_discount": "0.05",
+        "lp_bonding_discount": "0.05",
+        "vesting_period_blocks": 25
+    },
+    "distributorv1": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "distribution_genesis_block": 12350,
+        "staking_distribution_amount": "10000000",
+        "bonding_distribution_amount": "1000000"
+    },
+    "bro_distributions": {
+        "airdrop": "10000000000",
+        "vesting": "10000000000",
+        "rewards": "1000000000000"
     }
 }

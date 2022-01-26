@@ -51,7 +51,6 @@ fn update_config() {
 
     let msg = ExecuteMsg::UpdateConfig {
         owner: Some("owner2".to_string()),
-        bro_token: None,
         genesis_time: None,
     };
     let info = mock_info("owner", &[]);
@@ -71,7 +70,6 @@ fn update_config() {
 
     let msg = ExecuteMsg::UpdateConfig {
         owner: Some("owner".to_string()),
-        bro_token: None,
         genesis_time: None,
     };
     let info = mock_info("owner", &[]);
@@ -83,7 +81,6 @@ fn update_config() {
 
     let msg = ExecuteMsg::UpdateConfig {
         owner: None,
-        bro_token: Some("bro_token2".to_string()),
         genesis_time: Some(1u64),
     };
     let info = mock_info("owner2", &[]);
@@ -96,7 +93,7 @@ fn update_config() {
         .unwrap(),
         ConfigResponse {
             owner: "owner2".to_string(),
-            bro_token: "bro_token2".to_string(),
+            bro_token: "bro_token".to_string(),
             genesis_time: 1u64,
         }
     );

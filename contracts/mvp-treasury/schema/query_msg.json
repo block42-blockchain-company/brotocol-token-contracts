@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "description": "This structure describes the query messages of the contract",
+  "oneOf": [
+    {
+      "title": "Description",
+      "description": "Returns mvp-treasury contract config in the [`ConfigResponse`] object",
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Returns mvp-treasuty contract balance of specified asset in the [`BalanceResponse`] object",
+      "type": "object",
+      "required": [
+        "balance"
+      ],
+      "properties": {
+        "balance": {
+          "type": "object",
+          "required": [
+            "asset_info"
+          ],
+          "properties": {
+            "asset_info": {
+              "description": "asset info to query",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/AssetInfo"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "AssetInfo": {
+      "description": "AssetInfo contract_addr is usually passed from the cw20 hook so we can trust the contract_addr is properly validated.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "token"
+          ],
+          "properties": {
+            "token": {
+              "type": "object",
+              "required": [
+                "contract_addr"
+              ],
+              "properties": {
+                "contract_addr": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "native_token"
+          ],
+          "properties": {
+            "native_token": {
+              "type": "object",
+              "required": [
+                "denom"
+              ],
+              "properties": {
+                "denom": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

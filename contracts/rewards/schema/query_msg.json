@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "description": "This structure describes the query messages of the contract",
+  "oneOf": [
+    {
+      "title": "Description",
+      "description": "Returns rewards pool contract config in the [`ConfigResponse`] object",
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Returns rewards pool token balance in the [`RewardsPoolBalanceResponse`] object",
+      "type": "object",
+      "required": [
+        "balance"
+      ],
+      "properties": {
+        "balance": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

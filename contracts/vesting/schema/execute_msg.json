@@ -1,20 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
+  "description": "This structure describes the execute messages of the contract.",
   "oneOf": [
     {
-      "type": "object",
-      "required": [
-        "claim"
-      ],
-      "properties": {
-        "claim": {
-          "type": "object"
-        }
-      },
-      "additionalProperties": false
-    },
-    {
+      "title": "Description",
+      "description": "Updates contract settings ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "update_config"
@@ -23,13 +14,8 @@
         "update_config": {
           "type": "object",
           "properties": {
-            "bro_token": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
             "genesis_time": {
+              "description": "new genesis time frame",
               "type": [
                 "integer",
                 "null"
@@ -38,6 +24,7 @@
               "minimum": 0.0
             },
             "owner": {
+              "description": "new contract owner",
               "type": [
                 "string",
                 "null"
@@ -49,6 +36,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Registers vesting accounts for future distribution ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "register_vesting_accounts"
@@ -61,12 +50,27 @@
           ],
           "properties": {
             "vesting_accounts": {
+              "description": "vesting accounts",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/VestingAccount"
               }
             }
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Claims availalble amount for message sender",
+      "type": "object",
+      "required": [
+        "claim"
+      ],
+      "properties": {
+        "claim": {
+          "type": "object"
         }
       },
       "additionalProperties": false
@@ -78,6 +82,8 @@
       "type": "string"
     },
     "VestingAccount": {
+      "title": "VestingAccount",
+      "description": "This structure describes the basic settings for vesting account.",
       "type": "object",
       "required": [
         "address",
@@ -85,9 +91,11 @@
       ],
       "properties": {
         "address": {
+          "description": "account address",
           "type": "string"
         },
         "schedules": {
+          "description": "vesting schedules",
           "type": "array",
           "items": {
             "$ref": "#/definitions/VestingSchedule"
@@ -96,6 +104,8 @@
       }
     },
     "VestingSchedule": {
+      "title": "VestingSchedule",
+      "description": "This structure describes the basic settings for vesting schedule.",
       "type": "object",
       "required": [
         "bro_amount",
@@ -104,14 +114,21 @@
       ],
       "properties": {
         "bro_amount": {
-          "$ref": "#/definitions/Uint128"
+          "description": "claimable amount for schedule",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            }
+          ]
         },
         "end_time": {
+          "description": "the end time frame of schedule",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
         },
         "start_time": {
+          "description": "the start time frame of schedule",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0

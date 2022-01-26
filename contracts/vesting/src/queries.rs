@@ -9,6 +9,10 @@ use services::{
     },
 };
 
+/// ## Description
+/// Returns vesting contract config in the [`ConfigResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
@@ -20,6 +24,12 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     Ok(resp)
 }
 
+/// ## Description
+/// Returns vesting schedules for specified account in the [`VestingAccountResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **address** is a field of type [`String`]
 pub fn query_vesting_account(deps: Deps, address: String) -> StdResult<VestingAccountResponse> {
     let info = load_vesting_info(deps.storage, &deps.api.addr_validate(&address)?)?;
     let resp = VestingAccountResponse { address, info };
@@ -27,6 +37,16 @@ pub fn query_vesting_account(deps: Deps, address: String) -> StdResult<VestingAc
     Ok(resp)
 }
 
+/// ## Description
+/// Returns a list of accounts for given input params in the [`VestingAccountsResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **start_after** is an [`Option`] field of type [`Addr`]
+///
+/// * **limit** is an [`Option`] field of type [`u32`]
+///
+/// * **order_by** is an [`Option`] field of type [`OrderBy`]
 pub fn query_vesting_accounts(
     deps: Deps,
     start_after: Option<String>,
@@ -55,6 +75,14 @@ pub fn query_vesting_accounts(
     })
 }
 
+/// ## Description
+/// Returns available amount to claim for specified account in the [`ClaimableAmountResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **address** is a field of type [`String`]
 pub fn query_claimable_amount(
     deps: Deps,
     env: Env,

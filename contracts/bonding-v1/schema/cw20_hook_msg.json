@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cw20HookMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "distribute_reward"
+      ],
+      "properties": {
+        "distribute_reward": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "lp_bond"
+      ],
+      "properties": {
+        "lp_bond": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
+  "description": "This structure describes the execute messages of the contract.",
   "oneOf": [
     {
+      "title": "Description",
+      "description": "Updates contract settings ## Executor Only owner can execute this function",
       "type": "object",
       "required": [
         "update_config"
@@ -12,6 +15,7 @@
           "type": "object",
           "properties": {
             "owner": {
+              "description": "new contract owner",
               "type": [
                 "string",
                 "null"
@@ -23,6 +27,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Registers merkle root hash",
       "type": "object",
       "required": [
         "register_merkle_root"
@@ -35,6 +41,7 @@
           ],
           "properties": {
             "merkle_root": {
+              "description": "merkle root string represented as hash",
               "type": "string"
             }
           }
@@ -43,6 +50,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Claims availalble amount for message sender at specified airdrop round",
       "type": "object",
       "required": [
         "claim"
@@ -57,15 +66,22 @@
           ],
           "properties": {
             "amount": {
-              "$ref": "#/definitions/Uint128"
+              "description": "claim amount",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Uint128"
+                }
+              ]
             },
             "proof": {
+              "description": "proofs that message sender allowed to claim provided amount",
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
             "stage": {
+              "description": "airdrop stage",
               "type": "integer",
               "format": "uint8",
               "minimum": 0.0

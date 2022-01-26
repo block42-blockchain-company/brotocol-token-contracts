@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "VestingAccount",
+  "description": "This structure describes the basic settings for vesting account.",
   "type": "object",
   "required": [
     "address",
@@ -8,9 +9,11 @@
   ],
   "properties": {
     "address": {
+      "description": "account address",
       "type": "string"
     },
     "schedules": {
+      "description": "vesting schedules",
       "type": "array",
       "items": {
         "$ref": "#/definitions/VestingSchedule"
@@ -23,6 +26,8 @@
       "type": "string"
     },
     "VestingSchedule": {
+      "title": "VestingSchedule",
+      "description": "This structure describes the basic settings for vesting schedule.",
       "type": "object",
       "required": [
         "bro_amount",
@@ -31,14 +36,21 @@
       ],
       "properties": {
         "bro_amount": {
-          "$ref": "#/definitions/Uint128"
+          "description": "claimable amount for schedule",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            }
+          ]
         },
         "end_time": {
+          "description": "the end time frame of schedule",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
         },
         "start_time": {
+          "description": "the start time frame of schedule",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0

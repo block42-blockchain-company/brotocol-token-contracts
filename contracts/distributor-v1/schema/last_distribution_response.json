@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LastDistributionResponse",
+  "description": "This structure describes the fields for last ditribution response message.",
+  "type": "object",
+  "required": [
+    "last_distribution_block"
+  ],
+  "properties": {
+    "last_distribution_block": {
+      "description": "last distribution block",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    }
+  }
+}

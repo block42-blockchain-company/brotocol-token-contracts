@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "InstantiateMsg",
+  "description": "This structure describes the basic settings for creating a contract.",
   "type": "object",
   "required": [
     "bro_token",
@@ -9,14 +10,17 @@
   ],
   "properties": {
     "bro_token": {
+      "description": "bro token address",
       "type": "string"
     },
     "genesis_time": {
+      "description": "genesis time frame for vesting schedules",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
     },
     "owner": {
+      "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     }
   }

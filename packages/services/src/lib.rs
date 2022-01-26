@@ -1,3 +1,11 @@
 pub mod airdrop;
+pub mod bbro_minter;
+pub mod bonding;
 pub mod common;
+pub mod distributor;
+pub mod epoch_manager;
+pub mod querier;
+pub mod rewards;
+pub mod staking;
+pub mod treasury;
 pub mod vesting;

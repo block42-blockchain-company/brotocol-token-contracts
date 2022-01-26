@@ -4,7 +4,7 @@ version = "1.0.0"
 authors = ["block42"]
 edition = "2018"
 description = "A Vesting contract for Brotocol"
-repository = "todo"
+repository = "https://github.com/block42-blockchain-company/brotocol-token-contracts"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -23,8 +23,6 @@ overflow-checks = true
 [features]
 # for more explicit tests, cargo test --features=backtraces
 backtraces = ["cosmwasm-std/backtraces"]
-# use library feature to disable all instantiate/execute/query exports
-library = []
 
 [dependencies]
 cosmwasm-std = { version = "0.16.2" }

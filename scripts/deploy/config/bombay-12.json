@@ -1,0 +1,60 @@
+{
+    "bro_token": {
+        "name": "Bro",
+        "symbol": "BRO",
+        "decimals": 6
+    },
+    "airdrop": {
+        "owner": ""
+    },
+    "vesting": {
+        "owner": "",
+        "genesis_time": 0
+    },
+    "bbro_minter": {
+        "owner": "",
+        "whitelist": []
+    },
+    "bbro_token": {
+        "name": "bBro",
+        "symbol": "bBRO",
+        "decimals": 6
+    },
+    "rewards": {
+        "owner": "",
+        "spend_limit": "0",
+        "whitelist": []
+    },
+    "treasury": {
+        "owner": ""
+    },
+    "epoch_manager": {
+        "owner": "",
+        "epoch": 0,
+        "blocks_per_year": 0,
+        "bbro_emission_rate": "0"
+    },
+    "stakingv1": {
+        "unbond_period_blocks": 0
+    },
+    "bondingv1": {
+        "owner": "",
+        "lp_token": "",
+        "astroport_factory": "",
+        "ust_bonding_reward_ratio": "0",
+        "ust_bonding_discount": "0",
+        "lp_bonding_discount": "0",
+        "vesting_period_blocks": 0
+    },
+    "distributorv1": {
+        "owner": "",
+        "distribution_genesis_block": 0,
+        "staking_distribution_amount": "0",
+        "bonding_distribution_amount": "0"
+    },
+    "bro_distributions": {
+        "airdrop": "0",
+        "vesting": "0",
+        "rewards": "0"
+    }
+}

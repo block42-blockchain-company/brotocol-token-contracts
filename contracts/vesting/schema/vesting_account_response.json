@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "VestingAccountResponse",
+  "description": "This structure describes the fields for vesting account response message.",
   "type": "object",
   "required": [
     "address",
@@ -8,10 +9,16 @@
   ],
   "properties": {
     "address": {
+      "description": "vesting account address",
       "type": "string"
     },
     "info": {
-      "$ref": "#/definitions/VestingInfo"
+      "description": "vesting info for account",
+      "allOf": [
+        {
+          "$ref": "#/definitions/VestingInfo"
+        }
+      ]
     }
   },
   "definitions": {
@@ -20,6 +27,8 @@
       "type": "string"
     },
     "VestingInfo": {
+      "title": "VestingInfo",
+      "description": "This structure describes the basic settings for vesting information.",
       "type": "object",
       "required": [
         "last_claim_time",
@@ -27,11 +36,13 @@
       ],
       "properties": {
         "last_claim_time": {
+          "description": "last rewards claim time",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
         },
         "schedules": {
+          "description": "vesting schedules",
           "type": "array",
           "items": {
             "$ref": "#/definitions/VestingSchedule"
@@ -40,6 +51,8 @@
       }
     },
     "VestingSchedule": {
+      "title": "VestingSchedule",
+      "description": "This structure describes the basic settings for vesting schedule.",
       "type": "object",
       "required": [
         "bro_amount",
@@ -48,14 +61,21 @@
       ],
       "properties": {
         "bro_amount": {
-          "$ref": "#/definitions/Uint128"
+          "description": "claimable amount for schedule",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint128"
+            }
+          ]
         },
         "end_time": {
+          "description": "the end time frame of schedule",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
         },
         "start_time": {
+          "description": "the start time frame of schedule",
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0

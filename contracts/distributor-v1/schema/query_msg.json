@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "description": "This structure describes the query messages of the contract",
+  "oneOf": [
+    {
+      "title": "Description",
+      "description": "Returns bbro-minter contract config in the [`ConfigResponse`] object",
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Returns information about last distribution in the [`LastDistributionResponse`] object",
+      "type": "object",
+      "required": [
+        "last_distribution"
+      ],
+      "properties": {
+        "last_distribution": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

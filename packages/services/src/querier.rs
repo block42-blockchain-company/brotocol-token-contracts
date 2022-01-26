@@ -1,0 +1,96 @@
+use cosmwasm_std::{to_binary, Addr, QuerierWrapper, QueryRequest, StdResult, Uint128, WasmQuery};
+use cw20::{BalanceResponse as Cw20BalanceResponse, Cw20QueryMsg};
+
+use astroport::{
+    asset::{Asset, AssetInfo},
+    querier::query_pair_info,
+};
+
+use crate::{
+    epoch_manager::{EpochInfoResponse, QueryMsg as EpochManagerQueryMsg},
+    rewards::{QueryMsg as RewardsPoolQueryMsg, RewardsPoolBalanceResponse},
+};
+
+/// ## Description
+/// Returns the token balance at the specified contract address.
+/// ## Params
+/// * **querier** is the object of type [`QuerierWrapper`].
+///
+/// * **contract_addr** is the object of type [`Addr`]. Sets the address of the contract for which
+/// the balance will be requested
+///
+/// * **account_addr** is the object of type [`Addr`].
+pub fn query_token_balance(
+    querier: &QuerierWrapper,
+    contract_addr: Addr,
+    account_addr: Addr,
+) -> StdResult<Uint128> {
+    // load balance from the token contract
+    let res: Cw20BalanceResponse = querier
+        .query(&QueryRequest::Wasm(WasmQuery::Smart {
+            contract_addr: String::from(contract_addr),
+            msg: to_binary(&Cw20QueryMsg::Balance {
+                address: String::from(account_addr),
+            })?,
+        }))
+        .unwrap_or_else(|_| Cw20BalanceResponse {
+            balance: Uint128::zero(),
+        });
+
+    Ok(res.balance)
+}
+
+/// ## Description
+/// Returns the epoch info at the specified contract address.
+/// ## Params
+/// * **querier** is the object of type [`QuerierWrapper`].
+///
+/// * **epoch_manager_contract** is the object of type [`Addr`]. Sets the address of the contract for which
+/// the epoch-manager will be requested
+pub fn query_epoch_info(
+    querier: &QuerierWrapper,
+    epoch_manager_contract: Addr,
+) -> StdResult<EpochInfoResponse> {
+    querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: epoch_manager_contract.to_string(),
+        msg: to_binary(&EpochManagerQueryMsg::EpochInfo {})?,
+    }))
+}
+
+/// ## Description
+/// Returns the rewards pool balance info at the specified contract address.
+/// ## Params
+/// * **querier** is the object of type [`QuerierWrapper`].
+///
+/// * **rewards_pool_contract** is the object of type [`Addr`]. Sets the address of the contract for which
+/// the rewards-pool will be requested
+pub fn query_rewards_pool_balance(
+    querier: &QuerierWrapper,
+    rewards_pool_contract: Addr,
+) -> StdResult<RewardsPoolBalanceResponse> {
+    querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: rewards_pool_contract.to_string(),
+        msg: to_binary(&RewardsPoolQueryMsg::Balance {})?,
+    }))
+}
+
+/// ## Description
+/// Returns the asset info of pair at the specified contract address.
+/// ## Params
+/// * **querier** is the object of type [`QuerierWrapper`].
+///
+/// * **astro_factory** is the object of type [`Addr`]. Sets the address of the contract for which
+/// the pair will be requested
+///
+/// * **asset_info** is a slice of type [`AssetInfo`]
+pub fn query_pools(
+    querier: &QuerierWrapper,
+    astro_factory: Addr,
+    asset_info: &[AssetInfo; 2],
+) -> StdResult<[Asset; 2]> {
+    let pair_info = query_pair_info(querier, astro_factory, asset_info)?;
+
+    let pair_addr = pair_info.contract_addr.clone();
+    let pools = pair_info.query_pools(querier, pair_addr)?;
+    Ok(pools)
+}

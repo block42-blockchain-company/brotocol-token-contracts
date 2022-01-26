@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ClaimableAmountResponse",
+  "description": "This structure describes the fields for available amount to claim response message.",
   "type": "object",
   "required": [
     "address",
@@ -8,10 +9,16 @@
   ],
   "properties": {
     "address": {
+      "description": "vesting account address",
       "type": "string"
     },
     "claimable_amount": {
-      "$ref": "#/definitions/Uint128"
+      "description": "available amount to claim",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     }
   },
   "definitions": {

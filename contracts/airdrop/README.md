@@ -97,3 +97,9 @@ Returns claim information by specified stage and address.
     }
 }
 ```
+
+## MigrateMsg
+
+```json
+{}
+```

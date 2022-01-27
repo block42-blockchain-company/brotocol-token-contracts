@@ -11,7 +11,7 @@ use crate::{
     state::{load_config, store_config, store_latest_stage, Config},
 };
 
-use services::airdrop::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use services::airdrop::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 /// ## Description
 /// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
@@ -137,4 +137,17 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
             to_binary(&queries::query_claimed(deps, stage, address)?)
         }
     }
+}
+
+/// ## Description
+/// Used for migration of contract. Returns the default object of type [`Response`].
+/// ## Params
+/// * **_deps** is the object of type [`Deps`].
+///
+/// * **_env** is the object of type [`Env`].
+///
+/// * **_msg** is the object of type [`MigrateMsg`].
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    Ok(Response::default())
 }

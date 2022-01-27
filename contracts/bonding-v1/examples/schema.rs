@@ -5,7 +5,7 @@ use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use services::bonding::{
     ClaimInfoResponse, ClaimsResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg,
-    QueryMsg, StateResponse,
+    MigrateMsg, QueryMsg, StateResponse,
 };
 
 fn main() {
@@ -17,6 +17,7 @@ fn main() {
     export_schema(&schema_for!(InstantiateMsg), &out_dir);
     export_schema(&schema_for!(ExecuteMsg), &out_dir);
     export_schema(&schema_for!(QueryMsg), &out_dir);
+    export_schema(&schema_for!(MigrateMsg), &out_dir);
     export_schema(&schema_for!(ClaimsResponse), &out_dir);
     export_schema(&schema_for!(ClaimInfoResponse), &out_dir);
     export_schema(&schema_for!(ConfigResponse), &out_dir);

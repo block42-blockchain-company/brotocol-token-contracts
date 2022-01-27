@@ -79,7 +79,7 @@
     },
     {
       "title": "Description",
-      "description": "Returns available amount for staker to withdraw by specified address in the [`WithdrawalsResponse`] object",
+      "description": "Returns available withdrawals for staker by specified address in the [`WithdrawalsResponse`] object",
       "type": "object",
       "required": [
         "withdrawals"

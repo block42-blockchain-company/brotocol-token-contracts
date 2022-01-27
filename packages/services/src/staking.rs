@@ -84,13 +84,19 @@ pub enum QueryMsg {
         staker: String,
     },
     /// ## Description
-    /// Returns available amount for staker to withdraw by specified address
+    /// Returns available withdrawals for staker by specified address
     /// in the [`WithdrawalsResponse`] object
     Withdrawals {
         /// staker address
         staker: String,
     },
 }
+
+/// ## MigrateMsg
+/// This structure describes a migration message.
+/// We currently take no arguments for migrations.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MigrateMsg {}
 
 /// ## ConfigResponse
 /// This structure describes the fields for config response message.

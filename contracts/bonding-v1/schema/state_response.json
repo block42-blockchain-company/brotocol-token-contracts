@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "StateResponse",
+  "description": "This structure describes the fields for state response message.",
   "type": "object",
   "required": [
     "lp_bonding_balance",
@@ -8,10 +9,20 @@
   ],
   "properties": {
     "lp_bonding_balance": {
-      "$ref": "#/definitions/Uint128"
+      "description": "available bro balance for lp token bonding",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "ust_bonding_balance": {
-      "$ref": "#/definitions/Uint128"
+      "description": "available bro balance for ust bonding",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     }
   },
   "definitions": {

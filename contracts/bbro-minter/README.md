@@ -93,3 +93,9 @@ Returns bbro-minter contract config.
     "config": {}
 }
 ```
+
+## MigrateMsg
+
+```json
+{}
+```

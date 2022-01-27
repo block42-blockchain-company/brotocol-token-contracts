@@ -3,7 +3,7 @@ use crate::error::ContractError;
 use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{from_binary, to_binary, CosmosMsg, SubMsg, Uint128, WasmMsg};
 
-use crate::mock_querier::mock_dependencies;
+use crate::mock_querier::{mock_dependencies, MOCK_EPOCH_MANAGER_ADDR, MOCK_REWARDS_POOL_ADDR};
 
 use services::{
     bonding::Cw20HookMsg as BondingHookMsg,
@@ -24,7 +24,7 @@ use services::{
 ///     bbro_emission_rate: 1.0,
 /// }
 ///
-///rewards pool contract:
+/// rewards pool contract:
 /// mock address: rewards
 ///
 /// * **RewardsPoolQueryMsg::Balance {}** returns:
@@ -40,8 +40,8 @@ fn proper_initialization() {
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         distribution_genesis_block: 12500,
-        epoch_manager_contract: "epochmanager".to_string(),
-        rewards_contract: "rewards".to_string(),
+        epoch_manager_contract: MOCK_EPOCH_MANAGER_ADDR.to_string(),
+        rewards_contract: MOCK_REWARDS_POOL_ADDR.to_string(),
         staking_contract: "staking".to_string(),
         staking_distribution_amount: Uint128::from(1u128),
         bonding_contract: "bonding".to_string(),
@@ -59,8 +59,8 @@ fn proper_initialization() {
         ConfigResponse {
             owner: "owner".to_string(),
             distribution_genesis_block: 12500,
-            epoch_manager_contract: "epochmanager".to_string(),
-            rewards_contract: "rewards".to_string(),
+            epoch_manager_contract: MOCK_EPOCH_MANAGER_ADDR.to_string(),
+            rewards_contract: MOCK_REWARDS_POOL_ADDR.to_string(),
             staking_contract: "staking".to_string(),
             staking_distribution_amount: Uint128::from(1u128),
             bonding_contract: "bonding".to_string(),
@@ -87,8 +87,8 @@ fn distribute() {
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         distribution_genesis_block: 12500,
-        epoch_manager_contract: "epochmanager".to_string(),
-        rewards_contract: "rewards".to_string(),
+        epoch_manager_contract: MOCK_EPOCH_MANAGER_ADDR.to_string(),
+        rewards_contract: MOCK_REWARDS_POOL_ADDR.to_string(),
         staking_contract: "staking".to_string(),
         staking_distribution_amount: Uint128::from(500u128),
         bonding_contract: "bonding".to_string(),
@@ -151,7 +151,7 @@ fn distribute() {
     assert_eq!(
         distribution_msg,
         &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: "rewards".to_string(),
+            contract_addr: MOCK_REWARDS_POOL_ADDR.to_string(),
             funds: vec![],
             msg: to_binary(&RewardsMsg::DistributeRewards {
                 distributions: vec![
@@ -182,8 +182,8 @@ fn update_config() {
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         distribution_genesis_block: 12500,
-        epoch_manager_contract: "epochmanager".to_string(),
-        rewards_contract: "rewards".to_string(),
+        epoch_manager_contract: MOCK_EPOCH_MANAGER_ADDR.to_string(),
+        rewards_contract: MOCK_REWARDS_POOL_ADDR.to_string(),
         staking_contract: "staking".to_string(),
         staking_distribution_amount: Uint128::from(1u128),
         bonding_contract: "bonding".to_string(),

@@ -67,6 +67,12 @@ pub enum QueryMsg {
     Claimable { address: String },
 }
 
+/// ## MigrateMsg
+/// This structure describes a migration message.
+/// We currently take no arguments for migrations.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MigrateMsg {}
+
 /// ## VestingAccount
 /// This structure describes the basic settings for vesting account.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

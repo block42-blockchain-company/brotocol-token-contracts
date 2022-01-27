@@ -3,6 +3,10 @@ use services::bonding::{ClaimInfoResponse, ClaimsResponse, ConfigResponse, State
 
 use crate::state::{load_claims, load_config, load_state};
 
+/// ## Description
+/// Returns bonding contract config in the [`ConfigResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
@@ -20,12 +24,17 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         ust_bonding_reward_ratio: config.ust_bonding_reward_ratio,
         ust_bonding_discount: config.ust_bonding_discount,
         lp_bonding_discount: config.lp_bonding_discount,
+        min_bro_payout: config.min_bro_payout,
         vesting_period_blocks: config.vesting_period_blocks,
     };
 
     Ok(resp)
 }
 
+/// ## Description
+/// Returns bonding contract state in the [`StateResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
 pub fn query_state(deps: Deps) -> StdResult<StateResponse> {
     let state = load_state(deps.storage)?;
     let resp = StateResponse {
@@ -36,6 +45,12 @@ pub fn query_state(deps: Deps) -> StdResult<StateResponse> {
     Ok(resp)
 }
 
+/// ## Description
+/// Returns available claims for bonder by specified address in the [`ClaimsResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **address** is a field of type [`String`]
 pub fn query_claims(deps: Deps, address: String) -> StdResult<ClaimsResponse> {
     let address_raw = deps.api.addr_canonicalize(&address)?;
     let claims: Vec<ClaimInfoResponse> = load_claims(deps.storage, &address_raw)?

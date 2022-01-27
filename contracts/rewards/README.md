@@ -95,3 +95,9 @@ Returns rewards pool BRO token balance.
     "balance": {}
 }
 ```
+
+## MigrateMsg
+
+```json
+{}
+```

@@ -15,8 +15,20 @@ use crate::{
     state::{load_config, store_config, store_state, Config, State},
 };
 
-use services::bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
+use services::bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
+/// ## Description
+/// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
+/// Returns the default [`Response`] object if the operation was successful, otherwise returns
+/// the [`ContractError`] if the contract was not created.
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`].
+///
+/// * **_env** is an object of type [`Env`].
+///
+/// * **_info** is an object of type [`MessageInfo`].
+///
+/// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -25,7 +37,7 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     if msg.ust_bonding_reward_ratio > Decimal::from_str("1.0")?
-        || msg.ust_bonding_reward_ratio < Decimal::zero()
+        || msg.ust_bonding_reward_ratio <= Decimal::zero()
     {
         return Err(ContractError::InvalidUstBondRatio {});
     }
@@ -41,6 +53,7 @@ pub fn instantiate(
             ust_bonding_reward_ratio: msg.ust_bonding_reward_ratio,
             ust_bonding_discount: msg.ust_bonding_discount,
             lp_bonding_discount: msg.lp_bonding_discount,
+            min_bro_payout: msg.min_bro_payout,
             vesting_period_blocks: msg.vesting_period_blocks,
         },
     )?;
@@ -56,6 +69,37 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
+/// ## Description
+/// Available execute messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **info** is the object of type [`MessageInfo`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Messages
+///
+/// * **ExecuteMsg::Receive(msg)** Receives a message of type [`Cw20ReceiveMsg`]
+/// and processes it depending on the received template
+///
+/// * **ExecuteMsg::UstBond {}** Bond bro tokens by providing ust amount
+///
+/// * **ExecuteMsg::Claim {}** Claim availalble reward amount
+///
+/// * **ExecuteMsg::UpdateConfig {
+///         owner,
+///         lp_token,
+///         treasury_contract,
+///         astroport_factory,
+///         ust_bonding_reward_ratio,
+///         ust_bonding_discount,
+///         lp_bonding_discount,
+///         min_bro_payout,
+///         vesting_period_blocks,
+///     }** Updates contract settings
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -75,6 +119,7 @@ pub fn execute(
             ust_bonding_reward_ratio,
             ust_bonding_discount,
             lp_bonding_discount,
+            min_bro_payout,
             vesting_period_blocks,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
@@ -87,12 +132,25 @@ pub fn execute(
                 ust_bonding_reward_ratio,
                 ust_bonding_discount,
                 lp_bonding_discount,
+                min_bro_payout,
                 vesting_period_blocks,
             )
         }
     }
 }
 
+/// ## Description
+/// Receives a message of type [`Cw20ReceiveMsg`] and processes it depending on the received template.
+/// If the template is not found in the received message, then an [`ContractError`] is returned,
+/// otherwise returns the [`Response`] with the specified attributes if the operation was successful
+/// ## Params
+/// * **deps** is the object of type [`DepsMut`].
+///
+/// * **env** is the object of type [`Env`].
+///
+/// * **info** is the object of type [`MessageInfo`].
+///
+/// * **cw20_msg** is the object of type [`Cw20ReceiveMsg`].
 pub fn receive_cw20(
     deps: DepsMut,
     env: Env,
@@ -138,6 +196,22 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
     Ok(())
 }
 
+/// ## Description
+/// Available query messages of the contract
+/// ## Params
+/// * **deps** is the object of type [`Deps`].
+///
+/// * **_env** is the object of type [`Env`].
+///
+/// * **msg** is the object of type [`ExecuteMsg`].
+///
+/// ## Queries
+///
+/// * **QueryMsg::Config {}** Returns bonding contract config
+///
+/// * **QueryMsg::State {}** Returns bonding contract state
+///
+/// * **QueryMsg::Claims { address }** Returns available claims for bonder by specified address
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -145,4 +219,17 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
         QueryMsg::Claims { address } => to_binary(&queries::query_claims(deps, address)?),
     }
+}
+
+/// ## Description
+/// Used for migration of contract. Returns the default object of type [`Response`].
+/// ## Params
+/// * **_deps** is the object of type [`Deps`].
+///
+/// * **_env** is the object of type [`Env`].
+///
+/// * **_msg** is the object of type [`MigrateMsg`].
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    Ok(Response::default())
 }

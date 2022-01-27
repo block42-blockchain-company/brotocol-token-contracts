@@ -311,7 +311,7 @@ pub fn update_config(
 }
 
 /// ## Description
-/// Exracts ust amount from provided info.funds input.
+/// Extracts ust amount from provided info.funds input.
 /// Otherwise returns [`ContractError`]
 /// ## Params
 /// * **funds** is an object of type [`&[Coin]`]
@@ -324,7 +324,7 @@ fn extract_ust_amount(funds: &[Coin]) -> Result<Uint128, ContractError> {
 }
 
 /// ## Description
-/// Converts token amount into other token and returns result in the [`Uint128`] object
+/// Converts token amount into other token amount and returns result in the [`Uint128`] object
 /// ## Params
 /// * **token_amount** is an object of type [`Uint128`]
 ///

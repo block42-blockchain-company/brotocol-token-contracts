@@ -1,4 +1,4 @@
-name: Run tests converage
+name: Test coverage
 
 env:
   CARGO_TERM_COLOR: always

@@ -30,7 +30,7 @@ jobs:
           profile: minimal
           toolchain: 1.57.0
           override: true
-          components: tarpaulin
+          components: rustfmt, tarpaulin
 
       - name: Generate code coverage
         run: |

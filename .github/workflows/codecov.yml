@@ -10,27 +10,12 @@ jobs:
   test_coverage:
     name: Run test coverage check
     runs-on: ubuntu-latest
+    container:
+      image: xd009642/tarpaulin:develop-nightly
+      options: --security-opt seccomp=unconfined
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/bin
-            ~/.cargo/git/checkouts
-            ~/.cargo/git/db
-            ~/.cargo/registry/cache
-            ~/.cargo/registry/index
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: 1.57.0
-          override: true
-          components: rustfmt, tarpaulin
 
       - name: Generate code coverage
         run: |

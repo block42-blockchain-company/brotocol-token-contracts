@@ -1,4 +1,4 @@
-name: Basic workflow - test and lint contracts
+name: Tests and Linter checks
 
 env:
   CARGO_TERM_COLOR: always

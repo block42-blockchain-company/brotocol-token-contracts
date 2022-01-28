@@ -193,6 +193,7 @@ dependencies = [
 name = "brotocol-vesting"
 version = "1.0.0"
 dependencies = [
+ "astroport",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",

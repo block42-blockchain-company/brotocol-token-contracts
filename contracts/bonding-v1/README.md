@@ -1,6 +1,6 @@
 # Bonding V1
 
-The Bonding Contract contains logic for buying BRO token by discounted price by providing UST or UST/BRO LP Tokens.
+The Bonding Contract contains logic for buying BRO token by discounted price by providing UST or UST/BRO LP Tokens from Astroport.
 Price calculation will depend on current BRO market price.
 
 ---

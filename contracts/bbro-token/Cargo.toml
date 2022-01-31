@@ -1,7 +1,7 @@
 [package]
 name = "brotocol-bbro-token"
 version = "1.0.0"
-uthors = ["block42"]
+authors = ["block42"]
 edition = "2018"
 description = "A bbro token contract for Brotocol"
 repository = "https://github.com/block42-blockchain-company/brotocol-token-contracts"

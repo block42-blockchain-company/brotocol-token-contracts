@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ClaimInfoResponse",
+  "description": "This structure describes the fields for claim info response message.",
   "type": "object",
   "required": [
     "amount",
@@ -9,13 +10,24 @@
   ],
   "properties": {
     "amount": {
-      "$ref": "#/definitions/Uint128"
+      "description": "amount to claim",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "bond_type": {
+      "description": "bond type",
       "type": "string"
     },
     "claimable_at": {
-      "$ref": "#/definitions/Expiration"
+      "description": "block at which amount can be claimed",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Expiration"
+        }
+      ]
     }
   },
   "definitions": {

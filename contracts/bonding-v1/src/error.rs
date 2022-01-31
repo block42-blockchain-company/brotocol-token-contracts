@@ -1,6 +1,8 @@
 use cosmwasm_std::{OverflowError, StdError};
 use thiserror::Error;
 
+/// ## Description
+/// This enum describes bonding contract errors
 #[derive(Error, Debug)]
 pub enum ContractError {
     #[error("{0}")]
@@ -20,6 +22,9 @@ pub enum ContractError {
 
     #[error("Invalid funds input")]
     InvalidFundsInput {},
+
+    #[error("BRO bonding payout is too low")]
+    BondPayoutIsLow {},
 
     #[error("Insufficient BRO balance for bond payout")]
     NotEnoughForBondPayout {},

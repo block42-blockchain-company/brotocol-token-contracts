@@ -4,7 +4,7 @@ use std::fs::create_dir_all;
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use services::distributor::{
-    ConfigResponse, ExecuteMsg, InstantiateMsg, LastDistributionResponse, QueryMsg,
+    ConfigResponse, ExecuteMsg, InstantiateMsg, LastDistributionResponse, MigrateMsg, QueryMsg,
 };
 
 fn main() {
@@ -16,6 +16,7 @@ fn main() {
     export_schema(&schema_for!(InstantiateMsg), &out_dir);
     export_schema(&schema_for!(ExecuteMsg), &out_dir);
     export_schema(&schema_for!(QueryMsg), &out_dir);
+    export_schema(&schema_for!(MigrateMsg), &out_dir);
     export_schema(&schema_for!(ConfigResponse), &out_dir);
     export_schema(&schema_for!(LastDistributionResponse), &out_dir);
 }

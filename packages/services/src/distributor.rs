@@ -67,6 +67,12 @@ pub enum QueryMsg {
     LastDistribution {},
 }
 
+/// ## MigrateMsg
+/// This structure describes a migration message.
+/// We currently take no arguments for migrations.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MigrateMsg {}
+
 /// ## ConfigResponse
 /// This structure describes the fields for config response message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

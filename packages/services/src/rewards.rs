@@ -70,6 +70,12 @@ pub enum QueryMsg {
     Balance {},
 }
 
+/// ## MigrateMsg
+/// This structure describes a migration message.
+/// We currently take no arguments for migrations.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MigrateMsg {}
+
 /// ## DistributeRewardMsg
 /// This structure describes the fields for rewards distribution message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

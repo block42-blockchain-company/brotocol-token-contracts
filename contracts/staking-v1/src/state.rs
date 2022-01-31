@@ -229,7 +229,7 @@ pub fn remove_staker_info(storage: &mut dyn Storage, staker: &CanonicalAddr) {
 }
 
 /// ## Description
-/// Saves or updates changes in [`WITHDRAWALS`] map for specified key of type [`CanonicalAddr`] and value of type [`WithdrawalInfo`]
+/// Saves or updates changes in [`WITHDRAWALS`] map for specified key of type [`CanonicalAddr`] and value of type [`Vec<WithdrawalInfo>`]
 /// ## Params
 /// * **storage** is an object of type [`Storage`]
 ///

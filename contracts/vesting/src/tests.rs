@@ -1,5 +1,7 @@
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-use cosmwasm_std::{attr, from_binary, to_binary, CosmosMsg, SubMsg, Timestamp, Uint128, WasmMsg};
+use cosmwasm_std::{
+    attr, from_binary, to_binary, CosmosMsg, StdError, SubMsg, Timestamp, Uint128, WasmMsg,
+};
 use cw20::Cw20ExecuteMsg;
 
 use crate::contract::{execute, instantiate, query};
@@ -112,10 +114,31 @@ fn register_vesting_accounts() {
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
+    // error: invalid schedule
+    let msg = ExecuteMsg::RegisterVestingAccounts {
+        vesting_accounts: vec![VestingAccount {
+            address: "addr0000".to_string(),
+            schedules: vec![VestingSchedule {
+                start_time: 100u64,
+                end_time: 99u64,
+                bro_amount: Uint128::zero(),
+            }],
+        }],
+    };
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(msg, "end_time must be bigger than start_time".to_string())
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
     let acct1 = "addr0001".to_string();
     let acct2 = "addr0002".to_string();
     let acct3 = "addr0003".to_string();
 
+    // error: unauthorized
     let msg = ExecuteMsg::RegisterVestingAccounts {
         vesting_accounts: vec![
             VestingAccount {
@@ -163,6 +186,7 @@ fn register_vesting_accounts() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    // proper execution
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
     assert_eq!(

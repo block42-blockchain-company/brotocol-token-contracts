@@ -71,3 +71,8 @@ Returns information about last distribution.
     "last_distribution": {}
 }
 ```
+## MigrateMsg
+
+```json
+{}
+```

@@ -13,7 +13,7 @@ use crate::{
     state::{load_config, store_config, store_state, Config, State},
 };
 
-use services::staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
+use services::staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 /// ## Description
 /// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
@@ -154,7 +154,7 @@ pub fn receive_cw20(
 ///
 /// * **QueryMsg::StakerAccruedRewards { staker }** Returns available amount for staker to claim by specified address
 ///
-/// * **QueryMsg::Withdrawals { staker }** Returns available amount for staker to withdraw by specified address
+/// * **QueryMsg::Withdrawals { staker }** Returns available withdrawals for staker by specified address
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -168,4 +168,17 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         }
         QueryMsg::Withdrawals { staker } => to_binary(&queries::query_withdrawals(deps, staker)?),
     }
+}
+
+/// ## Description
+/// Used for migration of contract. Returns the default object of type [`Response`].
+/// ## Params
+/// * **_deps** is the object of type [`Deps`].
+///
+/// * **_env** is the object of type [`Env`].
+///
+/// * **_msg** is the object of type [`MigrateMsg`].
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    Ok(Response::default())
 }

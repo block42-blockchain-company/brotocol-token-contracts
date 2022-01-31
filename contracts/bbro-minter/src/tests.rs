@@ -307,8 +307,8 @@ fn burn() {
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     // bro_token address not set error
-    let msg = ExecuteMsg::Mint {
-        recipient: "addr0001".to_string(),
+    let msg = ExecuteMsg::Burn {
+        owner: "addr0001".to_string(),
         amount: Uint128::from(100u128),
     };
 
@@ -329,8 +329,8 @@ fn burn() {
     let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     // minter is not whitelisted error
-    let msg = ExecuteMsg::Mint {
-        recipient: "addr0001".to_string(),
+    let msg = ExecuteMsg::Burn {
+        owner: "addr0001".to_string(),
         amount: Uint128::from(100u128),
     };
 

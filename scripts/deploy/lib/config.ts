@@ -92,6 +92,7 @@ export interface BondingV1Config {
     ust_bonding_reward_ratio: string,
     ust_bonding_discount: string,
     lp_bonding_discount: string,
+    min_bro_payout: string,
     vesting_period_blocks: number,
 }
 

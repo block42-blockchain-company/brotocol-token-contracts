@@ -116,3 +116,9 @@ Returns available amount to claim for specified account.
     }
 }
 ```
+
+## MigrateMsg
+
+```json
+{}
+```

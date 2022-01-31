@@ -108,7 +108,7 @@ pub fn query_staker_accrued_rewards(
 }
 
 /// ## Description
-/// Returns available amount for staker to withdraw by specified address in the [`WithdrawalsResponse`] object
+/// Returns available withdrawals for staker by specified address in the [`WithdrawalsResponse`] object
 /// ## Params
 /// * **deps** is an object of type [`Deps`]
 ///

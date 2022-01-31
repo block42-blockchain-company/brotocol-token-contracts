@@ -58,3 +58,9 @@ Returns mvp-treasury contract balance of specified asset.
     }
 }
 ```
+
+## MigrateMsg
+
+```json
+{}
+```

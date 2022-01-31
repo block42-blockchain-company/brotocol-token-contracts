@@ -135,7 +135,7 @@ Returns available amount for staker to claim by specified address.
 
 ### `withdrawals`
 
-Returns available amount for staker to withdraw by specified address.
+Returns available withdrawals for staker by specified address.
 
 ```json
 {
@@ -143,4 +143,10 @@ Returns available amount for staker to withdraw by specified address.
         "staker": "terra1..."
     }
 }
+```
+
+## MigrateMsg
+
+```json
+{}
 ```

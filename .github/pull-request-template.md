@@ -25,6 +25,7 @@ Before submitting this PR I:
 - [ ] Ran fmt and clippy linters
 - [ ] Updated schema using ./scripts/build_schema.sh script
 - [ ] Updated .wasm artifacts using ./build_release.sh script
+- [ ] Checked that deploy scripts work properly(localterra deployment is enough)
 
 #### Testing (pick one)
 - [ ] I added necessary unit tests

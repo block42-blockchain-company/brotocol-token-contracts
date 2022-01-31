@@ -63,3 +63,9 @@ Returns epoch-manager contract state.
     "epoch_info": {}
 }
 ```
+
+## MigrateMsg
+
+```json
+{}
+```

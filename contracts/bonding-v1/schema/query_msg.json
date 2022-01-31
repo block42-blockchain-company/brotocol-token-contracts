@@ -1,8 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryMsg",
+  "description": "This structure describes the query messages of the contract",
   "oneOf": [
     {
+      "title": "Description",
+      "description": "Returns staking contract config in the [`ConfigResponse`] object",
       "type": "object",
       "required": [
         "config"
@@ -15,6 +18,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns staking contract state in the [`StateResponse`] object",
       "type": "object",
       "required": [
         "state"
@@ -27,6 +32,8 @@
       "additionalProperties": false
     },
     {
+      "title": "Description",
+      "description": "Returns available claims for bonder by specified address in the [`ClaimsResponse`] object",
       "type": "object",
       "required": [
         "claims"
@@ -39,6 +46,7 @@
           ],
           "properties": {
             "address": {
+              "description": "bonder address",
               "type": "string"
             }
           }

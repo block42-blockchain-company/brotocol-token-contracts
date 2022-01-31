@@ -293,7 +293,7 @@ pub fn claim_rewards(
             })?,
         })])
         .add_attributes(vec![
-            ("action", "withdraw"),
+            ("action", "claim_rewards"),
             ("staker", &info.sender.to_string()),
             ("amount", &amount.to_string()),
         ]))

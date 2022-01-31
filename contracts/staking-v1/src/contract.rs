@@ -4,6 +4,7 @@ use cosmwasm_std::{
     from_binary, to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
     Uint128,
 };
+use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
 
 use crate::{
@@ -14,6 +15,11 @@ use crate::{
 };
 
 use services::staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+
+/// Contract name that is used for migration.
+const CONTRACT_NAME: &str = "brotocol-staking-v1";
+/// Contract version that is used for migration.
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// ## Description
 /// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
@@ -34,6 +40,8 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
     store_config(
         deps.storage,
         &Config {

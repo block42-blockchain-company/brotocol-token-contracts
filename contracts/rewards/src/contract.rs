@@ -4,6 +4,7 @@ use cosmwasm_std::{
     to_binary, Addr, Api, Binary, CanonicalAddr, Deps, DepsMut, Env, MessageInfo, Response,
     StdResult, Storage,
 };
+use cw2::set_contract_version;
 
 use crate::{
     commands,
@@ -13,6 +14,11 @@ use crate::{
 };
 
 use services::rewards::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+
+/// Contract name that is used for migration.
+const CONTRACT_NAME: &str = "brotocol-rewards-pool";
+/// Contract version that is used for migration.
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// ## Description
 /// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
@@ -33,6 +39,8 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
     let whitelist = msg
         .whitelist
         .into_iter()

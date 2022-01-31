@@ -6,6 +6,7 @@ use cosmwasm_std::{
     from_binary, to_binary, Addr, Api, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response,
     StdResult, Storage, Uint128,
 };
+use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
 
 use crate::{
@@ -16,6 +17,11 @@ use crate::{
 };
 
 use services::bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+
+/// Contract name that is used for migration.
+const CONTRACT_NAME: &str = "brotocol-bonding-v1";
+/// Contract version that is used for migration.
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// ## Description
 /// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
@@ -36,6 +42,8 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
     if msg.ust_bonding_reward_ratio > Decimal::from_str("1.0")?
         || msg.ust_bonding_reward_ratio <= Decimal::zero()
     {

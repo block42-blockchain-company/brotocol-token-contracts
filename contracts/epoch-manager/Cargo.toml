@@ -5,6 +5,7 @@ authors = ["block42"]
 edition = "2018"
 description = "A BRO Staking V1 contract for Brotocol"
 repository = "https://github.com/block42-blockchain-company/brotocol-token-contracts"
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

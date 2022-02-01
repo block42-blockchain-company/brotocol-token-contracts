@@ -48,7 +48,7 @@ pub fn distribute_reward(
             })])
             .add_attributes(vec![
                 ("action", "distribute_reward"),
-                ("reward_amount", &reward_amount.to_string()),
+                ("reward_amount", "0"),
             ]));
     }
 

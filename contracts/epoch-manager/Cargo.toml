@@ -3,8 +3,9 @@ name = "brotocol-epoch-manager"
 version = "1.0.0"
 authors = ["block42"]
 edition = "2018"
-description = "A BRO Staking V1 contract for Brotocol"
+description = "An Epoch Manager contract for Brotocol"
 repository = "https://github.com/block42-blockchain-company/brotocol-token-contracts"
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

@@ -275,6 +275,11 @@ pub fn claim_rewards(
     staker_info.compute_staker_reward(&state)?;
 
     let amount = staker_info.pending_reward;
+
+    if amount == Uint128::zero() {
+        return Err(ContractError::NothingToClaim {});
+    }
+
     staker_info.pending_reward = Uint128::zero();
 
     if staker_info.bond_amount.is_zero() {

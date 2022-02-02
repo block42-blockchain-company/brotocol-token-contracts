@@ -30,6 +30,8 @@ pub struct Config {
     pub treasury_contract: CanonicalAddr,
     /// astroport factory contract address
     pub astroport_factory: CanonicalAddr,
+    /// price oracle contract address
+    pub oracle_contract: CanonicalAddr,
     /// distributed reward percentage for ust bonding balance
     pub ust_bonding_reward_ratio: Decimal,
     /// discount percentage for ust bonding

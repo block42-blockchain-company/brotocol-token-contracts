@@ -92,6 +92,13 @@
                 }
               ]
             },
+            "oracle_contract": {
+              "description": "price oracle contract address",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "owner": {
               "description": "new contract owner",
               "type": [

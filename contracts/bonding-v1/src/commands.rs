@@ -18,7 +18,7 @@ use crate::{
     },
 };
 
-use services::querier::query_pools;
+use services::querier::{query_oracle_price, query_pools};
 
 /// ## Description
 /// Distributes received reward.
@@ -74,7 +74,7 @@ pub fn lp_bond(
         deps.api.addr_humanize(&config.bro_token)?,
     )?;
 
-    let (bro_amount, ust_amount) = convert_lp_into_token_amounts(
+    let (bro_share, ust_share) = get_share_in_assets(
         &deps.querier,
         &bro_pool,
         &ust_pool,
@@ -82,11 +82,17 @@ pub fn lp_bond(
         deps.api.addr_humanize(&config.lp_token)?,
     )?;
 
-    // first we convert amount of bro shares into ust
-    let bond_amount =
-        ust_amount.checked_add(convert_token_into_other(bro_amount, &bro_pool, &ust_pool)?)?;
-    // then whole ust amount back into bro
-    let bro_amount = convert_token_into_other(bond_amount, &ust_pool, &bro_pool)?;
+    let bro_amount = bro_share.checked_add(
+        query_oracle_price(
+            &deps.querier,
+            deps.api.addr_humanize(&config.oracle_contract)?,
+            AssetInfo::NativeToken {
+                denom: "uusd".to_string(),
+            },
+            ust_share,
+        )?
+        .amount,
+    )?;
 
     let bro_payout = apply_discount(config.lp_bonding_discount, bro_amount)?;
     if bro_payout < config.min_bro_payout {
@@ -138,14 +144,16 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    let (bro_pool, ust_pool) = query_bro_ust_pair(
-        &deps.querier,
-        deps.api.addr_humanize(&config.astroport_factory)?,
-        deps.api.addr_humanize(&config.bro_token)?,
-    )?;
-
     let bond_amount = extract_ust_amount(&info.funds)?;
-    let bro_amount = convert_token_into_other(bond_amount, &ust_pool, &bro_pool)?;
+    let bro_amount = query_oracle_price(
+        &deps.querier,
+        deps.api.addr_humanize(&config.oracle_contract)?,
+        AssetInfo::NativeToken {
+            denom: "uusd".to_string(),
+        },
+        bond_amount,
+    )?
+    .amount;
 
     let bro_payout = apply_discount(config.ust_bonding_discount, bro_amount)?;
     if bro_payout < config.min_bro_payout {
@@ -246,6 +254,8 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 ///
 /// * **astroport_factory** is an [`Option`] of type [`String`]
 ///
+/// * **oracle_contract** is an [`Option`] of type [`String`]
+///
 /// * **ust_bonding_reward_ratio** is an [`Option`] of type [`Decimal`]
 ///
 /// * **ust_bonding_discount** is an [`Option`] of type [`Decimal`]
@@ -262,6 +272,7 @@ pub fn update_config(
     lp_token: Option<String>,
     treasury_contract: Option<String>,
     astroport_factory: Option<String>,
+    oracle_contract: Option<String>,
     ust_bonding_reward_ratio: Option<Decimal>,
     ust_bonding_discount: Option<Decimal>,
     lp_bonding_discount: Option<Decimal>,
@@ -284,6 +295,10 @@ pub fn update_config(
 
     if let Some(astroport_factory) = astroport_factory {
         config.astroport_factory = deps.api.addr_canonicalize(&astroport_factory)?;
+    }
+
+    if let Some(oracle_contract) = oracle_contract {
+        config.oracle_contract = deps.api.addr_canonicalize(&oracle_contract)?;
     }
 
     if let Some(ust_bonding_reward_ratio) = ust_bonding_reward_ratio {
@@ -324,26 +339,7 @@ fn extract_ust_amount(funds: &[Coin]) -> Result<Uint128, ContractError> {
 }
 
 /// ## Description
-/// Converts token amount into other token amount and returns result in the [`Uint128`] object
-/// ## Params
-/// * **token_amount** is an object of type [`Uint128`]
-///
-/// * **token_pool** is an object of type [`Asset`]
-///
-/// * **other_pool** is an object of type [`Asset`]
-fn convert_token_into_other(
-    token_amount: Uint128,
-    token_pool: &Asset,
-    other_pool: &Asset,
-) -> StdResult<Uint128> {
-    let other_pool_amount = Decimal::from_ratio(other_pool.amount, Uint128::from(1u128));
-    let other_amount = (other_pool_amount / token_pool.amount) * token_amount;
-    Ok(other_amount)
-}
-
-/// ## Description
-/// Converts lp token amount into underlying token amounts
-/// and returns result in the [`Uint128`] object
+/// Returns the share of assets in the [`Uint128`] object
 /// ## Params
 /// * **querier** is an object of type [`QuerierWrapper`]
 ///
@@ -354,7 +350,7 @@ fn convert_token_into_other(
 /// * **lp_amount** is an object of type [`Uint128`]
 ///
 /// * **lp_token_addr** is an object of type [`Addr`]
-fn convert_lp_into_token_amounts(
+fn get_share_in_assets(
     querier: &QuerierWrapper,
     bro_pool: &Asset,
     ust_pool: &Asset,

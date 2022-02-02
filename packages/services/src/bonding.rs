@@ -17,6 +17,8 @@ pub struct InstantiateMsg {
     pub treasury_contract: String,
     /// astroport factory contract address
     pub astroport_factory: String,
+    /// price oracle contract address
+    pub oracle_contract: String,
     /// distributed reward percentage for ust bonding balance
     pub ust_bonding_reward_ratio: Decimal,
     /// discount percentage for ust bonding
@@ -57,6 +59,8 @@ pub enum ExecuteMsg {
         treasury_contract: Option<String>,
         /// new astroport factory address
         astroport_factory: Option<String>,
+        /// price oracle contract address
+        oracle_contract: Option<String>,
         /// new distributed reward percentage for ust bonding balance
         ust_bonding_reward_ratio: Option<Decimal>,
         /// new discount percentage for ust bonding
@@ -123,6 +127,8 @@ pub struct ConfigResponse {
     pub treasury_contract: String,
     /// astroport factory contract address
     pub astroport_factory: String,
+    /// price oracle contract address
+    pub oracle_contract: String,
     /// distributed reward percentage for ust bonding balance
     pub ust_bonding_reward_ratio: Decimal,
     /// discount percentage for ust bonding

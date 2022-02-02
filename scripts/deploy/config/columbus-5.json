@@ -1,4 +1,5 @@
 {
+    "deployToken": false,
     "bro_token": {
         "name": "Bro",
         "symbol": "BRO",

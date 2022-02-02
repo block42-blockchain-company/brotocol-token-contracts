@@ -28,7 +28,9 @@ export class TerraClient {
         } else {
             const localTerra = new LocalTerra();
             this.terra = localTerra;
-            this.wallet = localTerra.wallets.test1;
+            this.wallet = this.terra.wallet(new MnemonicKey({
+                mnemonic: "satisfy adjust timber high purchase tuition stool faith fine install that you unaware feed domain license impose boss human eager hat rent enjoy dawn",
+            }));
         }
     }
 

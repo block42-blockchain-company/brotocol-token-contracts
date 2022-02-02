@@ -6,7 +6,10 @@ export function loadConfig(chainID: string): Config {
 }
 
 export interface Config {
+    deployToken: boolean,
     bro_token: BroTokenConfig,
+    bro_ust_pair: BroUstPairConfig,
+    oracle: OracleConfig,
     airdrop: AirdropConfig,
     vesting: VestingConfig,
     bbro_minter: BbroMinterConfig,
@@ -28,6 +31,25 @@ export interface BroTokenConfig {
         address: string,
         amount: string,
     }],
+}
+
+export interface BroUstPairConfig {
+    createPair: boolean,
+    factory_address: string,
+}
+
+export interface OracleConfig {
+    factory_contract: string,
+    asset_infos: ({
+        token: {
+            contract_addr: string;
+        };
+    } | {
+        native_token: {
+            denom: string;
+        };
+    })[],
+    price_update_interval: number,
 }
 
 export interface AirdropConfig {

@@ -1,8 +1,16 @@
 {
+    "deployToken": true,
     "bro_token": {
         "name": "Bro",
         "symbol": "BRO",
         "decimals": 6
+    },
+    "bro_ust_pair": {
+        "createPair": true,
+        "factory_address": "terra1ys7qglzew8ns39nl0wxalypc4nhwdqudd9rg2c"
+    },
+    "oracle": {
+        "price_update_interval": 123
     },
     "airdrop": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"

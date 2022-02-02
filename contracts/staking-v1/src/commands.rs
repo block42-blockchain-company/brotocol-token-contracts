@@ -48,7 +48,7 @@ pub fn distribute_reward(
             })])
             .add_attributes(vec![
                 ("action", "distribute_reward"),
-                ("reward_amount", &reward_amount.to_string()),
+                ("reward_amount", "0"),
             ]));
     }
 
@@ -275,6 +275,11 @@ pub fn claim_rewards(
     staker_info.compute_staker_reward(&state)?;
 
     let amount = staker_info.pending_reward;
+
+    if amount == Uint128::zero() {
+        return Err(ContractError::NothingToClaim {});
+    }
+
     staker_info.pending_reward = Uint128::zero();
 
     if staker_info.bond_amount.is_zero() {
@@ -293,7 +298,7 @@ pub fn claim_rewards(
             })?,
         })])
         .add_attributes(vec![
-            ("action", "withdraw"),
+            ("action", "claim_rewards"),
             ("staker", &info.sender.to_string()),
             ("amount", &amount.to_string()),
         ]))

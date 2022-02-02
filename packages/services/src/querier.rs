@@ -1,14 +1,15 @@
 use cosmwasm_std::{to_binary, Addr, QuerierWrapper, QueryRequest, StdResult, Uint128, WasmQuery};
 use cw20::{BalanceResponse as Cw20BalanceResponse, Cw20QueryMsg};
 
-use astroport::{
-    asset::{Asset, AssetInfo},
-    querier::query_pair_info,
-};
-
 use crate::{
     epoch_manager::{EpochInfoResponse, QueryMsg as EpochManagerQueryMsg},
     rewards::{QueryMsg as RewardsPoolQueryMsg, RewardsPoolBalanceResponse},
+};
+
+use astroport::{
+    asset::{Asset, AssetInfo},
+    pair::{CumulativePricesResponse, QueryMsg as PairQueryMsg, SimulationResponse},
+    querier::query_pair_info,
 };
 
 /// ## Description
@@ -93,4 +94,39 @@ pub fn query_pools(
     let pair_addr = pair_info.contract_addr.clone();
     let pools = pair_info.query_pools(querier, pair_addr)?;
     Ok(pools)
+}
+
+/// ## Description
+/// Returns information about the cumulative prices in a [`CumulativePricesResponse`] object.
+/// ## Params
+/// * **querier** is the object of type [`QuerierWrapper`].
+///
+/// * **pair_contract** is the object of type [`Addr`].
+pub fn query_cumulative_prices(
+    querier: &QuerierWrapper,
+    pair_contract: Addr,
+) -> StdResult<CumulativePricesResponse> {
+    querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: pair_contract.to_string(),
+        msg: to_binary(&PairQueryMsg::CumulativePrices {})?,
+    }))
+}
+
+/// ## Description
+/// Returns information about the prices in a [`SimulationResponse`] object.
+/// ## Params
+/// * **querier** is the object of type [`QuerierWrapper`].
+///
+/// * **pair_contract** is the object of type [`Addr`].
+///
+/// * **asset** is the object of type [`Asset`].
+pub fn query_prices(
+    querier: &QuerierWrapper,
+    pair_contract: Addr,
+    asset: Asset,
+) -> StdResult<SimulationResponse> {
+    querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: pair_contract.to_string(),
+        msg: to_binary(&PairQueryMsg::Simulation { offer_asset: asset })?,
+    }))
 }

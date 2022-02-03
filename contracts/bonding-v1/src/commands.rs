@@ -155,16 +155,14 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    let bond_amount = extract_ust_amount(&info.funds)?;
+    let bond_asset = extract_native_token(&info.funds)?;
 
     let oracle_contract = deps.api.addr_humanize(&config.oracle_contract)?;
     let bro_amount = query_oracle_price(
         &deps.querier,
         oracle_contract.clone(),
-        AssetInfo::NativeToken {
-            denom: "uusd".to_string(),
-        },
-        bond_amount,
+        bond_asset.info.clone(),
+        bond_asset.amount.clone(),
     )?
     .amount;
 
@@ -190,16 +188,9 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
 
     store_claims(deps.storage, &sender_raw, &claims)?;
 
-    let ust_transfer = Asset {
-        info: AssetInfo::NativeToken {
-            denom: "uusd".to_string(),
-        },
-        amount: bond_amount,
-    };
-
     Ok(Response::new()
         .add_messages(vec![
-            ust_transfer.into_msg(
+            bond_asset.into_msg(
                 &deps.querier,
                 deps.api.addr_humanize(&config.treasury_contract)?,
             )?,
@@ -350,12 +341,17 @@ pub fn update_config(
 /// Otherwise returns [`ContractError`]
 /// ## Params
 /// * **funds** is an object of type [`&[Coin]`]
-fn extract_ust_amount(funds: &[Coin]) -> Result<Uint128, ContractError> {
+fn extract_native_token(funds: &[Coin]) -> Result<Asset, ContractError> {
     if funds.len() != 1 || funds[0].denom != "uusd" || funds[0].amount.is_zero() {
         return Err(ContractError::InvalidFundsInput {});
     }
 
-    Ok(funds[0].amount)
+    Ok(Asset {
+        info: AssetInfo::NativeToken {
+            denom: "uusd".to_string(),
+        },
+        amount: funds[0].amount,
+    })
 }
 
 /// ## Description

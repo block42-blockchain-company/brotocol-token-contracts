@@ -18,7 +18,10 @@ use crate::{
     },
 };
 
-use services::querier::{query_oracle_price, query_pools};
+use services::{
+    oracle::ExecuteMsg as OracleExecuteMsg,
+    querier::{query_oracle_price, query_pools},
+};
 
 /// ## Description
 /// Distributes received reward.
@@ -82,10 +85,11 @@ pub fn lp_bond(
         deps.api.addr_humanize(&config.lp_token)?,
     )?;
 
+    let oracle_contract = deps.api.addr_humanize(&config.oracle_contract)?;
     let bro_amount = bro_share.checked_add(
         query_oracle_price(
             &deps.querier,
-            deps.api.addr_humanize(&config.oracle_contract)?,
+            oracle_contract.clone(),
             AssetInfo::NativeToken {
                 denom: "uusd".to_string(),
             },
@@ -116,17 +120,24 @@ pub fn lp_bond(
     store_claims(deps.storage, &sender_raw, &claims)?;
 
     Ok(Response::new()
-        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: deps.api.addr_humanize(&config.lp_token)?.to_string(),
-            funds: vec![],
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                recipient: deps
-                    .api
-                    .addr_humanize(&config.treasury_contract)?
-                    .to_string(),
-                amount: lp_amount,
-            })?,
-        })])
+        .add_messages(vec![
+            CosmosMsg::Wasm(WasmMsg::Execute {
+                contract_addr: deps.api.addr_humanize(&config.lp_token)?.to_string(),
+                funds: vec![],
+                msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                    recipient: deps
+                        .api
+                        .addr_humanize(&config.treasury_contract)?
+                        .to_string(),
+                    amount: lp_amount,
+                })?,
+            }),
+            CosmosMsg::Wasm(WasmMsg::Execute {
+                contract_addr: oracle_contract.to_string(),
+                funds: vec![],
+                msg: to_binary(&OracleExecuteMsg::UpdatePrice {})?,
+            }),
+        ])
         .add_attributes(vec![("action", "lp_bond")]))
 }
 
@@ -145,9 +156,11 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     let mut state = load_state(deps.storage)?;
 
     let bond_amount = extract_ust_amount(&info.funds)?;
+
+    let oracle_contract = deps.api.addr_humanize(&config.oracle_contract)?;
     let bro_amount = query_oracle_price(
         &deps.querier,
-        deps.api.addr_humanize(&config.oracle_contract)?,
+        oracle_contract.clone(),
         AssetInfo::NativeToken {
             denom: "uusd".to_string(),
         },
@@ -185,10 +198,17 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     };
 
     Ok(Response::new()
-        .add_messages(vec![ust_transfer.into_msg(
-            &deps.querier,
-            deps.api.addr_humanize(&config.treasury_contract)?,
-        )?])
+        .add_messages(vec![
+            ust_transfer.into_msg(
+                &deps.querier,
+                deps.api.addr_humanize(&config.treasury_contract)?,
+            )?,
+            CosmosMsg::Wasm(WasmMsg::Execute {
+                contract_addr: oracle_contract.to_string(),
+                funds: vec![],
+                msg: to_binary(&OracleExecuteMsg::UpdatePrice {})?,
+            }),
+        ])
         .add_attributes(vec![("action", "ust_bond")]))
 }
 

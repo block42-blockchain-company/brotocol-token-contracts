@@ -14,9 +14,12 @@ use crate::mock_querier::{
     MOCK_LP_TOKEN_ADDR, MOCK_ORACLE_ADDR,
 };
 
-use services::bonding::{
-    ClaimInfoResponse, ClaimsResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg,
-    QueryMsg, StateResponse,
+use services::{
+    bonding::{
+        ClaimInfoResponse, ClaimsResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg,
+        QueryMsg, StateResponse,
+    },
+    oracle::ExecuteMsg as OracleExecuteMsg,
 };
 
 /// WasmMockQuerier messages:
@@ -76,7 +79,17 @@ fn proper_initialization() {
     // proper initialization
     msg.ust_bonding_reward_ratio = Decimal::from_str("0.6").unwrap();
     let info = mock_info("addr0000", &[]);
-    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    let update_oracle_price_msg = res.messages.get(0).expect("no message");
+    assert_eq!(
+        update_oracle_price_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: MOCK_ORACLE_ADDR.to_string(),
+            funds: vec![],
+            msg: to_binary(&OracleExecuteMsg::UpdatePrice {}).unwrap()
+        }))
+    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(
@@ -286,6 +299,16 @@ fn lp_bond() {
         }))
     );
 
+    let update_oracle_price_msg = res.messages.get(1).expect("no message");
+    assert_eq!(
+        update_oracle_price_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: MOCK_ORACLE_ADDR.to_string(),
+            funds: vec![],
+            msg: to_binary(&OracleExecuteMsg::UpdatePrice {}).unwrap()
+        }))
+    );
+
     assert_eq!(
         from_binary::<StateResponse>(
             &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
@@ -479,6 +502,16 @@ fn ust_bond() {
                 amount: Uint128::from(50_000000u128),
             }]
         })),
+    );
+
+    let update_oracle_price_msg = res.messages.get(1).expect("no message");
+    assert_eq!(
+        update_oracle_price_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: MOCK_ORACLE_ADDR.to_string(),
+            funds: vec![],
+            msg: to_binary(&OracleExecuteMsg::UpdatePrice {}).unwrap()
+        }))
     );
 
     assert_eq!(

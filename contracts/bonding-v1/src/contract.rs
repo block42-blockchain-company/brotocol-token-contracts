@@ -3,8 +3,8 @@ use std::str::FromStr;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Api, Binary, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo,
-    Response, StdResult, Storage, Uint128, WasmMsg,
+    from_binary, to_binary, Addr, Api, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response,
+    StdResult, Storage, Uint128,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -16,10 +16,7 @@ use crate::{
     state::{load_config, store_config, store_state, Config, State},
 };
 
-use services::{
-    bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
-    oracle::ExecuteMsg as OracleExecuteMsg,
-};
+use services::bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-bonding-v1";
@@ -78,13 +75,7 @@ pub fn instantiate(
         },
     )?;
 
-    Ok(
-        Response::new().add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: msg.oracle_contract,
-            funds: vec![],
-            msg: to_binary(&OracleExecuteMsg::UpdatePrice {})?,
-        })]),
-    )
+    Ok(Response::default())
 }
 
 /// ## Description

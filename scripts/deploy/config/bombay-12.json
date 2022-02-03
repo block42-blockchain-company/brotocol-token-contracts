@@ -1,9 +1,17 @@
 {
-    "deployToken": false,
+    "deployToken": true,
+    "initialBroBalanceHolderAddress": "",
     "bro_token": {
         "name": "Bro",
         "symbol": "BRO",
         "decimals": 6
+    },
+    "bro_ust_pair": {
+        "createPair": true,
+        "factory_address": ""
+    },
+    "oracle": {
+        "price_update_interval": 0
     },
     "airdrop": {
         "owner": ""
@@ -40,7 +48,6 @@
     },
     "bondingv1": {
         "owner": "",
-        "lp_token": "",
         "astroport_factory": "",
         "ust_bonding_reward_ratio": "0",
         "ust_bonding_discount": "0",

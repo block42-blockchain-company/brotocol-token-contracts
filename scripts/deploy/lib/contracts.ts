@@ -32,10 +32,15 @@ export class BroToken implements Contract {
     public instantiateMsg: BroTokenConfig;
     public address: string;
 
-    constructor(client: TerraClient, config: BroTokenConfig, artifact: Artifact) {
+    constructor(
+        client: TerraClient,
+        config: BroTokenConfig,
+        initialBroBalanceHolderAddress: string,
+        artifact: Artifact,
+    ) {
         this.client = client;
         this.artifact = "cw20_base.wasm";
-        this.instantiateMsg = this.setInstantiateMsg(config);
+        this.instantiateMsg = this.setInstantiateMsg(config, initialBroBalanceHolderAddress);
         this.address = artifact.bro_token;
     }
 
@@ -55,9 +60,9 @@ export class BroToken implements Contract {
         )
     }
 
-    private setInstantiateMsg(config: BroTokenConfig): BroTokenConfig {
+    private setInstantiateMsg(config: BroTokenConfig, initialBroBalanceHolderAddress: string): BroTokenConfig {
         config.initial_balances = [{
-            address: this.client.wallet.key.accAddress,
+            address: initialBroBalanceHolderAddress,
             amount: String(INITIAL_BRO_BALANCE),
         }];
         return config;
@@ -412,7 +417,9 @@ export class BondingV1 implements Contract {
 
     private setInstantiateMsg(config: BondingV1Config, artifact: Artifact): BondingV1Config {
         config.bro_token = artifact.bro_token;
+        config.lp_token = artifact.bro_ust_lp_token;
         config.treasury_contract = artifact.mvp_treasury;
+        config.oracle_contract = artifact.oracle;
         return config;
     }
 }

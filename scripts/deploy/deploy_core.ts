@@ -17,8 +17,12 @@ async function main() {
     // set artifact network
     artifact.network = chainID;
 
-    if (!artifact.bbro_token) {
+    if (!artifact.bro_token) {
         throw Error("BRO token address must be stored in artifact. Deploy token first using deploy_token.ts script.");
+    }
+
+    if (!artifact.oracle) {
+        throw Error("Price oracle for BRO/UST pair must be stored in artifact. Deploy pair and oracle first using deploy_pair.ts script");
     }
 
     // Deploy airdrop
@@ -78,7 +82,7 @@ async function main() {
     await bbroMinterContract.moveOwnership();
 
     console.log("distribute bro tokens to contracts");
-    const broTokenContract = new BroToken(terraClient, config.bro_token, artifact);
+    const broTokenContract = new BroToken(terraClient, config.bro_token, config.initialBroBalanceHolderAddress, artifact);
     await broTokenContract.transfer(artifact.airdrop, config.bro_distributions.airdrop);
     await broTokenContract.transfer(artifact.vesting, config.bro_distributions.vesting);
     await broTokenContract.transfer(artifact.rewards_pool, config.bro_distributions.rewards);

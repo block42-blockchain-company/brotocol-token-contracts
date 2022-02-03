@@ -79,17 +79,7 @@ fn proper_initialization() {
     // proper initialization
     msg.ust_bonding_reward_ratio = Decimal::from_str("0.6").unwrap();
     let info = mock_info("addr0000", &[]);
-    let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-    let update_oracle_price_msg = res.messages.get(0).expect("no message");
-    assert_eq!(
-        update_oracle_price_msg,
-        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: MOCK_ORACLE_ADDR.to_string(),
-            funds: vec![],
-            msg: to_binary(&OracleExecuteMsg::UpdatePrice {}).unwrap()
-        }))
-    );
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     assert_eq!(
         from_binary::<ConfigResponse>(

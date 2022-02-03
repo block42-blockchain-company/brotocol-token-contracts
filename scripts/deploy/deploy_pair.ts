@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { loadConfig } from './lib/config.js';
-import { loadArtifact } from './lib/artifact.js';
+import { loadArtifact, writeArtifact } from './lib/artifact.js';
 import { TerraClient } from './lib/client.js';
 import { AstroFactory, deployContract, Oracle } from './lib/contracts.js';
 
@@ -17,7 +17,7 @@ async function main() {
     // set artifact network
     artifact.network = chainID;
 
-    if (!artifact.bbro_token) {
+    if (!artifact.bro_token) {
         throw Error("BRO token address must be stored in artifact. Deploy token first using deploy_token.ts script.");
     }
 
@@ -34,6 +34,12 @@ async function main() {
     } else {
         console.log(`BRO/UST pair deploy disabled. Current pair address: ${artifact.bro_ust_pair}`);
     }
+
+    // set bro_ust lp token address
+    const poolInfo = await terraClient.queryContract<any>(artifact.bro_ust_pair, { pair: {} });
+    artifact.bro_ust_lp_token = poolInfo.liquidity_token;
+    writeArtifact(artifact, chainID);
+    console.log(`bro/ust lp token stored. Contract address: ${artifact.bro_ust_lp_token}`);
 
     // Deploy oracle
     const oracleContract = new Oracle(terraClient, config, artifact);

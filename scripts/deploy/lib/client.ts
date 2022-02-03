@@ -78,7 +78,7 @@ export class TerraClient {
 
         this.throwOnError(txResponse);
 
-        const address= String(txResponse.logs[0].events[0].attributes.filter(element => element.key == 'contract_address' ).map(x => x.value).shift());
+        const address = String(txResponse.logs[0].events[0].attributes.filter(element => element.key == 'contract_address' ).map(x => x.value).shift());
         console.log(`Instantiate contract with code_id ${codeID} success. Contract address:\n${address}`);
         console.log(""); // empty line
 

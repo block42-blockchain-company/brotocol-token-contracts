@@ -23,7 +23,7 @@ async function main() {
     }
 
     // Deploy BRO token
-    const broTokenContract = new BroToken(terraClient, config.bro_token, artifact);
+    const broTokenContract = new BroToken(terraClient, config.bro_token, config.initialBroBalanceHolderAddress, artifact);
     await deployContract(chainID, artifact, broTokenContract, admin);
 }
 

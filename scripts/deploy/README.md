@@ -24,9 +24,25 @@ npm install
 
 ## Deploy
 
-4.1 Deploy IDO
+### Deploy IDO
 ```
 npm run deploy-ido
+```
+
+### Separate deployment
+Deploy BRO token
+```
+npm run deploy-token
+```
+
+Create BRO/UST pair and deploy oracle
+```
+deploy-pair
+```
+
+Deploy IDO related contracts
+```
+npm run deploy-core
 ```
 
 ### 5. Check ./artifacts folder for deployed contract addresses

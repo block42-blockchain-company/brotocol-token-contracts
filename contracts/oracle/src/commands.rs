@@ -58,8 +58,6 @@ pub fn update_price(deps: DepsMut, env: Env) -> Result<Response, ContractError> 
     }
 
     let prices = query_cumulative_prices(&deps.querier, config.pair.contract_addr)?;
-    price_last.price_0_cumulative_last = prices.price0_cumulative_last;
-    price_last.price_1_cumulative_last = prices.price1_cumulative_last;
 
     price_last.price_0_average = Decimal256::from_ratio(
         Uint256::from(
@@ -79,6 +77,8 @@ pub fn update_price(deps: DepsMut, env: Env) -> Result<Response, ContractError> 
         time_elapsed,
     );
 
+    price_last.price_0_cumulative_last = prices.price0_cumulative_last;
+    price_last.price_1_cumulative_last = prices.price1_cumulative_last;
     price_last.last_price_update_timestamp = current_time;
     store_price_cumulative_last(deps.storage, &price_last)?;
 

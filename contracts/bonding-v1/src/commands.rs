@@ -162,7 +162,7 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
         &deps.querier,
         oracle_contract.clone(),
         bond_asset.info.clone(),
-        bond_asset.amount.clone(),
+        bond_asset.amount,
     )?
     .amount;
 

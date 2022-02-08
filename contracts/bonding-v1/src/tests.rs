@@ -11,12 +11,15 @@ use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
 
 use crate::mock_querier::{
     mock_dependencies, MOCK_ASTRO_FACTORY_ADDR, MOCK_BRO_TOKEN_ADDR, MOCK_BRO_UST_PAIR_ADDR,
-    MOCK_LP_TOKEN_ADDR,
+    MOCK_LP_TOKEN_ADDR, MOCK_ORACLE_ADDR,
 };
 
-use services::bonding::{
-    ClaimInfoResponse, ClaimsResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg,
-    QueryMsg, StateResponse,
+use services::{
+    bonding::{
+        ClaimInfoResponse, ClaimsResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg,
+        QueryMsg, StateResponse,
+    },
+    oracle::ExecuteMsg as OracleExecuteMsg,
 };
 
 /// WasmMockQuerier messages:
@@ -36,7 +39,7 @@ use services::bonding::{
 ///     ],
 ///     contract_addr: Addr::unchecked(MOCK_BRO_UST_PAIR_ADDR),
 ///     liquidity_token: Addr::unchecked(MOCK_LP_TOKEN_ADDR),
-///     pair_type: astroport::factory::PairType::Stable {},
+///     pair_type: astroport::factory::PairType::Xyk {},
 /// }
 
 #[test]
@@ -50,6 +53,7 @@ fn proper_initialization() {
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
         ust_bonding_reward_ratio: Decimal::from_str("1.1").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
@@ -88,6 +92,7 @@ fn proper_initialization() {
             lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
             treasury_contract: "treasury".to_string(),
             astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+            oracle_contract: MOCK_ORACLE_ADDR.to_string(),
             ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
             ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
             lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
@@ -117,6 +122,7 @@ fn distribute_reward() {
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
         ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
@@ -182,6 +188,7 @@ fn lp_bond() {
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
         ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
@@ -248,6 +255,7 @@ fn lp_bond() {
         lp_token: None,
         treasury_contract: None,
         astroport_factory: None,
+        oracle_contract: None,
         ust_bonding_reward_ratio: None,
         ust_bonding_discount: None,
         lp_bonding_discount: None,
@@ -278,6 +286,16 @@ fn lp_bond() {
                 amount: Uint128::from(10_000000u128),
             })
             .unwrap(),
+        }))
+    );
+
+    let update_oracle_price_msg = res.messages.get(1).expect("no message");
+    assert_eq!(
+        update_oracle_price_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: MOCK_ORACLE_ADDR.to_string(),
+            funds: vec![],
+            msg: to_binary(&OracleExecuteMsg::UpdatePrice {}).unwrap()
         }))
     );
 
@@ -339,6 +357,7 @@ fn ust_bond() {
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
         ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
@@ -442,6 +461,7 @@ fn ust_bond() {
         lp_token: None,
         treasury_contract: None,
         astroport_factory: None,
+        oracle_contract: None,
         ust_bonding_reward_ratio: None,
         ust_bonding_discount: None,
         lp_bonding_discount: None,
@@ -472,6 +492,16 @@ fn ust_bond() {
                 amount: Uint128::from(50_000000u128),
             }]
         })),
+    );
+
+    let update_oracle_price_msg = res.messages.get(1).expect("no message");
+    assert_eq!(
+        update_oracle_price_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: MOCK_ORACLE_ADDR.to_string(),
+            funds: vec![],
+            msg: to_binary(&OracleExecuteMsg::UpdatePrice {}).unwrap()
+        }))
     );
 
     assert_eq!(
@@ -517,6 +547,7 @@ fn claim() {
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
         ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
@@ -643,6 +674,7 @@ fn update_config() {
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
         ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
@@ -659,6 +691,7 @@ fn update_config() {
         lp_token: Some("new_lp".to_string()),
         treasury_contract: Some("new_treasury".to_string()),
         astroport_factory: Some("new_astro".to_string()),
+        oracle_contract: Some("new_oracle".to_string()),
         ust_bonding_reward_ratio: Some(Decimal::from_str("0.61").unwrap()),
         ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
         lp_bonding_discount: Some(Decimal::from_str("0.06").unwrap()),
@@ -688,6 +721,7 @@ fn update_config() {
             lp_token: "new_lp".to_string(),
             treasury_contract: "new_treasury".to_string(),
             astroport_factory: "new_astro".to_string(),
+            oracle_contract: "new_oracle".to_string(),
             ust_bonding_reward_ratio: Decimal::from_str("0.61").unwrap(),
             ust_bonding_discount: Decimal::from_str("0.11").unwrap(),
             lp_bonding_discount: Decimal::from_str("0.06").unwrap(),

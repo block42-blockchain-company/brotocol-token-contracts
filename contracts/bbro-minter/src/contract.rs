@@ -62,13 +62,13 @@ pub fn instantiate(
 /// ## Description
 /// Available execute messages of the contract
 /// ## Params
-/// * **deps** is the object of type [`Deps`].
+/// * **deps** is an object of type [`Deps`].
 ///
-/// * **_env** is the object of type [`Env`].
+/// * **_env** is an object of type [`Env`].
 ///
-/// * **info** is the object of type [`MessageInfo`].
+/// * **info** is an object of type [`MessageInfo`].
 ///
-/// * **msg** is the object of type [`ExecuteMsg`].
+/// * **msg** is an object of type [`ExecuteMsg`].
 ///
 /// ## Messages
 ///
@@ -129,11 +129,11 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 /// ## Description
 /// Available query messages of the contract
 /// ## Params
-/// * **deps** is the object of type [`Deps`].
+/// * **deps** is an object of type [`Deps`].
 ///
-/// * **env** is the object of type [`Env`].
+/// * **env** is an object of type [`Env`].
 ///
-/// * **msg** is the object of type [`ExecuteMsg`].
+/// * **msg** is an object of type [`ExecuteMsg`].
 ///
 /// ## Queries
 ///
@@ -148,11 +148,11 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 /// ## Description
 /// Used for migration of contract. Returns the default object of type [`Response`].
 /// ## Params
-/// * **_deps** is the object of type [`Deps`].
+/// * **_deps** is an object of type [`Deps`].
 ///
-/// * **_env** is the object of type [`Env`].
+/// * **_env** is an object of type [`Env`].
 ///
-/// * **_msg** is the object of type [`MigrateMsg`].
+/// * **_msg** is an object of type [`MigrateMsg`].
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     Ok(Response::default())

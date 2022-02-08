@@ -6,6 +6,9 @@ const ARTIFACTS_PATH = './artifacts'
 export interface Artifact {
     network: string,
     bro_token: string,
+    bro_ust_pair: string,
+    bro_ust_lp_token: string,
+    oracle: string,
     airdrop: string,
     vesting: string,
     bbro_minter: string,

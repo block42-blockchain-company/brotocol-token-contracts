@@ -1,8 +1,8 @@
 import dotenv from 'dotenv'
 import { loadConfig } from './lib/config.js';
+import { loadArtifact } from './lib/artifact.js';
 import { TerraClient } from './lib/client.js';
 import { Airdrop, BbroMinter, BbroToken, BondingV1, BroToken, deployContract, DistributorV1, EpochManager, RewardsPool, StakingV1, Treasury, Vesting } from './lib/contracts.js';
-import { loadArtifact } from './lib/artifact.js';
 
 async function main() {
     dotenv.config();
@@ -17,9 +17,13 @@ async function main() {
     // set artifact network
     artifact.network = chainID;
 
-    // Deploy BRO token
-    const broTokenContract = new BroToken(terraClient, config.bro_token, artifact);
-    await deployContract(chainID, artifact, broTokenContract, admin);
+    if (!artifact.bro_token) {
+        throw Error("BRO token address must be stored in artifact. Deploy token first using deploy_token.ts script.");
+    }
+
+    if (!artifact.oracle) {
+        throw Error("Price oracle for BRO/UST pair must be stored in artifact. Deploy pair and oracle first using deploy_pair.ts script");
+    }
 
     // Deploy airdrop
     const airdropContract = new Airdrop(terraClient, config.airdrop, artifact);
@@ -78,6 +82,7 @@ async function main() {
     await bbroMinterContract.moveOwnership();
 
     console.log("distribute bro tokens to contracts");
+    const broTokenContract = new BroToken(terraClient, config.bro_token, config.initialBroBalanceHolderAddress, artifact);
     await broTokenContract.transfer(artifact.airdrop, config.bro_distributions.airdrop);
     await broTokenContract.transfer(artifact.vesting, config.bro_distributions.vesting);
     await broTokenContract.transfer(artifact.rewards_pool, config.bro_distributions.rewards);

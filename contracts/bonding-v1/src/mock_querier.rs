@@ -8,12 +8,14 @@ use std::collections::HashMap;
 
 use astroport::{asset::PairInfo, factory::QueryMsg as FactoryQueryMsg};
 use cw20::{BalanceResponse as Cw20BalanceResponse, Cw20QueryMsg, TokenInfoResponse};
+use services::oracle::{ConsultPriceResponse, QueryMsg as OracleQueryMsg};
 use terra_cosmwasm::{TaxCapResponse, TaxRateResponse, TerraQuery, TerraQueryWrapper, TerraRoute};
 
 pub const MOCK_ASTRO_FACTORY_ADDR: &str = "astrofactory";
 pub const MOCK_BRO_UST_PAIR_ADDR: &str = "bro_ust_pair";
 pub const MOCK_LP_TOKEN_ADDR: &str = "bro_ust_lp";
 pub const MOCK_BRO_TOKEN_ADDR: &str = "bro_token";
+pub const MOCK_ORACLE_ADDR: &str = "oracle";
 
 /// mock_dependencies is a drop-in replacement for cosmwasm_std::testing::mock_dependencies
 /// this uses our CustomQuerier.
@@ -130,10 +132,22 @@ impl WasmMockQuerier {
                                 ],
                                 contract_addr: Addr::unchecked(MOCK_BRO_UST_PAIR_ADDR),
                                 liquidity_token: Addr::unchecked(MOCK_LP_TOKEN_ADDR),
-                                pair_type: astroport::factory::PairType::Stable {},
+                                pair_type: astroport::factory::PairType::Xyk {},
                             })
                             .unwrap(),
                         )),
+                        _ => panic!("DO NOT ENTER HERE"),
+                    }
+                } else if contract_addr == MOCK_ORACLE_ADDR {
+                    match from_binary(msg).unwrap() {
+                        OracleQueryMsg::ConsultPrice { amount, .. } => {
+                            SystemResult::Ok(ContractResult::Ok(
+                                to_binary(&ConsultPriceResponse {
+                                    amount: amount.checked_div(Uint128::from(10u128)).unwrap(),
+                                })
+                                .unwrap(),
+                            ))
+                        }
                         _ => panic!("DO NOT ENTER HERE"),
                     }
                 } else {

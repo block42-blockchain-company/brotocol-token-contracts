@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExecuteMsg",
+  "description": "This structure describes the execute messages of the contract.",
+  "oneOf": [
+    {
+      "title": "Description",
+      "description": "Updates contract settings ## Executor Only owner can execute this function",
+      "type": "object",
+      "required": [
+        "update_config"
+      ],
+      "properties": {
+        "update_config": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "description": "contract/multisig address that allowed to control settings",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "price_update_interval": {
+              "description": "time interval for updating prices",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Updates cumulative prices",
+      "type": "object",
+      "required": [
+        "update_price"
+      ],
+      "properties": {
+        "update_price": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,8 +1,17 @@
 {
+    "deployToken": true,
+    "initialBroBalanceHolderAddress": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
     "bro_token": {
         "name": "Bro",
         "symbol": "BRO",
         "decimals": 6
+    },
+    "bro_ust_pair": {
+        "createPair": true,
+        "factory_address": "terra1ys7qglzew8ns39nl0wxalypc4nhwdqudd9rg2c"
+    },
+    "oracle": {
+        "price_update_interval": 123
     },
     "airdrop": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"
@@ -39,8 +48,7 @@
     },
     "bondingv1": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
-        "lp_token": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
-        "astroport_factory": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "astroport_factory": "terra1ys7qglzew8ns39nl0wxalypc4nhwdqudd9rg2c",
         "ust_bonding_reward_ratio": "0.6",
         "ust_bonding_discount": "0.05",
         "lp_bonding_discount": "0.05",
@@ -49,9 +57,9 @@
     },
     "distributorv1": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
-        "distribution_genesis_block": 12350,
-        "staking_distribution_amount": "10000000",
-        "bonding_distribution_amount": "1000000"
+        "distribution_genesis_block": 34420,
+        "staking_distribution_amount": "100000000",
+        "bonding_distribution_amount": "100000000"
     },
     "bro_distributions": {
         "airdrop": "10000000000",

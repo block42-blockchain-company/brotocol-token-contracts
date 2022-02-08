@@ -21,6 +21,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
             .api
             .addr_humanize(&config.astroport_factory)?
             .to_string(),
+        oracle_contract: deps.api.addr_humanize(&config.oracle_contract)?.to_string(),
         ust_bonding_reward_ratio: config.ust_bonding_reward_ratio,
         ust_bonding_discount: config.ust_bonding_discount,
         lp_bonding_discount: config.lp_bonding_discount,

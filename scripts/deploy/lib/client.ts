@@ -28,7 +28,9 @@ export class TerraClient {
         } else {
             const localTerra = new LocalTerra();
             this.terra = localTerra;
-            this.wallet = localTerra.wallets.test1;
+            this.wallet = this.terra.wallet(new MnemonicKey({
+                mnemonic: "satisfy adjust timber high purchase tuition stool faith fine install that you unaware feed domain license impose boss human eager hat rent enjoy dawn",
+            }));
         }
     }
 
@@ -76,7 +78,7 @@ export class TerraClient {
 
         this.throwOnError(txResponse);
 
-        const address= String(txResponse.logs[0].events[0].attributes.filter(element => element.key == 'contract_address' ).map(x => x.value).shift());
+        const address = String(txResponse.logs[0].events[0].attributes.filter(element => element.key == 'contract_address' ).map(x => x.value).shift());
         console.log(`Instantiate contract with code_id ${codeID} success. Contract address:\n${address}`);
         console.log(""); // empty line
 

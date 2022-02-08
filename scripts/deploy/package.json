@@ -1,9 +1,13 @@
 {
     "name": "deploy",
     "version": "1.0.0",
+    "license": "MIT",
     "type": "module",
     "scripts": {
-        "deploy-ido": "node --loader ts-node/esm deploy_ido.ts"
+        "deploy-ido": "npm run deploy-token && npm run deploy-pair && npm run deploy-core",
+        "deploy-token": "node --loader ts-node/esm deploy_token.ts",
+        "deploy-pair": "node --loader ts-node/esm deploy_pair.ts",
+        "deploy-core": "node --loader ts-node/esm deploy_core.ts"
     },
     "dependencies": {
         "@terra-money/terra.js": "^3.0.1",

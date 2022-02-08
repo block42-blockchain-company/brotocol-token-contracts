@@ -9,6 +9,7 @@
     "lp_bonding_discount",
     "lp_token",
     "min_bro_payout",
+    "oracle_contract",
     "owner",
     "treasury_contract",
     "ust_bonding_discount",
@@ -43,6 +44,10 @@
           "$ref": "#/definitions/Uint128"
         }
       ]
+    },
+    "oracle_contract": {
+      "description": "price oracle contract address",
+      "type": "string"
     },
     "owner": {
       "description": "contract/multisig address that allowed to control settings",

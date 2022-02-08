@@ -1,4 +1,4 @@
-import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, DistributorV1Config, EpochManagerConfig, RewardsPoolConfig, StakingV1Config, TreasuryConfig, VestingConfig } from "./config.js";
+import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TreasuryConfig, VestingConfig } from "./config.js";
 import { TerraClient } from "./client.js";
 import { Artifact, writeArtifact } from "./artifact.js";
 
@@ -32,10 +32,15 @@ export class BroToken implements Contract {
     public instantiateMsg: BroTokenConfig;
     public address: string;
 
-    constructor(client: TerraClient, config: BroTokenConfig, artifact: Artifact) {
+    constructor(
+        client: TerraClient,
+        config: BroTokenConfig,
+        initialBroBalanceHolderAddress: string,
+        artifact: Artifact,
+    ) {
         this.client = client;
         this.artifact = "cw20_base.wasm";
-        this.instantiateMsg = this.setInstantiateMsg(config);
+        this.instantiateMsg = this.setInstantiateMsg(config, initialBroBalanceHolderAddress);
         this.address = artifact.bro_token;
     }
 
@@ -55,12 +60,92 @@ export class BroToken implements Contract {
         )
     }
 
-    private setInstantiateMsg(config: BroTokenConfig): BroTokenConfig {
+    private setInstantiateMsg(config: BroTokenConfig, initialBroBalanceHolderAddress: string): BroTokenConfig {
         config.initial_balances = [{
-            address: this.client.wallet.key.accAddress,
+            address: initialBroBalanceHolderAddress,
             amount: String(INITIAL_BRO_BALANCE),
         }];
         return config;
+    }
+}
+
+// astro-factory
+export class AstroFactory implements Contract {
+    public client: TerraClient;
+    public artifact: string;
+    public instantiateMsg: Object;
+    public address: string;
+
+    constructor(client: TerraClient, config: BroUstPairConfig) {
+        this.client = client;
+        this.artifact = "";
+        this.instantiateMsg = new Object();
+        this.address = config.factory_address;
+    }
+
+    public setArtifactData(artifact: Artifact): void {}
+
+    public async createBroUstPair(artifact: Artifact): Promise<void> {
+        const txResponse = await this.client.executeContract(
+            this.address,
+            {
+                create_pair: {
+                    pair_type: {
+                        xyk: {},
+                    },
+                    asset_infos: [
+                        {
+                            token: {
+                                contract_addr: artifact.bro_token
+                            }
+                        },
+                        {
+                            native_token: {
+                                denom: "uusd"
+                            }
+                        }
+                    ]
+                }
+            }
+        );
+
+        artifact.bro_ust_pair = (txResponse as any).logs[0].eventsByType.from_contract.pair_contract_addr[0];
+    }
+}
+
+// oracle
+export class Oracle implements Contract {
+    public client: TerraClient;
+    public artifact: string;
+    public instantiateMsg: OracleConfig;
+    public address: string;
+
+    constructor(client: TerraClient, config: Config, artifact: Artifact) {
+        this.client = client;
+        this.artifact = "brotocol_oracle.wasm";
+        this.instantiateMsg = this.setInstantiateMsg(config, artifact);
+        this.address = artifact.oracle;
+    }
+
+    public setArtifactData(artifact: Artifact): void {
+        artifact.oracle = this.address;
+    }
+
+    private setInstantiateMsg(config: Config, artifact: Artifact): OracleConfig {
+        config.oracle.factory_contract = config.bro_ust_pair.factory_address;
+        config.oracle.asset_infos = [
+            {
+                token: {
+                    contract_addr: artifact.bro_token,
+                }
+            },
+            {
+                native_token: {
+                    denom: "uusd",
+                }
+            }
+        ];
+        return config.oracle;
     }
 }
 
@@ -332,7 +417,9 @@ export class BondingV1 implements Contract {
 
     private setInstantiateMsg(config: BondingV1Config, artifact: Artifact): BondingV1Config {
         config.bro_token = artifact.bro_token;
+        config.lp_token = artifact.bro_ust_lp_token;
         config.treasury_contract = artifact.mvp_treasury;
+        config.oracle_contract = artifact.oracle;
         return config;
     }
 }

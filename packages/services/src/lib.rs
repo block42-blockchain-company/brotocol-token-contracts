@@ -4,6 +4,7 @@ pub mod bonding;
 pub mod common;
 pub mod distributor;
 pub mod epoch_manager;
+pub mod oracle;
 pub mod querier;
 pub mod rewards;
 pub mod staking;

@@ -63,7 +63,7 @@ Returns oracle contract config.
 
 ### `consult_price`
 
-Multiplies a given amount and last average price in common.
+Converts specified asset amount into other using average price.
 
 ```json
 {

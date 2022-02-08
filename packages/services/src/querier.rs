@@ -102,7 +102,7 @@ pub fn query_pools(
 /// ## Params
 /// * **querier** is an object of type [`QuerierWrapper`].
 ///
-/// * **pair_contract** is the object of type [`Addr`].
+/// * **pair_contract** is an object of type [`Addr`].
 pub fn query_cumulative_prices(
     querier: &QuerierWrapper,
     pair_contract: Addr,
@@ -120,7 +120,7 @@ pub fn query_cumulative_prices(
 ///
 /// * **pair_contract** is an object of type [`Addr`].
 ///
-/// * **asset** is the object of type [`Asset`].
+/// * **asset** is an object of type [`Asset`].
 pub fn query_prices(
     querier: &QuerierWrapper,
     pair_contract: Addr,

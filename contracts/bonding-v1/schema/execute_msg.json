@@ -74,6 +74,13 @@
                 }
               ]
             },
+            "lp_bonding_enabled": {
+              "description": "sets either lp bonding option enabled or not",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
             "lp_token": {
               "description": "new bro/ust lp token address",
               "type": [

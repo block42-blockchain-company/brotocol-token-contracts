@@ -7,6 +7,7 @@
     "astroport_factory",
     "bro_token",
     "lp_bonding_discount",
+    "lp_bonding_enabled",
     "lp_token",
     "min_bro_payout",
     "oracle_contract",
@@ -32,6 +33,10 @@
           "$ref": "#/definitions/Decimal"
         }
       ]
+    },
+    "lp_bonding_enabled": {
+      "description": "sets either lp bonding option enabled or not",
+      "type": "boolean"
     },
     "lp_token": {
       "description": "bro/ust lp token address",

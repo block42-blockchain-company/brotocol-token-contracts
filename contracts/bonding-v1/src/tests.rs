@@ -150,7 +150,7 @@ fn distribute_reward() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    // proper execution
+    // distribute reward with enabled lp bonding
     let info = mock_info(MOCK_BRO_TOKEN_ADDR, &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 
@@ -161,6 +161,44 @@ fn distribute_reward() {
         .unwrap(),
         StateResponse {
             ust_bonding_balance: Uint128::from(60u128),
+            lp_bonding_balance: Uint128::from(40u128),
+        },
+    );
+
+    // disable lp bonding option
+    let msg = ExecuteMsg::UpdateConfig {
+        owner: None,
+        lp_token: None,
+        treasury_contract: None,
+        astroport_factory: None,
+        oracle_contract: None,
+        ust_bonding_reward_ratio: None,
+        ust_bonding_discount: None,
+        lp_bonding_discount: None,
+        min_bro_payout: None,
+        vesting_period_blocks: None,
+        lp_bonding_enabled: Some(false),
+    };
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    // distribute reward with disabled lp bonding
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "rewards".to_string(),
+        amount: Uint128::from(100u128),
+        msg: to_binary(&Cw20HookMsg::DistributeReward {}).unwrap(),
+    });
+
+    let info = mock_info(MOCK_BRO_TOKEN_ADDR, &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(
+        from_binary::<StateResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+        )
+        .unwrap(),
+        StateResponse {
+            ust_bonding_balance: Uint128::from(160u128),
             lp_bonding_balance: Uint128::from(40u128),
         },
     );
@@ -335,6 +373,36 @@ fn lp_bond() {
             }],
         },
     );
+
+    // disable lp bonding option
+    let msg = ExecuteMsg::UpdateConfig {
+        owner: None,
+        lp_token: None,
+        treasury_contract: None,
+        astroport_factory: None,
+        oracle_contract: None,
+        ust_bonding_reward_ratio: None,
+        ust_bonding_discount: None,
+        lp_bonding_discount: None,
+        min_bro_payout: None,
+        vesting_period_blocks: None,
+        lp_bonding_enabled: Some(false),
+    };
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    // error: lp bonding disabled
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "addr0000".to_string(),
+        amount: Uint128::from(10_000000u128),
+        msg: to_binary(&Cw20HookMsg::LpBond {}).unwrap(),
+    });
+    let info = mock_info(MOCK_LP_TOKEN_ADDR, &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::LpBondingDisabled {}) => assert!(true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
 }
 
 #[test]

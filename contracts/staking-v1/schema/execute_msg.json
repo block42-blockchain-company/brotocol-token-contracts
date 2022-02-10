@@ -19,20 +19,20 @@
     },
     {
       "title": "Description",
-      "description": "Unbond staked amount of tokens. Tokens will be claimable only after passing unbonding period.",
+      "description": "Unstake staked amount of tokens. Tokens will be claimable only after passing the unstaking period.",
       "type": "object",
       "required": [
-        "unbond"
+        "unstake"
       ],
       "properties": {
-        "unbond": {
+        "unstake": {
           "type": "object",
           "required": [
             "amount"
           ],
           "properties": {
             "amount": {
-              "description": "amount of tokens to unbond",
+              "description": "amount of tokens to unstake",
               "allOf": [
                 {
                   "$ref": "#/definitions/Uint128"
@@ -46,7 +46,7 @@
     },
     {
       "title": "Description",
-      "description": "Withdraw amount of tokens which have already passed unbonding period.",
+      "description": "Withdraw amount of tokens which have already passed the unstaking period.",
       "type": "object",
       "required": [
         "withdraw"

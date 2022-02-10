@@ -122,7 +122,9 @@ impl StakerInfo {
         let epochs_staked = Uint128::from(state.last_distribution_block - self.last_balance_update)
             .checked_div(Uint128::from(epoch_info.epoch))?;
 
-        let bbro_per_epoch_reward = self.stake_amount.checked_div(epoch_info.epochs_per_year())?
+        let bbro_per_epoch_reward = self
+            .stake_amount
+            .checked_div(epoch_info.epochs_per_year())?
             * epoch_info.bbro_emission_rate;
 
         let bbro_reward = bbro_per_epoch_reward.checked_mul(epochs_staked)?;

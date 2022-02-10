@@ -33,10 +33,10 @@
       "description": "Deposits specified amount of tokens to get reward shares",
       "type": "object",
       "required": [
-        "bond"
+        "stake"
       ],
       "properties": {
-        "bond": {
+        "stake": {
           "type": "object"
         }
       },

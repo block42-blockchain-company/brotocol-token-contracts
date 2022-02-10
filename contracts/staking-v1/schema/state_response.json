@@ -6,7 +6,7 @@
   "required": [
     "global_reward_index",
     "last_distribution_block",
-    "total_bond_amount"
+    "total_stake_amount"
   ],
   "properties": {
     "global_reward_index": {
@@ -23,8 +23,8 @@
       "format": "uint64",
       "minimum": 0.0
     },
-    "total_bond_amount": {
-      "description": "total amount of bonded BRO tokens by all stakers",
+    "total_stake_amount": {
+      "description": "total amount of staked BRO tokens by all stakers",
       "allOf": [
         {
           "$ref": "#/definitions/Uint128"

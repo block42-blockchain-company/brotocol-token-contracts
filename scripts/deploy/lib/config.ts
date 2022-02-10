@@ -105,7 +105,6 @@ export interface StakingV1Config {
     unbond_period_blocks: number,
 }
 
-// TODO: create mock contract for astro pool and lp token queries
 export interface BondingV1Config {
     owner: string,
     bro_token: string,
@@ -118,6 +117,7 @@ export interface BondingV1Config {
     lp_bonding_discount: string,
     min_bro_payout: string,
     vesting_period_blocks: number,
+    lp_bonding_enabled: boolean,
 }
 
 export interface DistributorV1Config {

@@ -19,7 +19,8 @@ Price calculation will depend on current BRO market price.
     "ust_bonding_discount": "0.05",
     "lp_bonding_discount": "0.05",
     "min_bro_payout": "100",
-    "vesting_period_blocks": 50
+    "vesting_period_blocks": 50,
+    "lp_bonding_enabled": true
 }
 ```
 
@@ -96,7 +97,8 @@ Message params are optional.
         "ust_bonding_discount": "0.05",
         "lp_bonding_discount": "0.05",
         "min_bro_payout": "100",
-        "vesting_period_blocks": 50
+        "vesting_period_blocks": 50,
+        "lp_bonding_enabled": true
     }
 }
 ```

@@ -23,7 +23,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
-        unbond_period_blocks: 10,
+        unstake_period_blocks: 10,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -39,7 +39,7 @@ fn proper_initialization() {
             rewards_pool_contract: "reward0000".to_string(),
             bbro_minter_contract: "bbrominter0000".to_string(),
             epoch_manager_contract: "epoch0000".to_string(),
-            unbond_period_blocks: 10,
+            unstake_period_blocks: 10,
         }
     );
 
@@ -49,7 +49,7 @@ fn proper_initialization() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::zero(),
+            total_stake_amount: Uint128::zero(),
             global_reward_index: Decimal::zero(),
             last_distribution_block: 12345,
         }
@@ -69,7 +69,7 @@ fn test_fractional_rewards() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
-        unbond_period_blocks: 10,
+        unstake_period_blocks: 10,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -77,7 +77,7 @@ fn test_fractional_rewards() {
     let mut env = mock_env();
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0000 bonds 100 tokens for 3 addresses, but keep the reward pool at 0
+    /////// addr0000 stakes 100 tokens for 3 addresses, but keep the reward pool at 0
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("bro0000", &[]);
@@ -86,7 +86,7 @@ fn test_fractional_rewards() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
     });
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -96,7 +96,7 @@ fn test_fractional_rewards() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0001".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
     });
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -106,7 +106,7 @@ fn test_fractional_rewards() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0002".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
     });
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -144,7 +144,7 @@ fn test_fractional_rewards() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(10u128, 3u128),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::from(333u128),
             last_balance_update: 12346,
         }
@@ -166,7 +166,7 @@ fn test_fractional_rewards() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::from_ratio(10u128, 3u128),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::from(333u128),
             last_balance_update: 12347,
         }
@@ -188,7 +188,7 @@ fn test_fractional_rewards() {
         StakerInfoResponse {
             staker: "addr0002".to_string(),
             reward_index: Decimal::from_ratio(10u128, 3u128),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::from(333u128),
             last_balance_update: 12348,
         }
@@ -200,7 +200,7 @@ fn test_fractional_rewards() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::from(300u128),
+            total_stake_amount: Uint128::from(300u128),
             global_reward_index: Decimal::from_ratio(10u128, 3u128),
             last_distribution_block: 12349,
         }
@@ -242,7 +242,7 @@ fn test_fractional_rewards() {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(10u128, 1u128)
                 - Decimal::from_ratio(1u128, 1000000000000000000u128),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::from(999u128),
             last_balance_update: 12346,
         }
@@ -250,7 +250,7 @@ fn test_fractional_rewards() {
 }
 
 #[test]
-fn test_bond_tokens() {
+fn test_stake_tokens() {
     let mut deps = mock_dependencies(&[]);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -262,7 +262,7 @@ fn test_bond_tokens() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
-        unbond_period_blocks: 10,
+        unstake_period_blocks: 10,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -270,7 +270,7 @@ fn test_bond_tokens() {
     let mut env = mock_env();
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// calling distribute reward when total bonding is 0
+    /////// calling distribute reward when total staking is 0
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("bro0000", &[]);
@@ -301,7 +301,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::zero(),
-            bond_amount: Uint128::zero(),
+            stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: 12345,
         }
@@ -313,14 +313,14 @@ fn test_bond_tokens() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::zero(),
+            total_stake_amount: Uint128::zero(),
             global_reward_index: Decimal::zero(),
             last_distribution_block: 12345,
         }
     );
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0000 bonds 100 tokens, but keep the reward pool at 0
+    /////// addr0000 stakes 100 tokens, but keep the reward pool at 0
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("bro0000", &[]);
@@ -329,7 +329,7 @@ fn test_bond_tokens() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
     });
     let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -350,7 +350,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::zero(),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::zero(),
             last_balance_update: env.block.height,
         }
@@ -362,20 +362,20 @@ fn test_bond_tokens() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::from(100u128),
+            total_stake_amount: Uint128::from(100u128),
             global_reward_index: Decimal::zero(),
             last_distribution_block: 12345,
         }
     );
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0001 bonds 100 tokens, but keep the reward pool at 0
+    /////// addr0001 stakes 100 tokens, but keep the reward pool at 0
     ////////////////////////////////////////////////////////////////////////////
 
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0001".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Bond {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
     });
     env.block.height += 1;
 
@@ -398,7 +398,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::zero(),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::zero(),
             last_balance_update: env.block.height,
         }
@@ -410,7 +410,7 @@ fn test_bond_tokens() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::from(200u128),
+            total_stake_amount: Uint128::from(200u128),
             global_reward_index: Decimal::zero(),
             last_distribution_block: 12345,
         }
@@ -470,7 +470,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::from(500u128),
             last_balance_update: 12346,
         }
@@ -482,7 +482,7 @@ fn test_bond_tokens() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::from(200u128),
+            total_stake_amount: Uint128::from(200u128),
             global_reward_index: Decimal::from_ratio(5u128, 1u128),
             last_distribution_block: 12348,
         }
@@ -503,7 +503,7 @@ fn test_bond_tokens() {
         .unwrap(),
         StakerAccruedRewardsResponse {
             rewards: Uint128::new(500),
-            bbro_staking_reward: Uint128::new(60),
+            bbro_stake_reward: Uint128::new(60),
         }
     );
 
@@ -559,7 +559,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::zero(),
             last_balance_update: 12346,
         }
@@ -571,7 +571,7 @@ fn test_bond_tokens() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::from(200u128),
+            total_stake_amount: Uint128::from(200u128),
             global_reward_index: Decimal::from_ratio(5u128, 1u128),
             last_distribution_block: 12348,
         }
@@ -591,29 +591,29 @@ fn test_bond_tokens() {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0000 tries to unbond 150 while only bonded 100
+    /////// addr0000 tries to unstake 150 while only staked 100
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("addr0000", &[]);
 
     env.block.height += 1;
 
-    let msg = ExecuteMsg::Unbond {
+    let msg = ExecuteMsg::Unstake {
         amount: Uint128::new(150),
     };
 
     match execute(deps.as_mut(), env.clone(), info, msg) {
-        Err(ContractError::ForbiddenToUnbondMoreThanBonded {}) => (),
-        _ => panic!("expecting failure due to unbonding too much"),
+        Err(ContractError::ForbiddenToUnstakeMoreThanStaked {}) => (),
+        _ => panic!("expecting failure due to unstaking too much"),
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0000 unbonds 50
+    /////// addr0000 unstakes 50
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("addr0000", &[]);
 
-    let msg = ExecuteMsg::Unbond {
+    let msg = ExecuteMsg::Unstake {
         amount: Uint128::new(50),
     };
     let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -636,7 +636,7 @@ fn test_bond_tokens() {
 
     assert_eq!(res.attributes.len(), 3);
     assert_eq!(res.attributes[0].key, "action");
-    assert_eq!(res.attributes[0].value, "unbond");
+    assert_eq!(res.attributes[0].value, "unstake");
     assert_eq!(res.attributes[1].key, "staker");
     assert_eq!(res.attributes[1].value, "addr0000");
     assert_eq!(res.attributes[2].key, "amount");
@@ -660,7 +660,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128),
-            bond_amount: Uint128::from(50u128),
+            stake_amount: Uint128::from(50u128),
             pending_reward: Uint128::zero(),
             last_balance_update: 12350,
         }
@@ -672,7 +672,7 @@ fn test_bond_tokens() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::from(150u128),
+            total_stake_amount: Uint128::from(150u128),
             global_reward_index: Decimal::from_ratio(5u128, 1u128),
             last_distribution_block: 12348,
         }
@@ -732,7 +732,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128) + Decimal::from_ratio(100u128, 15u128),
-            bond_amount: Uint128::from(50u128),
+            stake_amount: Uint128::from(50u128),
             pending_reward: Uint128::from(333u128),
             last_balance_update: 12350,
         }
@@ -753,7 +753,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128) + Decimal::from_ratio(100u128, 15u128),
-            bond_amount: Uint128::from(100u128),
+            stake_amount: Uint128::from(100u128),
             pending_reward: Uint128::from(1166u128),
             last_balance_update: 12347,
         }
@@ -826,12 +826,12 @@ fn test_bond_tokens() {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0001 unbonds all his 100
+    /////// addr0001 unstakes all his 100
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("addr0001", &[]);
 
-    let msg = ExecuteMsg::Unbond {
+    let msg = ExecuteMsg::Unstake {
         amount: Uint128::new(100),
     };
     let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -854,7 +854,7 @@ fn test_bond_tokens() {
 
     assert_eq!(res.attributes.len(), 3);
     assert_eq!(res.attributes[0].key, "action");
-    assert_eq!(res.attributes[0].value, "unbond");
+    assert_eq!(res.attributes[0].value, "unstake");
     assert_eq!(res.attributes[1].key, "staker");
     assert_eq!(res.attributes[1].value, "addr0001");
     assert_eq!(res.attributes[2].key, "amount");
@@ -878,7 +878,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128) + Decimal::from_ratio(100u128, 15u128),
-            bond_amount: Uint128::from(0u128),
+            stake_amount: Uint128::from(0u128),
             pending_reward: Uint128::from(1166u128),
             last_balance_update: 12362,
         }
@@ -890,7 +890,7 @@ fn test_bond_tokens() {
         )
         .unwrap(),
         StateResponse {
-            total_bond_amount: Uint128::from(50u128),
+            total_stake_amount: Uint128::from(50u128),
             global_reward_index: Decimal::from_ratio(5u128, 1u128)
                 + Decimal::from_ratio(100u128, 15u128),
             last_distribution_block: 12348,
@@ -919,7 +919,7 @@ fn test_bond_tokens() {
     );
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0001 claims reward after he unbonded everything
+    /////// addr0001 claims reward after it unstaked everything
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("addr0001", &[]);
@@ -954,7 +954,7 @@ fn test_bond_tokens() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128) + Decimal::from_ratio(100u128, 15u128),
-            bond_amount: Uint128::zero(),
+            stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: 12363,
         }

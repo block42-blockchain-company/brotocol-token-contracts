@@ -34,7 +34,7 @@ pub struct Config {
     /// epoch manager contract address
     pub epoch_manager_contract: CanonicalAddr,
     /// vesting period for withdrawal
-    pub unbond_period_blocks: u64,
+    pub unstake_period_blocks: u64,
 }
 
 /// ## Description
@@ -43,36 +43,36 @@ pub struct Config {
 pub struct State {
     /// global reward index for BRO staking rewards
     pub global_reward_index: Decimal,
-    /// total amount of bonded BRO tokens by all stakers
-    pub total_bond_amount: Uint128,
+    /// total amount of staked BRO tokens by all stakers
+    pub total_stake_amount: Uint128,
     /// last rewards distribution block
     pub last_distribution_block: u64,
 }
 
 impl State {
     /// ## Description
-    /// Increases total bond amount and staker bond amount
-    pub fn increase_bond_amount(
+    /// Increases total staking amount and staker staking amount
+    pub fn increase_stake_amount(
         &mut self,
         staker_info: &mut StakerInfo,
         amount: Uint128,
         current_block: u64,
     ) {
-        self.total_bond_amount += amount;
-        staker_info.bond_amount += amount;
+        self.total_stake_amount += amount;
+        staker_info.stake_amount += amount;
         staker_info.last_balance_update = current_block;
     }
 
     /// ## Description
-    /// Decreases total bond amount and staker bond amount
-    pub fn decrease_bond_amount(
+    /// Decreases total staking amount and staker staking amount
+    pub fn decrease_stake_amount(
         &mut self,
         staker_info: &mut StakerInfo,
         amount: Uint128,
         current_block: u64,
     ) -> StdResult<()> {
-        self.total_bond_amount = self.total_bond_amount.checked_sub(amount)?;
-        staker_info.bond_amount = staker_info.bond_amount.checked_sub(amount)?;
+        self.total_stake_amount = self.total_stake_amount.checked_sub(amount)?;
+        staker_info.stake_amount = staker_info.stake_amount.checked_sub(amount)?;
         staker_info.last_balance_update = current_block;
 
         Ok(())
@@ -85,11 +85,11 @@ impl State {
 pub struct StakerInfo {
     /// reward index of staker
     pub reward_index: Decimal,
-    /// amount of BRO tokens bonded by staker
-    pub bond_amount: Uint128,
+    /// amount of BRO tokens staked by staker
+    pub stake_amount: Uint128,
     /// amount of pending rewards of staker
     pub pending_reward: Uint128,
-    /// last balance update(bond, unbond) block
+    /// last balance update(stake, unstake) block
     pub last_balance_update: u64,
 }
 
@@ -97,8 +97,8 @@ impl StakerInfo {
     /// ## Description
     /// Computes staking reward and adds it to pending_reward
     pub fn compute_staker_reward(&mut self, state: &State) -> StdResult<()> {
-        let pending_reward = (self.bond_amount * state.global_reward_index)
-            .checked_sub(self.bond_amount * self.reward_index)?;
+        let pending_reward = (self.stake_amount * state.global_reward_index)
+            .checked_sub(self.stake_amount * self.reward_index)?;
 
         self.reward_index = state.global_reward_index;
         self.pending_reward += pending_reward;
@@ -113,7 +113,7 @@ impl StakerInfo {
         epoch_manager_contract: Addr,
         state: &State,
     ) -> StdResult<Uint128> {
-        if self.bond_amount.is_zero() || state.last_distribution_block < self.last_balance_update {
+        if self.stake_amount.is_zero() || state.last_distribution_block < self.last_balance_update {
             return Ok(Uint128::zero());
         }
 
@@ -122,7 +122,7 @@ impl StakerInfo {
         let epochs_staked = Uint128::from(state.last_distribution_block - self.last_balance_update)
             .checked_div(Uint128::from(epoch_info.epoch))?;
 
-        let bbro_per_epoch_reward = self.bond_amount.checked_div(epoch_info.epochs_per_year())?
+        let bbro_per_epoch_reward = self.stake_amount.checked_div(epoch_info.epochs_per_year())?
             * epoch_info.bbro_emission_rate;
 
         let bbro_reward = bbro_per_epoch_reward.checked_mul(epochs_staked)?;
@@ -211,7 +211,7 @@ pub fn read_staker_info(
         Some(info) => Ok(info),
         None => Ok(StakerInfo {
             reward_index: Decimal::zero(),
-            bond_amount: Uint128::zero(),
+            stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: current_block,
         }),

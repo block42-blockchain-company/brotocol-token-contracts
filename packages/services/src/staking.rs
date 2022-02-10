@@ -16,7 +16,7 @@ pub struct InstantiateMsg {
     /// epoch manager contract address
     pub epoch_manager_contract: String,
     /// vesting period for withdrawal
-    pub unbond_period_blocks: u64,
+    pub unstake_period_blocks: u64,
 }
 
 /// ## ExecuteMsg
@@ -29,14 +29,14 @@ pub enum ExecuteMsg {
     /// template.
     Receive(Cw20ReceiveMsg),
     /// ## Description
-    /// Unbond staked amount of tokens.
-    /// Tokens will be claimable only after passing unbonding period.
-    Unbond {
-        /// amount of tokens to unbond
+    /// Unstake staked amount of tokens.
+    /// Tokens will be claimable only after passing the unstaking period.
+    Unstake {
+        /// amount of tokens to unstake
         amount: Uint128,
     },
     /// ## Description
-    /// Withdraw amount of tokens which have already passed unbonding period.
+    /// Withdraw amount of tokens which have already passed the unstaking period.
     Withdraw {},
     /// ## Description
     /// Claim availalble reward amount
@@ -56,7 +56,7 @@ pub enum Cw20HookMsg {
     },
     /// ## Description
     /// Deposits specified amount of tokens to get reward shares
-    Bond {},
+    Stake {},
 }
 
 /// ## QueryMsg
@@ -111,7 +111,7 @@ pub struct ConfigResponse {
     /// epoch manager contract address
     pub epoch_manager_contract: String,
     /// vesting period for withdrawal
-    pub unbond_period_blocks: u64,
+    pub unstake_period_blocks: u64,
 }
 
 /// ## StateResponse
@@ -120,8 +120,8 @@ pub struct ConfigResponse {
 pub struct StateResponse {
     /// global reward index for BRO staking rewards
     pub global_reward_index: Decimal,
-    /// total amount of bonded BRO tokens by all stakers
-    pub total_bond_amount: Uint128,
+    /// total amount of staked BRO tokens by all stakers
+    pub total_stake_amount: Uint128,
     /// last rewards distribution block
     pub last_distribution_block: u64,
 }
@@ -134,11 +134,11 @@ pub struct StakerInfoResponse {
     pub staker: String,
     /// reward index of staker
     pub reward_index: Decimal,
-    /// amount of BRO tokens bonded by staker
-    pub bond_amount: Uint128,
+    /// amount of BRO tokens staked by staker
+    pub stake_amount: Uint128,
     /// amount of pending rewards of staker
     pub pending_reward: Uint128,
-    /// last balance update(bond, unbond) block
+    /// last balance update(stake, unstake) block
     pub last_balance_update: u64,
 }
 
@@ -149,7 +149,7 @@ pub struct StakerAccruedRewardsResponse {
     /// amount of pending rewards of staker
     pub rewards: Uint128,
     /// amount of bBRO reward from staking BRO tokens
-    pub bbro_staking_reward: Uint128,
+    pub bbro_stake_reward: Uint128,
 }
 
 /// ## WithdrawalInfoResponse

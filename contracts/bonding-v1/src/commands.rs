@@ -35,8 +35,14 @@ pub fn distribute_reward(deps: DepsMut, amount: Uint128) -> Result<Response, Con
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    let ust_bond_amount = amount * config.ust_bonding_reward_ratio;
-    let lp_bond_amount = amount.checked_sub(ust_bond_amount)?;
+    let (ust_bond_amount, lp_bond_amount) = if config.lp_bonding_enabled {
+        let ust_bond_amount = amount * config.ust_bonding_reward_ratio;
+        let lp_bond_amount = amount.checked_sub(ust_bond_amount)?;
+
+        (ust_bond_amount, lp_bond_amount)
+    } else {
+        (amount, Uint128::zero())
+    };
 
     state.ust_bonding_balance = state.ust_bonding_balance.checked_add(ust_bond_amount)?;
     state.lp_bonding_balance = state.lp_bonding_balance.checked_add(lp_bond_amount)?;
@@ -70,6 +76,10 @@ pub fn lp_bond(
 ) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
+
+    if !config.lp_bonding_enabled {
+        return Err(ContractError::LpBondingDisabled {});
+    }
 
     let (bro_pool, ust_pool) = query_bro_ust_pair(
         &deps.querier,
@@ -276,6 +286,8 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 /// * **min_bro_payout** is an [`Option`] of type [`Uint128`]
 ///
 /// * **vesting_period_blocks** is an [`Option`] of type [`u64`]
+///
+/// * **lp_bonding_enabled** is an [`Option`] of type [`bool`]
 #[allow(clippy::too_many_arguments)]
 pub fn update_config(
     deps: DepsMut,
@@ -289,6 +301,7 @@ pub fn update_config(
     lp_bonding_discount: Option<Decimal>,
     min_bro_payout: Option<Uint128>,
     vesting_period_blocks: Option<u64>,
+    lp_bonding_enabled: Option<bool>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
@@ -330,6 +343,10 @@ pub fn update_config(
 
     if let Some(vesting_period_blocks) = vesting_period_blocks {
         config.vesting_period_blocks = vesting_period_blocks;
+    }
+
+    if let Some(lp_bonding_enabled) = lp_bonding_enabled {
+        config.lp_bonding_enabled = lp_bonding_enabled;
     }
 
     store_config(deps.storage, &config)?;

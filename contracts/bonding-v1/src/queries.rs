@@ -27,6 +27,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         lp_bonding_discount: config.lp_bonding_discount,
         min_bro_payout: config.min_bro_payout,
         vesting_period_blocks: config.vesting_period_blocks,
+        lp_bonding_enabled: config.lp_bonding_enabled,
     };
 
     Ok(resp)

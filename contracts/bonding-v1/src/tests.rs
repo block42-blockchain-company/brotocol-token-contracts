@@ -59,6 +59,7 @@ fn proper_initialization() {
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
         vesting_period_blocks: 10,
+        lp_bonding_enabled: true,
     };
 
     let info = mock_info("addr0001", &[]);
@@ -98,6 +99,7 @@ fn proper_initialization() {
             lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
             min_bro_payout: Uint128::from(1u128),
             vesting_period_blocks: 10,
+            lp_bonding_enabled: true,
         },
     );
 
@@ -128,6 +130,7 @@ fn distribute_reward() {
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
         vesting_period_blocks: 10,
+        lp_bonding_enabled: true,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -194,6 +197,7 @@ fn lp_bond() {
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(3_000000u128),
         vesting_period_blocks: 10,
+        lp_bonding_enabled: true,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -261,6 +265,7 @@ fn lp_bond() {
         lp_bonding_discount: None,
         min_bro_payout: Some(Uint128::from(2_000000u128)),
         vesting_period_blocks: None,
+        lp_bonding_enabled: None,
     };
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
@@ -363,6 +368,7 @@ fn ust_bond() {
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(6_000000u128),
         vesting_period_blocks: 10,
+        lp_bonding_enabled: true,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -467,6 +473,7 @@ fn ust_bond() {
         lp_bonding_discount: None,
         min_bro_payout: Some(Uint128::from(5_000000u128)),
         vesting_period_blocks: None,
+        lp_bonding_enabled: None,
     };
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
@@ -553,6 +560,7 @@ fn claim() {
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
         vesting_period_blocks: 10,
+        lp_bonding_enabled: true,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -680,6 +688,7 @@ fn update_config() {
         lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
         vesting_period_blocks: 10,
+        lp_bonding_enabled: true,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -697,6 +706,7 @@ fn update_config() {
         lp_bonding_discount: Some(Decimal::from_str("0.06").unwrap()),
         min_bro_payout: Some(Uint128::from(2u128)),
         vesting_period_blocks: Some(11),
+        lp_bonding_enabled: Some(false),
     };
 
     let info = mock_info("addr0000", &[]);
@@ -727,6 +737,7 @@ fn update_config() {
             lp_bonding_discount: Decimal::from_str("0.06").unwrap(),
             min_bro_payout: Uint128::from(2u128),
             vesting_period_blocks: 11,
+            lp_bonding_enabled: false,
         },
     );
 }

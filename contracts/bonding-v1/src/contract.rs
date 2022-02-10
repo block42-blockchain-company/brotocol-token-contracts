@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -8,6 +6,7 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
+use std::str::FromStr;
 
 use crate::{
     commands,
@@ -64,6 +63,7 @@ pub fn instantiate(
             lp_bonding_discount: msg.lp_bonding_discount,
             min_bro_payout: msg.min_bro_payout,
             vesting_period_blocks: msg.vesting_period_blocks,
+            lp_bonding_enabled: msg.lp_bonding_enabled,
         },
     )?;
 
@@ -109,6 +109,7 @@ pub fn instantiate(
 ///         lp_bonding_discount,
 ///         min_bro_payout,
 ///         vesting_period_blocks,
+///         lp_bonding_enabled,
 ///     }** Updates contract settings
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
@@ -132,6 +133,7 @@ pub fn execute(
             lp_bonding_discount,
             min_bro_payout,
             vesting_period_blocks,
+            lp_bonding_enabled,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(
@@ -146,6 +148,7 @@ pub fn execute(
                 lp_bonding_discount,
                 min_bro_payout,
                 vesting_period_blocks,
+                lp_bonding_enabled,
             )
         }
     }

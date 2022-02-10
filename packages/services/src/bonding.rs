@@ -29,6 +29,8 @@ pub struct InstantiateMsg {
     pub min_bro_payout: Uint128,
     /// vesting period for withdrawal
     pub vesting_period_blocks: u64,
+    /// sets either lp bonding option enabled or not
+    pub lp_bonding_enabled: bool,
 }
 
 /// ## ExecuteMsg
@@ -71,6 +73,8 @@ pub enum ExecuteMsg {
         min_bro_payout: Option<Uint128>,
         /// new vesting period for withdrawal
         vesting_period_blocks: Option<u64>,
+        /// sets either lp bonding option enabled or not
+        lp_bonding_enabled: Option<bool>,
     },
 }
 
@@ -139,6 +143,8 @@ pub struct ConfigResponse {
     pub min_bro_payout: Uint128,
     /// vesting period for withdrawal
     pub vesting_period_blocks: u64,
+    /// sets either lp bonding option enabled or not
+    pub lp_bonding_enabled: bool,
 }
 
 /// ## StateResponse

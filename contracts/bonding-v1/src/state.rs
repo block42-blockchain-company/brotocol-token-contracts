@@ -26,6 +26,8 @@ pub struct Config {
     pub bro_token: CanonicalAddr,
     /// bro/ust lp token address
     pub lp_token: CanonicalAddr,
+    /// rewards pool address
+    pub rewards_pool_contract: CanonicalAddr,
     /// treasury contract address
     pub treasury_contract: CanonicalAddr,
     /// astroport factory contract address

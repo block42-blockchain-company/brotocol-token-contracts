@@ -13,6 +13,8 @@ pub struct InstantiateMsg {
     pub bro_token: String,
     /// bro/ust lp token address
     pub lp_token: String,
+    /// rewards pool address
+    pub rewards_pool_contract: String,
     /// treasury contract address
     pub treasury_contract: String,
     /// astroport factory contract address
@@ -57,6 +59,8 @@ pub enum ExecuteMsg {
         owner: Option<String>,
         /// new bro/ust lp token address
         lp_token: Option<String>,
+        /// rewards pool address
+        rewards_pool_contract: Option<String>,
         /// new treasury contract address
         treasury_contract: Option<String>,
         /// new astroport factory address
@@ -127,6 +131,8 @@ pub struct ConfigResponse {
     pub bro_token: String,
     /// bro/ust lp token address
     pub lp_token: String,
+    /// rewards pool address
+    pub rewards_pool_contract: String,
     /// treasury contract address
     pub treasury_contract: String,
     /// astroport factory contract address

@@ -51,6 +51,7 @@ fn proper_initialization() {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
@@ -91,6 +92,7 @@ fn proper_initialization() {
             owner: "owner".to_string(),
             bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
             lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            rewards_pool_contract: "rewards".to_string(),
             treasury_contract: "treasury".to_string(),
             astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
             oracle_contract: MOCK_ORACLE_ADDR.to_string(),
@@ -122,6 +124,7 @@ fn distribute_reward() {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
@@ -137,12 +140,12 @@ fn distribute_reward() {
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
-        sender: "rewards".to_string(),
+        sender: "addr0004".to_string(),
         amount: Uint128::from(100u128),
         msg: to_binary(&Cw20HookMsg::DistributeReward {}).unwrap(),
     });
 
-    // error: unauthorized
+    // error: unauthorized (info.sender must be bro token addr)
     let info = mock_info("addr0001", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
     match res {
@@ -150,7 +153,21 @@ fn distribute_reward() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    // error: unauthorized (cw20_msg.sender must be rewards pool)
+    let info = mock_info(MOCK_BRO_TOKEN_ADDR, &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::Unauthorized {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
     // distribute reward with enabled lp bonding
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "rewards".to_string(),
+        amount: Uint128::from(100u128),
+        msg: to_binary(&Cw20HookMsg::DistributeReward {}).unwrap(),
+    });
+
     let info = mock_info(MOCK_BRO_TOKEN_ADDR, &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 
@@ -169,6 +186,7 @@ fn distribute_reward() {
     let msg = ExecuteMsg::UpdateConfig {
         owner: None,
         lp_token: None,
+        rewards_pool_contract: None,
         treasury_contract: None,
         astroport_factory: None,
         oracle_contract: None,
@@ -227,6 +245,7 @@ fn lp_bond() {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
@@ -295,6 +314,7 @@ fn lp_bond() {
     let msg = ExecuteMsg::UpdateConfig {
         owner: None,
         lp_token: None,
+        rewards_pool_contract: None,
         treasury_contract: None,
         astroport_factory: None,
         oracle_contract: None,
@@ -378,6 +398,7 @@ fn lp_bond() {
     let msg = ExecuteMsg::UpdateConfig {
         owner: None,
         lp_token: None,
+        rewards_pool_contract: None,
         treasury_contract: None,
         astroport_factory: None,
         oracle_contract: None,
@@ -428,6 +449,7 @@ fn ust_bond() {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
@@ -533,6 +555,7 @@ fn ust_bond() {
     let msg = ExecuteMsg::UpdateConfig {
         owner: None,
         lp_token: None,
+        rewards_pool_contract: None,
         treasury_contract: None,
         astroport_factory: None,
         oracle_contract: None,
@@ -620,6 +643,7 @@ fn claim() {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
@@ -748,6 +772,7 @@ fn update_config() {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
@@ -766,6 +791,7 @@ fn update_config() {
     let msg = ExecuteMsg::UpdateConfig {
         owner: Some("new_owner".to_string()),
         lp_token: Some("new_lp".to_string()),
+        rewards_pool_contract: Some("new_rewards".to_string()),
         treasury_contract: Some("new_treasury".to_string()),
         astroport_factory: Some("new_astro".to_string()),
         oracle_contract: Some("new_oracle".to_string()),
@@ -797,6 +823,7 @@ fn update_config() {
             owner: "new_owner".to_string(),
             bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
             lp_token: "new_lp".to_string(),
+            rewards_pool_contract: "new_rewards".to_string(),
             treasury_contract: "new_treasury".to_string(),
             astroport_factory: "new_astro".to_string(),
             oracle_contract: "new_oracle".to_string(),

@@ -293,6 +293,7 @@ pub fn update_config(
     deps: DepsMut,
     owner: Option<String>,
     lp_token: Option<String>,
+    rewards_pool_contract: Option<String>,
     treasury_contract: Option<String>,
     astroport_factory: Option<String>,
     oracle_contract: Option<String>,
@@ -311,6 +312,10 @@ pub fn update_config(
 
     if let Some(lp_token) = lp_token {
         config.lp_token = deps.api.addr_canonicalize(&lp_token)?;
+    }
+
+    if let Some(rewards_pool_contract) = rewards_pool_contract {
+        config.rewards_pool_contract = deps.api.addr_canonicalize(&rewards_pool_contract)?;
     }
 
     if let Some(treasury_contract) = treasury_contract {

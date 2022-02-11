@@ -55,6 +55,7 @@ pub fn instantiate(
             owner: deps.api.addr_canonicalize(&msg.owner)?,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
             lp_token: deps.api.addr_canonicalize(&msg.lp_token)?,
+            rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
             treasury_contract: deps.api.addr_canonicalize(&msg.treasury_contract)?,
             astroport_factory: deps.api.addr_canonicalize(&msg.astroport_factory)?,
             oracle_contract: deps.api.addr_canonicalize(&msg.oracle_contract)?,
@@ -101,6 +102,7 @@ pub fn instantiate(
 /// * **ExecuteMsg::UpdateConfig {
 ///         owner,
 ///         lp_token,
+///         rewards_pool_contract,
 ///         treasury_contract,
 ///         astroport_factory,
 ///         oracle_contract,
@@ -125,6 +127,7 @@ pub fn execute(
         ExecuteMsg::UpdateConfig {
             owner,
             lp_token,
+            rewards_pool_contract,
             treasury_contract,
             astroport_factory,
             oracle_contract,
@@ -140,6 +143,7 @@ pub fn execute(
                 deps,
                 owner,
                 lp_token,
+                rewards_pool_contract,
                 treasury_contract,
                 astroport_factory,
                 oracle_contract,
@@ -177,6 +181,11 @@ pub fn receive_cw20(
     match from_binary(&cw20_msg.msg) {
         Ok(Cw20HookMsg::DistributeReward {}) => {
             if info.sender != deps.api.addr_humanize(&config.bro_token)? {
+                return Err(ContractError::Unauthorized {});
+            }
+
+            // only rewards pool allowed to send bro token rewards to bonding contract
+            if config.rewards_pool_contract != deps.api.addr_canonicalize(&cw20_msg.sender)? {
                 return Err(ContractError::Unauthorized {});
             }
 

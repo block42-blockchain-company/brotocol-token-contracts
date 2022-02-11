@@ -44,7 +44,7 @@
         "bbro_emission_rate": "1.0"
     },
     "stakingv1": {
-        "unbond_period_blocks": 30
+        "unstake_period_blocks": 30
     },
     "bondingv1": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",

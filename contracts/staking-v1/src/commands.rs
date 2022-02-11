@@ -31,7 +31,7 @@ pub fn distribute_reward(
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    // because tota_stake_amount is zero and we cannot distribute received rewards
+    // because total_stake_amount is zero and we cannot distribute received rewards
     // we send it back to rewards pool
     if state.total_stake_amount.is_zero() {
         return Ok(Response::new()

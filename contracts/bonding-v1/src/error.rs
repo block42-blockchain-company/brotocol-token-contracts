@@ -31,4 +31,7 @@ pub enum ContractError {
 
     #[error("Nothing to claim, wait for vesting period")]
     NothingToClaim {},
+
+    #[error("LP Token bonding disabled")]
+    LpBondingDisabled {},
 }

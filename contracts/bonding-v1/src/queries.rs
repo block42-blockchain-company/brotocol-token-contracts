@@ -13,6 +13,10 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         bro_token: deps.api.addr_humanize(&config.bro_token)?.to_string(),
         lp_token: deps.api.addr_humanize(&config.lp_token)?.to_string(),
+        rewards_pool_contract: deps
+            .api
+            .addr_humanize(&config.rewards_pool_contract)?
+            .to_string(),
         treasury_contract: deps
             .api
             .addr_humanize(&config.treasury_contract)?
@@ -27,6 +31,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         lp_bonding_discount: config.lp_bonding_discount,
         min_bro_payout: config.min_bro_payout,
         vesting_period_blocks: config.vesting_period_blocks,
+        lp_bonding_enabled: config.lp_bonding_enabled,
     };
 
     Ok(resp)

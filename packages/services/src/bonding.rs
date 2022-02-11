@@ -13,6 +13,8 @@ pub struct InstantiateMsg {
     pub bro_token: String,
     /// bro/ust lp token address
     pub lp_token: String,
+    /// rewards pool address
+    pub rewards_pool_contract: String,
     /// treasury contract address
     pub treasury_contract: String,
     /// astroport factory contract address
@@ -29,6 +31,8 @@ pub struct InstantiateMsg {
     pub min_bro_payout: Uint128,
     /// vesting period for withdrawal
     pub vesting_period_blocks: u64,
+    /// sets lp bonding option either to enabled or disabled
+    pub lp_bonding_enabled: bool,
 }
 
 /// ## ExecuteMsg
@@ -55,6 +59,8 @@ pub enum ExecuteMsg {
         owner: Option<String>,
         /// new bro/ust lp token address
         lp_token: Option<String>,
+        /// rewards pool address
+        rewards_pool_contract: Option<String>,
         /// new treasury contract address
         treasury_contract: Option<String>,
         /// new astroport factory address
@@ -71,6 +77,8 @@ pub enum ExecuteMsg {
         min_bro_payout: Option<Uint128>,
         /// new vesting period for withdrawal
         vesting_period_blocks: Option<u64>,
+        /// sets lp bonding option either to enabled or disabled
+        lp_bonding_enabled: Option<bool>,
     },
 }
 
@@ -123,6 +131,8 @@ pub struct ConfigResponse {
     pub bro_token: String,
     /// bro/ust lp token address
     pub lp_token: String,
+    /// rewards pool address
+    pub rewards_pool_contract: String,
     /// treasury contract address
     pub treasury_contract: String,
     /// astroport factory contract address
@@ -139,6 +149,8 @@ pub struct ConfigResponse {
     pub min_bro_payout: Uint128,
     /// vesting period for withdrawal
     pub vesting_period_blocks: u64,
+    /// sets lp bonding option either to enabled or disabled
+    pub lp_bonding_enabled: bool,
 }
 
 /// ## StateResponse

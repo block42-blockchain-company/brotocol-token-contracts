@@ -26,6 +26,8 @@ pub struct Config {
     pub bro_token: CanonicalAddr,
     /// bro/ust lp token address
     pub lp_token: CanonicalAddr,
+    /// rewards pool address
+    pub rewards_pool_contract: CanonicalAddr,
     /// treasury contract address
     pub treasury_contract: CanonicalAddr,
     /// astroport factory contract address
@@ -42,6 +44,8 @@ pub struct Config {
     pub min_bro_payout: Uint128,
     /// vesting period for withdrawal
     pub vesting_period_blocks: u64,
+    /// sets lp bonding option either to enabled or disabled
+    pub lp_bonding_enabled: bool,
 }
 
 /// ## Description

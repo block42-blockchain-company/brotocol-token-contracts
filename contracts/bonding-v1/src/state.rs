@@ -42,7 +42,7 @@ pub struct Config {
     pub min_bro_payout: Uint128,
     /// vesting period for withdrawal
     pub vesting_period_blocks: u64,
-    /// sets either lp bonding option enabled or not
+    /// sets lp bonding option either to enabled or disabled
     pub lp_bonding_enabled: bool,
 }
 

@@ -35,7 +35,7 @@
       ]
     },
     "lp_bonding_enabled": {
-      "description": "sets either lp bonding option enabled or not",
+      "description": "sets lp bonding option either to enabled or disabled",
       "type": "boolean"
     },
     "lp_token": {

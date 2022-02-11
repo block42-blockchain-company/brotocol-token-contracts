@@ -109,6 +109,7 @@ export interface BondingV1Config {
     owner: string,
     bro_token: string,
     lp_token: string,
+    rewards_pool_contract: string,
     treasury_contract: string,
     astroport_factory: string,
     oracle_contract: string,

@@ -418,6 +418,7 @@ export class BondingV1 implements Contract {
     private setInstantiateMsg(config: BondingV1Config, artifact: Artifact): BondingV1Config {
         config.bro_token = artifact.bro_token;
         config.lp_token = artifact.bro_ust_lp_token;
+        config.rewards_pool_contract = artifact.rewards_pool;
         config.treasury_contract = artifact.mvp_treasury;
         config.oracle_contract = artifact.oracle;
         return config;

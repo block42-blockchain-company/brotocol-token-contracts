@@ -12,6 +12,7 @@ Price calculation will depend on current BRO market price.
     "owner": "terra1...",
     "bro_token": "terra1...",
     "lp_token": "terra1...",
+    "rewards_pool_contract": "terra1...",
     "treasury_contract": "terra1...",
     "astroport_factory": "terra1...",
     "oracle_contract": "terra1...",
@@ -90,6 +91,7 @@ Message params are optional.
     "update_config": {
         "owner": "terra1...",
         "lp_token": "terra1...",
+        "rewards_pool_contract": "terra1...",
         "treasury_contract": "terra1...",
         "astroport_factory": "terra1...",
         "oracle_contract": "terra1...",

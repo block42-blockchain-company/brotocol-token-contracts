@@ -113,6 +113,13 @@
                 "null"
               ]
             },
+            "rewards_pool_contract": {
+              "description": "rewards pool address",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "treasury_contract": {
               "description": "new treasury contract address",
               "type": [

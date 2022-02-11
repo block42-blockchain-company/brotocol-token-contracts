@@ -12,6 +12,7 @@
     "min_bro_payout",
     "oracle_contract",
     "owner",
+    "rewards_pool_contract",
     "treasury_contract",
     "ust_bonding_discount",
     "ust_bonding_reward_ratio",
@@ -56,6 +57,10 @@
     },
     "owner": {
       "description": "contract/multisig address that allowed to control settings",
+      "type": "string"
+    },
+    "rewards_pool_contract": {
+      "description": "rewards pool address",
       "type": "string"
     },
     "treasury_contract": {

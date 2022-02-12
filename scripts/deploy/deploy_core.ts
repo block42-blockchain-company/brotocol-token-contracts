@@ -83,7 +83,6 @@ async function main() {
 
     console.log("distribute bro tokens to contracts");
     const broTokenContract = new BroToken(terraClient, config.bro_token, config.initialBroBalanceHolderAddress, artifact);
-    await broTokenContract.transfer(artifact.airdrop, config.bro_distributions.airdrop);
     await broTokenContract.transfer(artifact.vesting, config.bro_distributions.vesting);
     await broTokenContract.transfer(artifact.rewards_pool, config.bro_distributions.rewards);
 

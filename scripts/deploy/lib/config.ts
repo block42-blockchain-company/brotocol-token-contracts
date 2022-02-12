@@ -133,7 +133,6 @@ export interface DistributorV1Config {
 }
 
 export interface BroDistributionAmountsConfig {
-    airdrop: string,
     vesting: string,
     rewards: string,
 }

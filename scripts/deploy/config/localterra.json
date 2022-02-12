@@ -63,7 +63,6 @@
         "bonding_distribution_amount": "100000000"
     },
     "bro_distributions": {
-        "airdrop": "10000000000",
         "vesting": "10000000000",
         "rewards": "1000000000000"
     }

@@ -15,6 +15,30 @@ The Airdrop contract is used for airdropping BRO tokens to TBA.
 
 ## ExecuteMsg
 
+### `receive`
+
+Receives a hook message and processes it depending on the received template.
+
+```json
+{
+    "receive": {
+        "sender": "terra1...",
+        "amount": "100",
+        "msg": "<base64_encoded_json_string>"
+    }
+}
+```
+
+### `receive:register_merkle_root`
+
+Registers merkle root hash. Can be executed only by owner.
+
+```json
+{
+    "merkle_root": "<keccak256_string>"
+}
+```
+
 ### `update_config`
 
 Updates airdrop contract config. Can be executed only by owner.
@@ -23,16 +47,6 @@ Message params are optional.
 ```json
 {
     "owner": "terra1..."
-}
-```
-
-### `register_merkleRoot`
-
-Registers merkle root hash. Can be executed only by owner.
-
-```json
-{
-    "merkle_root": "hd1082hd01dj12j2d12"
 }
 ```
 
@@ -45,8 +59,8 @@ Claims availalble amount for message sender at specified airdrop round.
     "stage": 1,
     "amount": "100",
     "proof": [
-        "djawd92jd91j",
-        "klf92h038fhb"
+        "<keccak256_string>",
+        "<keccak256_string>"
     ]
 }
 ```

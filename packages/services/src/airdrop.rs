@@ -1,4 +1,5 @@
 use cosmwasm_std::Uint128;
+use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -18,18 +19,16 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     /// ## Description
+    /// Receives a message of type [`Cw20ReceiveMsg`] and processes it depending on the received
+    /// template.
+    Receive(Cw20ReceiveMsg),
+    /// ## Description
     /// Updates contract settings
     /// ## Executor
     /// Only owner can execute this function
     UpdateConfig {
         /// new contract owner
         owner: Option<String>,
-    },
-    /// ## Description
-    /// Registers merkle root hash
-    RegisterMerkleRoot {
-        /// merkle root string represented as hash
-        merkle_root: String,
     },
     /// ## Description
     /// Claims availalble amount for message sender at specified airdrop round
@@ -40,6 +39,19 @@ pub enum ExecuteMsg {
         amount: Uint128,
         /// proofs that message sender allowed to claim provided amount
         proof: Vec<String>,
+    },
+}
+
+/// ## Cw20HookMsg
+/// This structure describes the cw20 receive hook messages of the contract.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum Cw20HookMsg {
+    /// ## Description
+    /// Registers merkle root hash
+    RegisterMerkleRoot {
+        /// merkle root string represented as hash
+        merkle_root: String,
     },
 }
 

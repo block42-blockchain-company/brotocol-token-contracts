@@ -11,6 +11,9 @@ pub enum ContractError {
     #[error("Unauthorized")]
     Unauthorized {},
 
+    #[error("Invalid receive hook msg")]
+    InvalidHookData {},
+
     #[error("Invalid hex encoded merkle root")]
     InvalidHexMerkle {},
 

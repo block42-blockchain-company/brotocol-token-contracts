@@ -1,12 +1,12 @@
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 use cosmwasm_std::{attr, from_binary, to_binary, CosmosMsg, SubMsg, Uint128, WasmMsg};
-use cw20::Cw20ExecuteMsg;
+use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use services::airdrop::{
-    ConfigResponse, ExecuteMsg, InstantiateMsg, IsClaimedResponse, LatestStageResponse,
-    MerkleRootResponse, QueryMsg,
+    ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, IsClaimedResponse,
+    LatestStageResponse, MerkleRootResponse, QueryMsg,
 };
 
 #[test]
@@ -83,13 +83,46 @@ fn register_merkle_root() {
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    // register new merkle root
-    let info = mock_info("owner0000", &[]);
-    let msg = ExecuteMsg::RegisterMerkleRoot {
-        merkle_root: "34e1e5510ffa861485d6d4712cb297b60fbad7114f01aeeedd426947cf88c689".to_string(),
-    };
+    // error: unauthorized (info.sender must be bro token addr)
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "addr0000".to_string(),
+        amount: Uint128::from(100u128),
+        msg: to_binary(&Cw20HookMsg::RegisterMerkleRoot {
+            merkle_root: "34e1e5510ffa861485d6d4712cb297b60fbad7114f01aeeedd426947cf88c689"
+                .to_string(),
+        })
+        .unwrap(),
+    });
 
+    let info = mock_info("addr0000", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::Unauthorized {}) => {}
+        _ => panic!("Must return unauthorized error"),
+    }
+
+    // error: unauthorized (cw20_msg.sender must be contract owner)
+    let info = mock_info("bro0000", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    match res {
+        Err(ContractError::Unauthorized {}) => {}
+        _ => panic!("Must return unauthorized error"),
+    }
+
+    // register new merkle root
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "owner0000".to_string(),
+        amount: Uint128::from(100u128),
+        msg: to_binary(&Cw20HookMsg::RegisterMerkleRoot {
+            merkle_root: "34e1e5510ffa861485d6d4712cb297b60fbad7114f01aeeedd426947cf88c689"
+                .to_string(),
+        })
+        .unwrap(),
+    });
+
+    let info = mock_info("bro0000", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
     assert_eq!(
         res.attributes,
         vec![
@@ -133,17 +166,28 @@ fn claim() {
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    // Register merkle roots
-    let info = mock_info("owner0000", &[]);
-    let msg = ExecuteMsg::RegisterMerkleRoot {
-        merkle_root: "6379fc64b595aaed9ad87abb9c3acac7d29bea4546a35fafac4fc98269d4b615".to_string(),
-    };
-    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    // register merkle roots
+    let info = mock_info("bro0000", &[]);
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "owner0000".to_string(),
+        amount: Uint128::from(100u128),
+        msg: to_binary(&Cw20HookMsg::RegisterMerkleRoot {
+            merkle_root: "6379fc64b595aaed9ad87abb9c3acac7d29bea4546a35fafac4fc98269d4b615"
+                .to_string(),
+        })
+        .unwrap(),
+    });
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg).unwrap();
 
-    let info = mock_info("owner0000", &[]);
-    let msg = ExecuteMsg::RegisterMerkleRoot {
-        merkle_root: "374d30a1b573a7a328ea39cbaf507c4c246f5744396b740cd2b332666a5ed733".to_string(),
-    };
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "owner0000".to_string(),
+        amount: Uint128::from(100u128),
+        msg: to_binary(&Cw20HookMsg::RegisterMerkleRoot {
+            merkle_root: "374d30a1b573a7a328ea39cbaf507c4c246f5744396b740cd2b332666a5ed733"
+                .to_string(),
+        })
+        .unwrap(),
+    });
     let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     let msg = ExecuteMsg::Claim {

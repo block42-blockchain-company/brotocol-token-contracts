@@ -248,6 +248,7 @@ dependencies = [
  "schemars",
  "serde",
  "services",
+ "terra-cosmwasm",
  "thiserror",
 ]
 

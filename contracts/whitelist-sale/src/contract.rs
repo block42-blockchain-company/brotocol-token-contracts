@@ -47,7 +47,7 @@ pub fn instantiate(
         &Config {
             owner: deps.api.addr_canonicalize(&info.sender.to_string())?,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
-            bro_amount_per_uusd: msg.bro_amount_per_uusd,
+            bro_price_per_uusd: msg.bro_price_per_uusd,
             bro_amount_per_nft: msg.bro_amount_per_nft,
             treasury_contract: deps.api.addr_canonicalize(&msg.treasury_contract)?,
             rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,

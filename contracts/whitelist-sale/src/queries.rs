@@ -9,7 +9,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let resp = ConfigResponse {
         owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         bro_token: deps.api.addr_humanize(&config.bro_token)?.to_string(),
-        bro_amount_per_uusd: config.bro_amount_per_uusd,
+        bro_price_per_uusd: config.bro_price_per_uusd,
         bro_amount_per_nft: config.bro_amount_per_nft,
         treasury_contract: deps
             .api

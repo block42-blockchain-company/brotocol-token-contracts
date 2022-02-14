@@ -13,7 +13,7 @@ static WHITELISTED_ACCOUNTS: Map<&[u8], Uint128> = Map::new("whitelist");
 pub struct Config {
     pub owner: CanonicalAddr,
     pub bro_token: CanonicalAddr,
-    pub bro_amount_per_uusd: Uint128,
+    pub bro_price_per_uusd: Uint128,
     pub bro_amount_per_nft: Uint128,
     pub treasury_contract: CanonicalAddr,
     pub rewards_pool_contract: CanonicalAddr,

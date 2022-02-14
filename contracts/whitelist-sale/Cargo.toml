@@ -29,6 +29,7 @@ backtraces = ["cosmwasm-std/backtraces"]
 cosmwasm-std = { version = "0.16.2" }
 cosmwasm-storage = { version = "0.16.0" }
 cw-storage-plus = "0.8.0"
+terra-cosmwasm = { version = "2.2.0" }
 cw2 = "0.8.1"
 cw20 = "0.8.1"
 schemars = "0.8.3"

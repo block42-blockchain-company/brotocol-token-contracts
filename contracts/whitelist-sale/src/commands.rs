@@ -29,7 +29,7 @@ pub fn register_sale(
         return Err(ContractError::SaleWasAlreadyRegistered {});
     }
 
-    if sale_end_time < sale_start_time || env.block.time.seconds() > sale_start_time {
+    if sale_end_time <= sale_start_time || env.block.time.seconds() >= sale_start_time {
         return Err(ContractError::InvalidSalePeriod {});
     }
 
@@ -79,9 +79,7 @@ pub fn purchase(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     }
 
     let received_ust = extract_native_token(&info.funds)?;
-    let purchase_amount = received_ust
-        .amount
-        .checked_mul(config.bro_amount_per_uusd)?;
+    let purchase_amount = received_ust.amount.checked_mul(config.bro_price_per_uusd)?;
 
     let sender_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let available_purchase_amount = load_whitelisted_account(deps.storage, &sender_raw)

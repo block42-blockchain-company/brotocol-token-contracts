@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
     pub bro_token: String,
-    pub bro_amount_per_uusd: Uint128,
+    pub bro_price_per_uusd: Uint128,
     pub bro_amount_per_nft: Uint128,
     pub treasury_contract: String,
     pub rewards_pool_contract: String,
@@ -67,7 +67,7 @@ pub struct MigrateMsg {}
 pub struct ConfigResponse {
     pub owner: String,
     pub bro_token: String,
-    pub bro_amount_per_uusd: Uint128,
+    pub bro_price_per_uusd: Uint128,
     pub bro_amount_per_nft: Uint128,
     pub treasury_contract: String,
     pub rewards_pool_contract: String,

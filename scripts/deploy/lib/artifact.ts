@@ -31,5 +31,9 @@ export function loadArtifact(name: string = "artifact"): Artifact {
 }
 
 export function writeArtifact(data: Artifact, name: string = "artifact") {
+    if (!fs.existsSync(ARTIFACTS_PATH)) {
+        fs.mkdirSync(ARTIFACTS_PATH);
+    }
+
     fs.writeFileSync(path.join(ARTIFACTS_PATH, `${name}.json`), JSON.stringify(data, null, 2))
 }

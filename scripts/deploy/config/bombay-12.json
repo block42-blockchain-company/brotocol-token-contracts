@@ -63,7 +63,6 @@
         "bonding_distribution_amount": "0"
     },
     "bro_distributions": {
-        "airdrop": "0",
         "vesting": "0",
         "rewards": "0"
     }

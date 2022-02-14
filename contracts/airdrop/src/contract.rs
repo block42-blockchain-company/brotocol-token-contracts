@@ -1,9 +1,11 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Storage,
+    from_binary, to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response,
+    StdResult, Storage,
 };
 use cw2::set_contract_version;
+use cw20::Cw20ReceiveMsg;
 
 use crate::{
     commands,
@@ -12,7 +14,7 @@ use crate::{
     state::{load_config, store_config, store_latest_stage, Config},
 };
 
-use services::airdrop::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::airdrop::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-airdrop";
@@ -84,19 +86,52 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
+        ExecuteMsg::Receive(msg) => receive_cw20(deps, info, msg),
         ExecuteMsg::UpdateConfig { owner } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(deps, owner)
-        }
-        ExecuteMsg::RegisterMerkleRoot { merkle_root } => {
-            assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::register_merkle_root(deps, merkle_root)
         }
         ExecuteMsg::Claim {
             stage,
             amount,
             proof,
         } => commands::claim(deps, info, stage, amount, proof),
+    }
+}
+
+/// ## Description
+/// Receives a message of type [`Cw20ReceiveMsg`] and processes it depending on the received template.
+/// If the template is not found in the received message, then an [`ContractError`] is returned,
+/// otherwise returns the [`Response`] with the specified attributes if the operation was successful
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`].
+///
+/// * **env** is an object of type [`Env`].
+///
+/// * **info** is an object of type [`MessageInfo`].
+///
+/// * **cw20_msg** is an object of type [`Cw20ReceiveMsg`].
+pub fn receive_cw20(
+    deps: DepsMut,
+    info: MessageInfo,
+    cw20_msg: Cw20ReceiveMsg,
+) -> Result<Response, ContractError> {
+    let config = load_config(deps.storage)?;
+
+    if info.sender != deps.api.addr_humanize(&config.bro_token)? {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    match from_binary(&cw20_msg.msg) {
+        Ok(Cw20HookMsg::RegisterMerkleRoot { merkle_root }) => {
+            // only owner can register new merkle root
+            if config.owner != deps.api.addr_canonicalize(&cw20_msg.sender)? {
+                return Err(ContractError::Unauthorized {});
+            }
+
+            commands::register_merkle_root(deps, merkle_root)
+        }
+        Err(_) => Err(ContractError::InvalidHookData {}),
     }
 }
 

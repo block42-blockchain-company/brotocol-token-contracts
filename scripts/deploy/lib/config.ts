@@ -20,6 +20,7 @@ export interface Config {
     epoch_manager: EpochManagerConfig,
     stakingv1: StakingV1Config,
     bondingv1: BondingV1Config,
+    whitelist_sale: WhitelistSaleConfig,
     distributorv1: DistributorV1Config,
     bro_distributions: BroDistributionAmountsConfig,
 };
@@ -130,6 +131,14 @@ export interface DistributorV1Config {
     staking_distribution_amount: string,
     bonding_contract: string,
     bonding_distribution_amount: string,
+}
+
+export interface WhitelistSaleConfig {
+    bro_token: string,
+    bro_price_per_uusd: string,
+    bro_amount_per_nft: string,
+    treasury_contract: string,
+    rewards_pool_contract: string,
 }
 
 export interface BroDistributionAmountsConfig {

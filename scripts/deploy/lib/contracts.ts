@@ -1,4 +1,4 @@
-import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TreasuryConfig, VestingConfig } from "./config.js";
+import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TreasuryConfig, VestingConfig, WhitelistSaleConfig } from "./config.js";
 import { TerraClient } from "./client.js";
 import { Artifact, writeArtifact } from "./artifact.js";
 
@@ -421,6 +421,32 @@ export class BondingV1 implements Contract {
         config.rewards_pool_contract = artifact.rewards_pool;
         config.treasury_contract = artifact.mvp_treasury;
         config.oracle_contract = artifact.oracle;
+        return config;
+    }
+}
+
+// whitelist sale
+export class WhitelistSale implements Contract {
+    public client: TerraClient;
+    public artifact: string;
+    public instantiateMsg: WhitelistSaleConfig;
+    public address: string;
+
+    constructor(client: TerraClient, config: WhitelistSaleConfig, artifact: Artifact) {
+        this.client = client;
+        this.artifact = "brotocol_whitelist_sale.wasm";
+        this.instantiateMsg = this.setInstantiateMsg(config, artifact);
+        this.address = artifact.whitelist_sale;
+    }
+
+    public setArtifactData(artifact: Artifact): void {
+        artifact.whitelist_sale = this.address;
+    }
+
+    private setInstantiateMsg(config: WhitelistSaleConfig, artifact: Artifact): WhitelistSaleConfig {
+        config.bro_token = artifact.bro_token;
+        config.rewards_pool_contract = artifact.rewards_pool;
+        config.treasury_contract = artifact.mvp_treasury;
         return config;
     }
 }

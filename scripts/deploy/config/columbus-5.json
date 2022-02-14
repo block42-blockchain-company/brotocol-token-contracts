@@ -56,6 +56,10 @@
         "vesting_period_blocks": 0,
         "lp_bonding_enabled": false
     },
+    "whitelist_sale": {
+        "bro_price_per_uusd": "",
+        "bro_amount_per_nft": ""
+    },
     "distributorv1": {
         "owner": "",
         "distribution_genesis_block": 0,

@@ -30,7 +30,7 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 ///
 /// * **_env** is an object of type [`Env`].
 ///
-/// * **_info** is an object of type [`MessageInfo`].
+/// * **info** is an object of type [`MessageInfo`].
 ///
 /// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -67,6 +67,25 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
+/// ## Description
+/// Available execute messages of the contract
+/// ## Params
+/// * **deps** is an object of type [`Deps`].
+///
+/// * **env** is an object of type [`Env`].
+///
+/// * **info** is an object of type [`MessageInfo`].
+///
+/// * **msg** is an object of type [`ExecuteMsg`].
+///
+/// ## Messages
+///
+/// * **ExecuteMsg::Receive(msg)** Receives a message of type [`Cw20ReceiveMsg`]
+/// and processes it depending on the received template
+///
+/// * **ExecuteMsg::Purchase {}** Purchase bro by fixed price by providing ust amount
+///
+/// * **ExecuteMsg::WithdrawRemainingBalance {}** Withdraw remaining bro balance after sale is over
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -148,6 +167,23 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
     Ok(())
 }
 
+/// ## Description
+/// Available query messages of the contract
+/// ## Params
+/// * **deps** is an object of type [`Deps`].
+///
+/// * **env** is an object of type [`Env`].
+///
+/// * **msg** is an object of type [`ExecuteMsg`].
+///
+/// ## Queries
+///
+/// * **QueryMsg::Config {}** Returns whitelist sale contract config
+///
+/// * **QueryMsg::State {}** Returns whitelist sale contract state
+///
+/// * **QueryMsg::WhitelistedAccount { address }** Returns whitelisted account info
+/// by specified address
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {

@@ -4,6 +4,10 @@ use crate::state::{load_config, load_state, load_whitelisted_account};
 
 use services::whitelist_sale::{ConfigResponse, StateResponse, WhitelistedAccountInfoResponse};
 
+/// ## Description
+/// Returns whitelist sale contract config in the [`ConfigResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
@@ -24,6 +28,12 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     Ok(resp)
 }
 
+/// ## Description
+/// Returns whitelist contract contract state in the [`StateResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **env** is an object of type [`Env`]
 pub fn query_state(deps: Deps, env: Env) -> StdResult<StateResponse> {
     let state = load_state(deps.storage)?;
     let resp = StateResponse {
@@ -37,6 +47,12 @@ pub fn query_state(deps: Deps, env: Env) -> StdResult<StateResponse> {
     Ok(resp)
 }
 
+/// ## Description
+/// Returns whitelisted account info in the [`WhitelistedAccountInfoResponse`] object
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **address** is an object of type [`String`]
 pub fn query_whitelisted_account(
     deps: Deps,
     address: String,

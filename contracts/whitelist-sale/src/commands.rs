@@ -15,6 +15,22 @@ use crate::{
 
 use services::whitelist_sale::WhitelistedAccountInfo;
 
+/// ## Description
+/// Registers sale and whitelists addresses.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **sale_start_time** is a field of type [`u64`]
+///
+/// * **sale_end_time** is a field of type [`u64`]
+///
+/// * **accounts** is a [`Vec`] of type [`WhitelistedAccountInfo`]
+///
+/// * **transfer_amount** is an object of type [`Uint128`]
 pub fn register_sale(
     deps: DepsMut,
     env: Env,
@@ -70,6 +86,16 @@ pub fn register_sale(
     ]))
 }
 
+/// ## Description
+/// Purchase bro by fixed price by providing ust amount.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **info** is an object of type [`MessageInfo`]
 pub fn purchase(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
@@ -116,6 +142,14 @@ pub fn purchase(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
         ]))
 }
 
+/// ## Description
+/// Withdraw remaining bro balance after sale is over.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
 pub fn withdraw_remaining_balance(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;

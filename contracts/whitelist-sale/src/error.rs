@@ -1,6 +1,8 @@
 use cosmwasm_std::{OverflowError, StdError};
 use thiserror::Error;
 
+/// ## Description
+/// This enum describes whitelist sale contract errors
 #[derive(Error, Debug)]
 pub enum ContractError {
     #[error("{0}")]

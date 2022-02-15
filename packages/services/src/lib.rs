@@ -2,6 +2,7 @@ pub mod airdrop;
 pub mod bbro_minter;
 pub mod bonding;
 pub mod common;
+pub mod community;
 pub mod distributor;
 pub mod epoch_manager;
 pub mod oracle;

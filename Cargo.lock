@@ -118,6 +118,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "brotocol-community"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-storage-plus",
+ "cw2",
+ "cw20",
+ "schemars",
+ "serde",
+ "services",
+ "thiserror",
+]
+
+[[package]]
 name = "brotocol-distributor-v1"
 version = "1.0.0"
 dependencies = [

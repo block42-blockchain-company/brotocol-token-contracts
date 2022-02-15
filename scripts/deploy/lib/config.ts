@@ -142,7 +142,6 @@ export interface WhitelistSaleConfig {
 }
 
 export interface BroDistributionAmountsConfig {
-    airdrop: string,
     vesting: string,
     rewards: string,
 }

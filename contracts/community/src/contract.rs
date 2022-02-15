@@ -71,6 +71,8 @@ pub fn instantiate(
 ///         amount,
 ///         msg,
 ///     }** Transfer specified amount to specified contract with provided execute msg
+///
+/// * **ExecuteMsg::UpdateConfig { owner }** Updates contract settings
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -90,6 +92,10 @@ pub fn execute(
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::send(deps, contract, amount, msg)
+        }
+        ExecuteMsg::UpdateConfig { owner } => {
+            assert_owner(deps.storage, deps.api, info.sender)?;
+            commands::update_config(deps, owner)
         }
     }
 }

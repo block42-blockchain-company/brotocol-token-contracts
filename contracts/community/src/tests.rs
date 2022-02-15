@@ -122,3 +122,43 @@ fn send() {
         }))
     );
 }
+
+#[test]
+fn update_config() {
+    let mut deps = mock_dependencies(&[]);
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // error: unauthorized(only owner can execute)
+    let msg = ExecuteMsg::UpdateConfig {
+        owner: Some("new_owner".to_string()),
+    };
+
+    let info = mock_info("addr0001", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::Unauthorized {}) => assert!(true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // proper execution
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "new_owner".to_string(),
+            bro_token: "bro0000".to_string(),
+        },
+    );
+}

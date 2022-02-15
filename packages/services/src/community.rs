@@ -35,6 +35,14 @@ pub enum ExecuteMsg {
         /// message to execute
         msg: Binary,
     },
+    /// ## Description
+    /// Updates contract settings
+    /// ## Executor
+    /// Only owner can execute this function
+    UpdateConfig {
+        /// new contract owner
+        owner: Option<String>,
+    },
 }
 
 /// ## QueryMsg

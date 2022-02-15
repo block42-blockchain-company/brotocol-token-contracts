@@ -1,7 +1,10 @@
 use cosmwasm_std::{to_binary, Binary, CosmosMsg, DepsMut, Response, Uint128, WasmMsg};
 use cw20::Cw20ExecuteMsg;
 
-use crate::{error::ContractError, state::load_config};
+use crate::{
+    error::ContractError,
+    state::{load_config, store_config},
+};
 
 /// ## Description
 /// Transfer specified amount to specified address.
@@ -73,4 +76,24 @@ pub fn send(
             ("contract", &contract),
             ("amount", &amount.to_string()),
         ]))
+}
+
+/// ## Description
+/// Updates contract settings.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **owner** is an [`Option`] of type [`String`]
+pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, ContractError> {
+    let mut config = load_config(deps.storage)?;
+
+    if let Some(owner) = owner {
+        config.owner = deps.api.addr_canonicalize(&owner)?;
+    }
+
+    store_config(deps.storage, &config)?;
+
+    Ok(Response::new().add_attributes(vec![("action", "update_config")]))
 }

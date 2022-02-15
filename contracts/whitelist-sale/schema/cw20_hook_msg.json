@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cw20HookMsg",
+  "description": "This structure describes the cw20 receive hook messages of the contract.",
+  "oneOf": [
+    {
+      "title": "Description",
+      "description": "Registers sale and whitelists addresses",
+      "type": "object",
+      "required": [
+        "register_sale"
+      ],
+      "properties": {
+        "register_sale": {
+          "type": "object",
+          "required": [
+            "accounts",
+            "sale_end_time",
+            "sale_start_time"
+          ],
+          "properties": {
+            "accounts": {
+              "description": "whitelisted accounts",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/WhitelistedAccountInfo"
+              }
+            },
+            "sale_end_time": {
+              "description": "sale end time",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "sale_start_time": {
+              "description": "sale start time",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "WhitelistedAccountInfo": {
+      "title": "WhitelistedAccountInfo",
+      "description": "This structure describes the fields for whitelisted account info object.",
+      "type": "object",
+      "required": [
+        "address",
+        "owned_nfts_count"
+      ],
+      "properties": {
+        "address": {
+          "description": "account address",
+          "type": "string"
+        },
+        "owned_nfts_count": {
+          "description": "amount of owned nfts",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      }
+    }
+  }
+}

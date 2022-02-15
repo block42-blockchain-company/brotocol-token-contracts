@@ -1,43 +1,45 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "InstantiateMsg",
-  "description": "This structure describes the basic settings for creating a contract.",
+  "title": "StateResponse",
+  "description": "This structure describes the fields for state response message.",
   "type": "object",
   "required": [
-    "bro_amount_per_nft",
-    "bro_price_per_uusd",
-    "bro_token",
-    "rewards_pool_contract",
-    "treasury_contract"
+    "balance",
+    "current_time",
+    "sale_end_time",
+    "sale_registered",
+    "sale_start_time"
   ],
   "properties": {
-    "bro_amount_per_nft": {
-      "description": "bro amount for purchase per nft",
+    "balance": {
+      "description": "remaining contract balance",
       "allOf": [
         {
           "$ref": "#/definitions/Uint128"
         }
       ]
     },
-    "bro_price_per_uusd": {
-      "description": "bro amount per uusd",
-      "allOf": [
-        {
-          "$ref": "#/definitions/Uint128"
-        }
-      ]
+    "current_time": {
+      "description": "current time",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     },
-    "bro_token": {
-      "description": "bro token address",
-      "type": "string"
+    "sale_end_time": {
+      "description": "sale end time",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     },
-    "rewards_pool_contract": {
-      "description": "rewards pool address",
-      "type": "string"
+    "sale_registered": {
+      "description": "sets sale either to registered or not",
+      "type": "boolean"
     },
-    "treasury_contract": {
-      "description": "treasury contract address",
-      "type": "string"
+    "sale_start_time": {
+      "description": "sale start time",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
     }
   },
   "definitions": {

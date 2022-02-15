@@ -1,12 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "InstantiateMsg",
-  "description": "This structure describes the basic settings for creating a contract.",
+  "title": "ConfigResponse",
+  "description": "This structure describes the fields for config response message.",
   "type": "object",
   "required": [
     "bro_amount_per_nft",
     "bro_price_per_uusd",
     "bro_token",
+    "owner",
     "rewards_pool_contract",
     "treasury_contract"
   ],
@@ -29,6 +30,10 @@
     },
     "bro_token": {
       "description": "bro token address",
+      "type": "string"
+    },
+    "owner": {
+      "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     },
     "rewards_pool_contract": {

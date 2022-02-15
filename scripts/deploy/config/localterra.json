@@ -65,9 +65,5 @@
         "distribution_genesis_block": 34420,
         "staking_distribution_amount": "100000000",
         "bonding_distribution_amount": "100000000"
-    },
-    "bro_distributions": {
-        "vesting": "10000000000",
-        "rewards": "1000000000000"
     }
 }

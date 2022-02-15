@@ -22,7 +22,6 @@ export interface Config {
     bondingv1: BondingV1Config,
     whitelist_sale: WhitelistSaleConfig,
     distributorv1: DistributorV1Config,
-    bro_distributions: BroDistributionAmountsConfig,
 };
 
 export interface BroTokenConfig {
@@ -139,9 +138,4 @@ export interface WhitelistSaleConfig {
     bro_amount_per_nft: string,
     treasury_contract: string,
     rewards_pool_contract: string,
-}
-
-export interface BroDistributionAmountsConfig {
-    vesting: string,
-    rewards: string,
 }

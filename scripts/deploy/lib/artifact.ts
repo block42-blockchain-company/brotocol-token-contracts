@@ -15,6 +15,7 @@ export interface Artifact {
     bbro_token: string,
     rewards_pool: string,
     mvp_treasury: string,
+    community: string,
     epoch_manager: string,
     staking_v1: string,
     bonding_v1: string,

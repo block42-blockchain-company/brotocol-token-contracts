@@ -37,6 +37,9 @@
     "treasury": {
         "owner": ""
     },
+    "community": {
+        "owner": ""
+    },
     "epoch_manager": {
         "owner": "",
         "epoch": 0,

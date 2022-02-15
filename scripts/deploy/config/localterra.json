@@ -37,6 +37,9 @@
     "treasury": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"
     },
+    "community": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"
+    },
     "epoch_manager": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
         "epoch": 30,

@@ -1,14 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryMsg",
-  "anyOf": [
+  "description": "This structure describes the query messages of the contract",
+  "oneOf": [
     {
+      "title": "Description",
+      "description": "Returns staking contract config in the [`ConfigResponse`] object",
       "type": "object",
       "required": [
-        "get_count"
+        "config"
       ],
       "properties": {
-        "get_count": {
+        "config": {
           "type": "object"
         }
       },

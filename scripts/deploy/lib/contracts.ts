@@ -1,4 +1,4 @@
-import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TreasuryConfig, VestingConfig } from "./config.js";
+import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, CommunityConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TreasuryConfig, VestingConfig } from "./config.js";
 import { TerraClient } from "./client.js";
 import { Artifact, writeArtifact } from "./artifact.js";
 
@@ -348,6 +348,30 @@ export class Treasury implements Contract {
 
     public setArtifactData(artifact: Artifact): void {
         artifact.mvp_treasury = this.address;
+    }
+}
+
+// community pool
+export class Community implements Contract {
+    public client: TerraClient;
+    public artifact: string;
+    public instantiateMsg: CommunityConfig;
+    public address: string;
+
+    constructor(client: TerraClient, config: CommunityConfig, artifact: Artifact) {
+        this.client = client;
+        this.artifact = "brotocol_community.wasm";
+        this.instantiateMsg = this.setInstantiateMsg(config, artifact);;
+        this.address = artifact.community;
+    }
+
+    public setArtifactData(artifact: Artifact): void {
+        artifact.community = this.address;
+    }
+
+    private setInstantiateMsg(config: CommunityConfig, artifact: Artifact): CommunityConfig {
+        config.bro_token = artifact.bro_token;
+        return config;
     }
 }
 

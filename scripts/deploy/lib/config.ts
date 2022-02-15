@@ -17,6 +17,7 @@ export interface Config {
     bbro_token: BbroTokenConfig,
     rewards: RewardsPoolConfig,
     treasury: TreasuryConfig,
+    community: CommunityConfig,
     epoch_manager: EpochManagerConfig,
     stakingv1: StakingV1Config,
     bondingv1: BondingV1Config,
@@ -88,6 +89,11 @@ export interface RewardsPoolConfig {
 
 export interface TreasuryConfig {
     owner: string,
+}
+
+export interface CommunityConfig {
+    owner: string,
+    bro_token: string,
 }
 
 export interface EpochManagerConfig {

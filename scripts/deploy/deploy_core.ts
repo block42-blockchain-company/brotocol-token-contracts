@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 import { loadConfig } from './lib/config.js';
 import { loadArtifact } from './lib/artifact.js';
 import { TerraClient } from './lib/client.js';
-import { Airdrop, BbroMinter, BbroToken, BondingV1, BroToken, deployContract, DistributorV1, EpochManager, RewardsPool, StakingV1, Treasury, Vesting } from './lib/contracts.js';
+import { Airdrop, BbroMinter, BbroToken, BondingV1, BroToken, Community, deployContract, DistributorV1, EpochManager, RewardsPool, StakingV1, Treasury, Vesting } from './lib/contracts.js';
 
 async function main() {
     dotenv.config();
@@ -52,6 +52,10 @@ async function main() {
     // Deploy mvp treasury
     const treasuryContract = new Treasury(terraClient, config.treasury, artifact);
     await deployContract(chainID, artifact, treasuryContract, admin);
+
+    // Deploy community pool
+    const communityContract = new Community(terraClient, config.community, artifact);
+    await deployContract(chainID, artifact, communityContract, admin);
 
     // Deploy epoch manager
     const epochManagerContract = new EpochManager(terraClient, config.epoch_manager, artifact);

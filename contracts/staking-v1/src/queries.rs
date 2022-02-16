@@ -27,7 +27,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
             .api
             .addr_humanize(&config.epoch_manager_contract)?
             .to_string(),
-        unbond_period_blocks: config.unbond_period_blocks,
+        unstake_period_blocks: config.unstake_period_blocks,
     };
 
     Ok(resp)
@@ -41,7 +41,7 @@ pub fn query_state(deps: Deps) -> StdResult<StateResponse> {
     let state = load_state(deps.storage)?;
     let resp = StateResponse {
         global_reward_index: state.global_reward_index,
-        total_bond_amount: state.total_bond_amount,
+        total_stake_amount: state.total_stake_amount,
         last_distribution_block: state.last_distribution_block,
     };
 
@@ -65,7 +65,7 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
     let resp = StakerInfoResponse {
         staker,
         reward_index: staker_info.reward_index,
-        bond_amount: staker_info.bond_amount,
+        stake_amount: staker_info.stake_amount,
         pending_reward: staker_info.pending_reward,
         last_balance_update: staker_info.last_balance_update,
     };
@@ -92,7 +92,7 @@ pub fn query_staker_accrued_rewards(
     let state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &staker_addr_raw, env.block.height)?;
 
-    let bbro_staking_reward = staker_info.compute_staker_bbro_reward(
+    let bbro_stake_reward = staker_info.compute_staker_bbro_reward(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
         &state,
@@ -101,7 +101,7 @@ pub fn query_staker_accrued_rewards(
     staker_info.compute_staker_reward(&state)?;
     let resp = StakerAccruedRewardsResponse {
         rewards: staker_info.pending_reward,
-        bbro_staking_reward,
+        bbro_stake_reward,
     };
 
     Ok(resp)

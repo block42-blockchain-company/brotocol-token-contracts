@@ -8,7 +8,7 @@
     "bro_token",
     "epoch_manager_contract",
     "rewards_pool_contract",
-    "unbond_period_blocks"
+    "unstake_period_blocks"
   ],
   "properties": {
     "bbro_minter_contract": {
@@ -27,7 +27,7 @@
       "description": "rewards pool address",
       "type": "string"
     },
-    "unbond_period_blocks": {
+    "unstake_period_blocks": {
       "description": "vesting period for withdrawal",
       "type": "integer",
       "format": "uint64",

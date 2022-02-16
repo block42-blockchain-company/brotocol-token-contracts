@@ -24,7 +24,7 @@ pub enum ContractError {
     InvalidFundsInput {},
 
     #[error("BRO bonding payout is too low")]
-    BondPayoutIsLow {},
+    BondPayoutIsTooLow {},
 
     #[error("Insufficient BRO balance for bond payout")]
     NotEnoughForBondPayout {},

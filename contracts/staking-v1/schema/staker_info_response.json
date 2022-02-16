@@ -4,23 +4,15 @@
   "description": "This structure describes the fields for staker info response message.",
   "type": "object",
   "required": [
-    "bond_amount",
     "last_balance_update",
     "pending_reward",
     "reward_index",
+    "stake_amount",
     "staker"
   ],
   "properties": {
-    "bond_amount": {
-      "description": "amount of BRO tokens bonded by staker",
-      "allOf": [
-        {
-          "$ref": "#/definitions/Uint128"
-        }
-      ]
-    },
     "last_balance_update": {
-      "description": "last balance update(bond, unbond) block",
+      "description": "last balance update(stake, unstake) block",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
@@ -38,6 +30,14 @@
       "allOf": [
         {
           "$ref": "#/definitions/Decimal"
+        }
+      ]
+    },
+    "stake_amount": {
+      "description": "amount of BRO tokens staked by staker",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
         }
       ]
     },

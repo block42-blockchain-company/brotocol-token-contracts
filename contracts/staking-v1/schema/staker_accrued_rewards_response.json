@@ -4,11 +4,11 @@
   "description": "This structure describes the fields for staker accrued rewards response message.",
   "type": "object",
   "required": [
-    "bbro_staking_reward",
+    "bbro_stake_reward",
     "rewards"
   ],
   "properties": {
-    "bbro_staking_reward": {
+    "bbro_stake_reward": {
       "description": "amount of bBRO reward from staking BRO tokens",
       "allOf": [
         {

@@ -292,7 +292,7 @@ fn lp_bond() {
     let info = mock_info(MOCK_LP_TOKEN_ADDR, &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
     match res {
-        Err(ContractError::BondPayoutIsLow {}) => assert_eq!(true, true),
+        Err(ContractError::BondPayoutIsTooLow {}) => assert_eq!(true, true),
         _ => panic!("DO NOT ENTER HERE"),
     }
 
@@ -531,7 +531,7 @@ fn ust_bond() {
     );
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
     match res {
-        Err(ContractError::BondPayoutIsLow {}) => assert_eq!(true, true),
+        Err(ContractError::BondPayoutIsTooLow {}) => assert_eq!(true, true),
         _ => panic!("DO NOT ENTER HERE"),
     }
 

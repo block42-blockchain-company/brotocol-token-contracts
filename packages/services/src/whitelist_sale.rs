@@ -1,4 +1,4 @@
-use cosmwasm_std::Uint128;
+use cosmwasm_std::{Binary, Uint128};
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -49,7 +49,7 @@ pub enum Cw20HookMsg {
         /// sale end time
         sale_end_time: u64,
         /// whitelisted accounts
-        accounts: Vec<WhitelistedAccountInfo>,
+        accounts: Binary,
     },
 }
 

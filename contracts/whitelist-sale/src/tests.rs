@@ -80,10 +80,11 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 0,
             sale_end_time: 0,
-            accounts: vec![WhitelistedAccountInfo {
+            accounts: to_binary(&vec![WhitelistedAccountInfo {
                 address: "addr0001".to_string(),
                 owned_nfts_count: 1,
-            }],
+            }])
+            .unwrap(),
         })
         .unwrap(),
     });
@@ -102,10 +103,11 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 0,
             sale_end_time: 0,
-            accounts: vec![WhitelistedAccountInfo {
+            accounts: to_binary(&vec![WhitelistedAccountInfo {
                 address: "addr0001".to_string(),
                 owned_nfts_count: 1,
-            }],
+            }])
+            .unwrap(),
         })
         .unwrap(),
     });
@@ -124,10 +126,11 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 0,
             sale_end_time: 0,
-            accounts: vec![WhitelistedAccountInfo {
+            accounts: to_binary(&vec![WhitelistedAccountInfo {
                 address: "addr0001".to_string(),
                 owned_nfts_count: 1,
-            }],
+            }])
+            .unwrap(),
         })
         .unwrap(),
     });
@@ -149,10 +152,11 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 10,
             sale_end_time: 20,
-            accounts: vec![WhitelistedAccountInfo {
+            accounts: to_binary(&vec![WhitelistedAccountInfo {
                 address: "addr0001".to_string(),
                 owned_nfts_count: 1,
-            }],
+            }])
+            .unwrap(),
         })
         .unwrap(),
     });
@@ -171,10 +175,11 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: vec![WhitelistedAccountInfo {
+            accounts: to_binary(&vec![WhitelistedAccountInfo {
                 address: "addr0001".to_string(),
                 owned_nfts_count: 2,
-            }],
+            }])
+            .unwrap(),
         })
         .unwrap(),
     });
@@ -193,10 +198,11 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: vec![WhitelistedAccountInfo {
+            accounts: to_binary(&vec![WhitelistedAccountInfo {
                 address: "addr0001".to_string(),
                 owned_nfts_count: 2,
-            }],
+            }])
+            .unwrap(),
         })
         .unwrap(),
     });
@@ -243,10 +249,11 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: vec![WhitelistedAccountInfo {
+            accounts: to_binary(&vec![WhitelistedAccountInfo {
                 address: "addr0001".to_string(),
                 owned_nfts_count: 2,
-            }],
+            }])
+            .unwrap(),
         })
         .unwrap(),
     });
@@ -293,7 +300,7 @@ fn purchase() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: vec![
+            accounts: to_binary(&vec![
                 WhitelistedAccountInfo {
                     address: "addr0001".to_string(),
                     owned_nfts_count: 1,
@@ -306,7 +313,8 @@ fn purchase() {
                     address: "addr0003".to_string(),
                     owned_nfts_count: 3,
                 },
-            ],
+            ])
+            .unwrap(),
         })
         .unwrap(),
     });
@@ -507,10 +515,11 @@ fn withdraw_remaining_balance() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: vec![WhitelistedAccountInfo {
+            accounts: to_binary(&vec![WhitelistedAccountInfo {
                 address: "addr0001".to_string(),
                 owned_nfts_count: 1,
-            }],
+            }])
+            .unwrap(),
         })
         .unwrap(),
     });

@@ -5,7 +5,7 @@
   "type": "object",
   "required": [
     "bro_amount_per_nft",
-    "bro_price_per_uusd",
+    "bro_amount_per_uusd",
     "bro_token",
     "owner",
     "rewards_pool_contract",
@@ -20,7 +20,7 @@
         }
       ]
     },
-    "bro_price_per_uusd": {
+    "bro_amount_per_uusd": {
       "description": "bro amount per uusd",
       "allOf": [
         {

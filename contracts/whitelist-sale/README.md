@@ -40,12 +40,7 @@ Registers sale and whitelists addresses. Can be executed only by owner.
 {
     "sale_start_time": 100,
     "sale_end_time": 200,
-    "accounts": [
-        {
-            "address": "terra1...",
-            "owned_nfts_count": 1
-        }
-    ]
+    "accounts": "<base64_encoded_json_string>"
 }
 ```
 

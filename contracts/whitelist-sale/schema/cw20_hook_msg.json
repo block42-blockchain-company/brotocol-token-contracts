@@ -21,10 +21,11 @@
           "properties": {
             "accounts": {
               "description": "whitelisted accounts",
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/WhitelistedAccountInfo"
-              }
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Binary"
+                }
+              ]
             },
             "sale_end_time": {
               "description": "sale end time",
@@ -45,26 +46,9 @@
     }
   ],
   "definitions": {
-    "WhitelistedAccountInfo": {
-      "title": "WhitelistedAccountInfo",
-      "description": "This structure describes the fields for whitelisted account info object.",
-      "type": "object",
-      "required": [
-        "address",
-        "owned_nfts_count"
-      ],
-      "properties": {
-        "address": {
-          "description": "account address",
-          "type": "string"
-        },
-        "owned_nfts_count": {
-          "description": "amount of owned nfts",
-          "type": "integer",
-          "format": "uint64",
-          "minimum": 0.0
-        }
-      }
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "type": "string"
     }
   }
 }

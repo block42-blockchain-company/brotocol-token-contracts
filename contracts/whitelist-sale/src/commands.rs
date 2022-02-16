@@ -1,5 +1,6 @@
 use cosmwasm_std::{
-    to_binary, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, Uint128, WasmMsg,
+    from_binary, to_binary, Binary, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, Uint128,
+    WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
 
@@ -28,7 +29,7 @@ use services::whitelist_sale::WhitelistedAccountInfo;
 ///
 /// * **sale_end_time** is a field of type [`u64`]
 ///
-/// * **accounts** is a [`Vec`] of type [`WhitelistedAccountInfo`]
+/// * **accounts** is an object of type [`Binary`]
 ///
 /// * **transfer_amount** is an object of type [`Uint128`]
 pub fn register_sale(
@@ -36,7 +37,7 @@ pub fn register_sale(
     env: Env,
     sale_start_time: u64,
     sale_end_time: u64,
-    accounts: Vec<WhitelistedAccountInfo>,
+    accounts: Binary,
     transfer_amount: Uint128,
 ) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
@@ -48,6 +49,8 @@ pub fn register_sale(
     if sale_end_time <= sale_start_time || env.block.time.seconds() >= sale_start_time {
         return Err(ContractError::InvalidSalePeriod {});
     }
+
+    let accounts = from_binary::<Vec<WhitelistedAccountInfo>>(&accounts)?;
 
     let mut required_transfer_amount = Uint128::zero();
     for account in accounts.iter() {

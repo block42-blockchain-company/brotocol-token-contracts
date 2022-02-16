@@ -11,3 +11,4 @@ pub mod rewards;
 pub mod staking;
 pub mod treasury;
 pub mod vesting;
+pub mod whitelist_sale;

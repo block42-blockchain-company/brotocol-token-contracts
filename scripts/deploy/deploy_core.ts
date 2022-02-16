@@ -2,7 +2,21 @@ import dotenv from 'dotenv'
 import { loadConfig } from './lib/config.js';
 import { loadArtifact } from './lib/artifact.js';
 import { TerraClient } from './lib/client.js';
-import { Airdrop, BbroMinter, BbroToken, BondingV1, BroToken, Community, deployContract, DistributorV1, EpochManager, RewardsPool, StakingV1, Treasury, Vesting } from './lib/contracts.js';
+import { 
+    Airdrop,
+    BbroMinter,
+    BbroToken,
+    BondingV1,
+    Community,
+    deployContract,
+    DistributorV1,
+    EpochManager,
+    RewardsPool,
+    StakingV1,
+    Treasury,
+    Vesting,
+    WhitelistSale
+} from './lib/contracts.js';
 
 async function main() {
     dotenv.config();
@@ -69,6 +83,10 @@ async function main() {
     const bondingContract = new BondingV1(terraClient, config.bondingv1, artifact);
     await deployContract(chainID, artifact, bondingContract, admin);
 
+    // Deploy whitelist sale
+    const whitelistSaleContract = new WhitelistSale(terraClient, config.whitelist_sale, artifact);
+    await deployContract(chainID, artifact, whitelistSaleContract, admin);
+
     // Deploy distributor
     const distributorContract = new DistributorV1(terraClient, config.distributorv1, artifact);
     await deployContract(chainID, artifact, distributorContract, admin);
@@ -84,11 +102,6 @@ async function main() {
 
     console.log("move ownership of bbro-minter to configured owner");
     await bbroMinterContract.moveOwnership();
-
-    console.log("distribute bro tokens to contracts");
-    const broTokenContract = new BroToken(terraClient, config.bro_token, config.initialBroBalanceHolderAddress, artifact);
-    await broTokenContract.transfer(artifact.vesting, config.bro_distributions.vesting);
-    await broTokenContract.transfer(artifact.rewards_pool, config.bro_distributions.rewards);
 
     console.log(`You can find deployed contract addresses in artifacts folder: artifacts/${chainID}.json`);
 }

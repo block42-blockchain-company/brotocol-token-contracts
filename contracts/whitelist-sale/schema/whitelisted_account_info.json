@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WhitelistedAccountInfo",
+  "description": "This structure describes the fields for whitelisted account info object.",
+  "type": "object",
+  "required": [
+    "address",
+    "owned_nfts_count"
+  ],
+  "properties": {
+    "address": {
+      "description": "account address",
+      "type": "string"
+    },
+    "owned_nfts_count": {
+      "description": "amount of owned nfts",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    }
+  }
+}

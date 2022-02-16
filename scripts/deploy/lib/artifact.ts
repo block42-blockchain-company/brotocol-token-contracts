@@ -19,6 +19,7 @@ export interface Artifact {
     epoch_manager: string,
     staking_v1: string,
     bonding_v1: string,
+    whitelist_sale: string,
     distributor_v1: string,
 }
 

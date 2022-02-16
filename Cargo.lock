@@ -251,6 +251,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "brotocol-whitelist-sale"
+version = "1.0.0"
+dependencies = [
+ "astroport",
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-storage-plus",
+ "cw2",
+ "cw20",
+ "schemars",
+ "serde",
+ "services",
+ "terra-cosmwasm",
+ "thiserror",
+]
+
+[[package]]
 name = "byteorder"
 version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,3 +1,5 @@
 node_modules/
 .env
 artifacts/**
+
+config/localterra.json

@@ -56,14 +56,14 @@
         "vesting_period_blocks": 0,
         "lp_bonding_enabled": false
     },
+    "whitelist_sale": {
+        "bro_amount_per_uusd": "",
+        "bro_amount_per_nft": ""
+    },
     "distributorv1": {
         "owner": "",
         "distribution_genesis_block": 0,
         "staking_distribution_amount": "0",
         "bonding_distribution_amount": "0"
-    },
-    "bro_distributions": {
-        "vesting": "0",
-        "rewards": "0"
     }
 }

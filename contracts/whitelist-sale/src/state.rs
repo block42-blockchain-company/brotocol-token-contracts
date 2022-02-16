@@ -24,7 +24,7 @@ pub struct Config {
     /// bro token address
     pub bro_token: CanonicalAddr,
     /// bro amount per uusd
-    pub bro_price_per_uusd: Uint128,
+    pub bro_amount_per_uusd: Uint128,
     /// bro amount for purchase per nft
     pub bro_amount_per_nft: Uint128,
     /// treasury contract address
@@ -35,7 +35,7 @@ pub struct Config {
 
 /// ## Description
 /// This structure describes state of whitelist sale contract.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, Default)]
 pub struct State {
     /// sets sale either to registered or not
     pub sale_registered: bool,
@@ -48,7 +48,7 @@ pub struct State {
 }
 
 impl State {
-    pub fn sale_is_on(&self, current_time: u64) -> bool {
+    pub fn sale_is_live(&self, current_time: u64) -> bool {
         if !self.sale_registered
             || self.sale_start_time > current_time
             || self.sale_end_time < current_time

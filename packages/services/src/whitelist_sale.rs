@@ -10,7 +10,7 @@ pub struct InstantiateMsg {
     /// bro token address
     pub bro_token: String,
     /// bro amount per uusd
-    pub bro_price_per_uusd: Uint128,
+    pub bro_amount_per_uusd: Uint128,
     /// bro amount for purchase per nft
     pub bro_amount_per_nft: Uint128,
     /// treasury contract address
@@ -97,7 +97,7 @@ pub struct ConfigResponse {
     /// bro token address
     pub bro_token: String,
     /// bro amount per uusd
-    pub bro_price_per_uusd: Uint128,
+    pub bro_amount_per_uusd: Uint128,
     /// bro amount for purchase per nft
     pub bro_amount_per_nft: Uint128,
     /// treasury contract address

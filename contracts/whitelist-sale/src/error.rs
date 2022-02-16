@@ -32,8 +32,8 @@ pub enum ContractError {
     #[error("Address is not whitelisted")]
     AddressIsNotWhitelisted {},
 
-    #[error("Sale is not on")]
-    SaleIsNotOn {},
+    #[error("Sale is not live")]
+    SaleIsNotLive {},
 
     #[error("Purchase amount is too high")]
     PurchaseAmountIsTooHigh {},

@@ -100,12 +100,14 @@ pub fn purchase(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    if !state.sale_is_on(env.block.time.seconds()) {
-        return Err(ContractError::SaleIsNotOn {});
+    if !state.sale_is_live(env.block.time.seconds()) {
+        return Err(ContractError::SaleIsNotLive {});
     }
 
     let received_ust = extract_native_token(&info.funds)?;
-    let purchase_amount = received_ust.amount.checked_mul(config.bro_price_per_uusd)?;
+    let purchase_amount = received_ust
+        .amount
+        .checked_mul(config.bro_amount_per_uusd)?;
 
     let sender_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let available_purchase_amount = load_whitelisted_account(deps.storage, &sender_raw)

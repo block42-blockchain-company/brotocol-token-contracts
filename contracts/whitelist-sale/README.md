@@ -9,7 +9,7 @@ The Whitelist Sale contract contains logic for selling BRO token by fixed price 
 ```json
 {
     "bro_token": "terra1...",
-    "bro_price_per_uusd": "10",
+    "bro_amount_per_uusd": "10",
     "bro_amount_per_nft": "2",
     "treasury_contract": "terra1...",
     "rewards_pool_contract": "terra1..."

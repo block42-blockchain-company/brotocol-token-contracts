@@ -134,7 +134,7 @@ export interface DistributorV1Config {
 
 export interface WhitelistSaleConfig {
     bro_token: string,
-    bro_price_per_uusd: string,
+    bro_amount_per_uusd: string,
     bro_amount_per_nft: string,
     treasury_contract: string,
     rewards_pool_contract: string,

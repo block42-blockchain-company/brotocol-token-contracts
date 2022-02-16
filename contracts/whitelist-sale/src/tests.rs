@@ -19,7 +19,7 @@ fn proper_initialization() {
 
     let msg = InstantiateMsg {
         bro_token: "bro0000".to_string(),
-        bro_price_per_uusd: Uint128::from(10u128),
+        bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),
         treasury_contract: "treasury".to_string(),
         rewards_pool_contract: "rewards".to_string(),
@@ -36,7 +36,7 @@ fn proper_initialization() {
         ConfigResponse {
             owner: "addr0000".to_string(),
             bro_token: "bro0000".to_string(),
-            bro_price_per_uusd: Uint128::from(10u128),
+            bro_amount_per_uusd: Uint128::from(10u128),
             bro_amount_per_nft: Uint128::from(100u128),
             treasury_contract: "treasury".to_string(),
             rewards_pool_contract: "rewards".to_string(),
@@ -64,7 +64,7 @@ fn register_sale() {
 
     let msg = InstantiateMsg {
         bro_token: "bro0000".to_string(),
-        bro_price_per_uusd: Uint128::from(10u128),
+        bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),
         treasury_contract: "treasury".to_string(),
         rewards_pool_contract: "rewards".to_string(),
@@ -265,7 +265,7 @@ fn purchase() {
 
     let msg = InstantiateMsg {
         bro_token: "bro0000".to_string(),
-        bro_price_per_uusd: Uint128::from(10u128),
+        bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100_000000u128),
         treasury_contract: "treasury".to_string(),
         rewards_pool_contract: "rewards".to_string(),
@@ -279,7 +279,7 @@ fn purchase() {
     let info = mock_info("addr0000", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
     match res {
-        Err(ContractError::SaleIsNotOn {}) => assert!(true),
+        Err(ContractError::SaleIsNotLive {}) => assert!(true),
         _ => panic!("DO NOT ENTER HERE"),
     }
 
@@ -319,7 +319,7 @@ fn purchase() {
     let info = mock_info("addr0001", &[]);
     let res = execute(deps.as_mut(), env.clone(), info, msg.clone());
     match res {
-        Err(ContractError::SaleIsNotOn {}) => assert!(true),
+        Err(ContractError::SaleIsNotLive {}) => assert!(true),
         _ => panic!("DO NOT ENTER HERE"),
     }
 
@@ -328,7 +328,7 @@ fn purchase() {
     let info = mock_info("addr0001", &[]);
     let res = execute(deps.as_mut(), env.clone(), info, msg.clone());
     match res {
-        Err(ContractError::SaleIsNotOn {}) => assert!(true),
+        Err(ContractError::SaleIsNotLive {}) => assert!(true),
         _ => panic!("DO NOT ENTER HERE"),
     }
 
@@ -470,7 +470,7 @@ fn withdraw_remaining_balance() {
 
     let msg = InstantiateMsg {
         bro_token: "bro0000".to_string(),
-        bro_price_per_uusd: Uint128::from(10u128),
+        bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),
         treasury_contract: "treasury".to_string(),
         rewards_pool_contract: "rewards".to_string(),

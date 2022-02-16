@@ -2,7 +2,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     from_binary, to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Storage, Uint128,
+    StdResult, Storage,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -47,22 +47,14 @@ pub fn instantiate(
         &Config {
             owner: deps.api.addr_canonicalize(&info.sender.to_string())?,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
-            bro_price_per_uusd: msg.bro_price_per_uusd,
+            bro_amount_per_uusd: msg.bro_amount_per_uusd,
             bro_amount_per_nft: msg.bro_amount_per_nft,
             treasury_contract: deps.api.addr_canonicalize(&msg.treasury_contract)?,
             rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
         },
     )?;
 
-    store_state(
-        deps.storage,
-        &State {
-            sale_registered: false,
-            sale_start_time: 0,
-            sale_end_time: 0,
-            balance: Uint128::zero(),
-        },
-    )?;
+    store_state(deps.storage, &State::default())?;
 
     Ok(Response::default())
 }

@@ -57,7 +57,7 @@
         "lp_bonding_enabled": true
     },
     "whitelist_sale": {
-        "bro_price_per_uusd": "10",
+        "bro_amount_per_uusd": "10",
         "bro_amount_per_nft": "100"
     },
     "distributorv1": {

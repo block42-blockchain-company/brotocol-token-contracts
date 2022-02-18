@@ -61,7 +61,8 @@
     },
     "whitelist_sale": {
         "bro_amount_per_uusd": "",
-        "bro_amount_per_nft": ""
+        "bro_amount_per_nft": "",
+        "ust_receiver": ""
     },
     "distributorv1": {
         "owner": "",

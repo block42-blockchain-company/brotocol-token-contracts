@@ -142,6 +142,6 @@ export interface WhitelistSaleConfig {
     bro_token: string,
     bro_amount_per_uusd: string,
     bro_amount_per_nft: string,
-    treasury_contract: string,
+    ust_receiver: string,
     rewards_pool_contract: string,
 }

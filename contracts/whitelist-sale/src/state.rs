@@ -27,8 +27,8 @@ pub struct Config {
     pub bro_amount_per_uusd: Uint128,
     /// bro amount for purchase per nft
     pub bro_amount_per_nft: Uint128,
-    /// treasury contract address
-    pub treasury_contract: CanonicalAddr,
+    /// address for sending received ust
+    pub ust_receiver: CanonicalAddr,
     /// rewards pool address
     pub rewards_pool_contract: CanonicalAddr,
 }

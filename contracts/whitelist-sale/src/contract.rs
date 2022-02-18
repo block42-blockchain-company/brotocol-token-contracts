@@ -49,7 +49,7 @@ pub fn instantiate(
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
             bro_amount_per_uusd: msg.bro_amount_per_uusd,
             bro_amount_per_nft: msg.bro_amount_per_nft,
-            treasury_contract: deps.api.addr_canonicalize(&msg.treasury_contract)?,
+            ust_receiver: deps.api.addr_canonicalize(&msg.ust_receiver)?,
             rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
         },
     )?;

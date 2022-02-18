@@ -128,10 +128,7 @@ pub fn purchase(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
 
     Ok(Response::new()
         .add_messages(vec![
-            received_ust.into_msg(
-                &deps.querier,
-                deps.api.addr_humanize(&config.treasury_contract)?,
-            )?,
+            received_ust.into_msg(&deps.querier, deps.api.addr_humanize(&config.ust_receiver)?)?,
             CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
                 funds: vec![],

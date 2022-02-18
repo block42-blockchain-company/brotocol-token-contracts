@@ -8,7 +8,7 @@
     "bro_amount_per_uusd",
     "bro_token",
     "rewards_pool_contract",
-    "treasury_contract"
+    "ust_receiver"
   ],
   "properties": {
     "bro_amount_per_nft": {
@@ -35,8 +35,8 @@
       "description": "rewards pool address",
       "type": "string"
     },
-    "treasury_contract": {
-      "description": "treasury contract address",
+    "ust_receiver": {
+      "description": "address for sending received ust",
       "type": "string"
     }
   },

@@ -15,10 +15,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         bro_token: deps.api.addr_humanize(&config.bro_token)?.to_string(),
         bro_amount_per_uusd: config.bro_amount_per_uusd,
         bro_amount_per_nft: config.bro_amount_per_nft,
-        treasury_contract: deps
-            .api
-            .addr_humanize(&config.treasury_contract)?
-            .to_string(),
+        ust_receiver: deps.api.addr_humanize(&config.ust_receiver)?.to_string(),
         rewards_pool_contract: deps
             .api
             .addr_humanize(&config.rewards_pool_contract)?

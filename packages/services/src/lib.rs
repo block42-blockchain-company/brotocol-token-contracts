@@ -8,6 +8,7 @@ pub mod oracle;
 pub mod querier;
 pub mod rewards;
 pub mod staking;
+pub mod token_pool;
 pub mod treasury;
 pub mod vesting;
 pub mod whitelist_sale;

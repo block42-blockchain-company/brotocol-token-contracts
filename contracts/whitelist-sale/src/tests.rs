@@ -21,7 +21,7 @@ fn proper_initialization() {
         bro_token: "bro0000".to_string(),
         bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),
-        treasury_contract: "treasury".to_string(),
+        ust_receiver: "treasury".to_string(),
         rewards_pool_contract: "rewards".to_string(),
     };
 
@@ -38,7 +38,7 @@ fn proper_initialization() {
             bro_token: "bro0000".to_string(),
             bro_amount_per_uusd: Uint128::from(10u128),
             bro_amount_per_nft: Uint128::from(100u128),
-            treasury_contract: "treasury".to_string(),
+            ust_receiver: "treasury".to_string(),
             rewards_pool_contract: "rewards".to_string(),
         },
     );
@@ -66,7 +66,7 @@ fn register_sale() {
         bro_token: "bro0000".to_string(),
         bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),
-        treasury_contract: "treasury".to_string(),
+        ust_receiver: "treasury".to_string(),
         rewards_pool_contract: "rewards".to_string(),
     };
 
@@ -274,7 +274,7 @@ fn purchase() {
         bro_token: "bro0000".to_string(),
         bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100_000000u128),
-        treasury_contract: "treasury".to_string(),
+        ust_receiver: "treasury".to_string(),
         rewards_pool_contract: "rewards".to_string(),
     };
 
@@ -480,7 +480,7 @@ fn withdraw_remaining_balance() {
         bro_token: "bro0000".to_string(),
         bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),
-        treasury_contract: "treasury".to_string(),
+        ust_receiver: "treasury".to_string(),
         rewards_pool_contract: "rewards".to_string(),
     };
 

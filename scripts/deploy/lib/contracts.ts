@@ -1,4 +1,4 @@
-import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TreasuryConfig, VestingConfig, WhitelistSaleConfig } from "./config.js";
+import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TokenPoolConfig, TreasuryConfig, VestingConfig, WhitelistSaleConfig } from "./config.js";
 import { TerraClient } from "./client.js";
 import { Artifact, writeArtifact } from "./artifact.js";
 
@@ -351,6 +351,30 @@ export class Treasury implements Contract {
     }
 }
 
+// token pool
+export class TokenPool implements Contract {
+    public client: TerraClient;
+    public artifact: string;
+    public instantiateMsg: TokenPoolConfig;
+    public address: string;
+
+    constructor(client: TerraClient, config: TokenPoolConfig, artifact: Artifact) {
+        this.client = client;
+        this.artifact = "brotocol_token_pool.wasm";
+        this.instantiateMsg = this.setInstantiateMsg(config, artifact);;
+        this.address = artifact.token_pool;
+    }
+
+    public setArtifactData(artifact: Artifact): void {
+        artifact.token_pool = this.address;
+    }
+
+    private setInstantiateMsg(config: TokenPoolConfig, artifact: Artifact): TokenPoolConfig {
+        config.bro_token = artifact.bro_token;
+        return config;
+    }
+}
+
 // epoch manager
 export class EpochManager implements Contract {
     public client: TerraClient;
@@ -446,7 +470,6 @@ export class WhitelistSale implements Contract {
     private setInstantiateMsg(config: WhitelistSaleConfig, artifact: Artifact): WhitelistSaleConfig {
         config.bro_token = artifact.bro_token;
         config.rewards_pool_contract = artifact.rewards_pool;
-        config.treasury_contract = artifact.mvp_treasury;
         return config;
     }
 }

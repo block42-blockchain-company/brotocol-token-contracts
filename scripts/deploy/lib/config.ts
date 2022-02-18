@@ -17,6 +17,7 @@ export interface Config {
     bbro_token: BbroTokenConfig,
     rewards: RewardsPoolConfig,
     treasury: TreasuryConfig,
+    token_pool: TokenPoolConfig,
     epoch_manager: EpochManagerConfig,
     stakingv1: StakingV1Config,
     bondingv1: BondingV1Config,
@@ -90,6 +91,11 @@ export interface TreasuryConfig {
     owner: string,
 }
 
+export interface TokenPoolConfig {
+    owner: string,
+    bro_token: string,
+}
+
 export interface EpochManagerConfig {
     owner: string,
     epoch: number,
@@ -136,6 +142,6 @@ export interface WhitelistSaleConfig {
     bro_token: string,
     bro_amount_per_uusd: string,
     bro_amount_per_nft: string,
-    treasury_contract: string,
+    ust_receiver: string,
     rewards_pool_contract: string,
 }

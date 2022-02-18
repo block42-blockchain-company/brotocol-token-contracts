@@ -49,7 +49,7 @@ pub fn instantiate(
             rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
             bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
             epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
-            unbond_period_blocks: msg.unbond_period_blocks,
+            unstake_period_blocks: msg.unstake_period_blocks,
         },
     )?;
 
@@ -57,7 +57,7 @@ pub fn instantiate(
         deps.storage,
         &State {
             global_reward_index: Decimal::zero(),
-            total_bond_amount: Uint128::zero(),
+            total_stake_amount: Uint128::zero(),
             last_distribution_block: env.block.height,
         },
     )?;
@@ -81,9 +81,9 @@ pub fn instantiate(
 /// * **ExecuteMsg::Receive(msg)** Receives a message of type [`Cw20ReceiveMsg`]
 /// and processes it depending on the received template
 ///
-/// * **ExecuteMsg::Unbond { amount }** Unbond staked amount of tokens
+/// * **ExecuteMsg::Unstake { amount }** Unstake staked amount of tokens
 ///
-/// * **ExecuteMsg::Withdraw {}** Withdraw amount of tokens which have already passed unbonding period
+/// * **ExecuteMsg::Withdraw {}** Withdraw amount of tokens which have already passed unstaking period
 ///
 /// * **ExecuteMsg::ClaimRewards {}** Claim availalble reward amount
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -95,7 +95,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
-        ExecuteMsg::Unbond { amount } => commands::unbond(deps, env, info, amount),
+        ExecuteMsg::Unstake { amount } => commands::unstake(deps, env, info, amount),
         ExecuteMsg::Withdraw {} => commands::withdraw(deps, env, info),
         ExecuteMsg::ClaimRewards {} => commands::claim_rewards(deps, env, info),
     }
@@ -135,9 +135,9 @@ pub fn receive_cw20(
 
             commands::distribute_reward(deps, cw20_msg.amount, distributed_at_block)
         }
-        Ok(Cw20HookMsg::Bond {}) => {
+        Ok(Cw20HookMsg::Stake {}) => {
             let cw20_sender = deps.api.addr_validate(&cw20_msg.sender)?;
-            commands::bond(deps, env, cw20_sender, cw20_msg.amount)
+            commands::stake(deps, env, cw20_sender, cw20_msg.amount)
         }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }

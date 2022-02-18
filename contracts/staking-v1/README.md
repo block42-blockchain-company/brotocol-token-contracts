@@ -13,7 +13,7 @@ Also bBRO tokens will be minted as a reward for staking BRO.
     "rewards_pool_contract": "terra1...",
     "bbro_minter_contract": "terra1...",
     "epoch_manager_contract": "terra1...",
-    "unbond_period_blocks": 100
+    "unstake_period_blocks": 100
 }
 ```
 
@@ -45,23 +45,23 @@ Distributes received reward.
 }
 ```
 
-### `receive:bond`
+### `receive:stake`
 
 Deposits specified amount of tokens to get reward shares.
 
 ```json
 {
-    "bond": {}
+    "stake": {}
 }
 ```
 
-### `unbond`
+### `unstake`
 
-Unbond staked amount of tokens. Tokens will be claimable only after passing unbonding period.
+Unstake staked amount of tokens. Tokens will be claimable only after passing unstaking period.
 
 ```json
 {
-    "unbond": {
+    "unstake": {
         "amount": "100"
     }
 }
@@ -69,7 +69,7 @@ Unbond staked amount of tokens. Tokens will be claimable only after passing unbo
 
 ### `withdraw`
 
-Withdraw amount of tokens which have already passed unbonding period.
+Withdraw amount of tokens which have already passed unstaking period.
 
 ```json
 {
@@ -79,7 +79,7 @@ Withdraw amount of tokens which have already passed unbonding period.
 
 ### `claim_rewards`
 
-Claim availalble reward amount.
+Claim available reward amount.
 
 ```json
 {

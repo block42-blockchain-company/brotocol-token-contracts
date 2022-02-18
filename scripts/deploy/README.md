@@ -45,7 +45,7 @@ npm run deploy-token
 
 Create BRO/UST pair and deploy oracle
 ```
-deploy-pair
+npm run deploy-pair
 ```
 
 Deploy IDO related contracts

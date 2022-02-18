@@ -110,7 +110,7 @@ pub fn lp_bond(
 
     let bro_payout = apply_discount(config.lp_bonding_discount, bro_amount)?;
     if bro_payout < config.min_bro_payout {
-        return Err(ContractError::BondPayoutIsLow {});
+        return Err(ContractError::BondPayoutIsTooLow {});
     }
 
     if bro_payout > state.lp_bonding_balance {
@@ -178,7 +178,7 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
 
     let bro_payout = apply_discount(config.ust_bonding_discount, bro_amount)?;
     if bro_payout < config.min_bro_payout {
-        return Err(ContractError::BondPayoutIsLow {});
+        return Err(ContractError::BondPayoutIsTooLow {});
     }
 
     if bro_payout > state.ust_bonding_balance {

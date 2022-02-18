@@ -31,9 +31,9 @@ pub fn distribute_reward(
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    // because total_bond_amount is zero and we cannot distribute received rewards
+    // because total_stake_amount is zero and we cannot distribute received rewards
     // we send it back to rewards pool
-    if state.total_bond_amount.is_zero() {
+    if state.total_stake_amount.is_zero() {
         return Ok(Response::new()
             .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
@@ -54,7 +54,7 @@ pub fn distribute_reward(
 
     state.last_distribution_block = distributed_at_block;
     state.global_reward_index =
-        state.global_reward_index + Decimal::from_ratio(reward_amount, state.total_bond_amount);
+        state.global_reward_index + Decimal::from_ratio(reward_amount, state.total_stake_amount);
 
     store_state(deps.storage, &state)?;
 
@@ -76,7 +76,7 @@ pub fn distribute_reward(
 /// * **sender_addr** is an object of type [`Addr`]
 ///
 /// * **amount** is an object of type [`Uint128`]
-pub fn bond(
+pub fn stake(
     deps: DepsMut,
     env: Env,
     sender_addr: Addr,
@@ -89,20 +89,20 @@ pub fn bond(
     let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
 
     // calculate bbro reward using current bro staked amount
-    let bbro_staking_reward = staker_info.compute_staker_bbro_reward(
+    let bbro_stake_reward = staker_info.compute_staker_bbro_reward(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
         &state,
     )?;
 
     staker_info.compute_staker_reward(&state)?;
-    state.increase_bond_amount(&mut staker_info, amount, env.block.height);
+    state.increase_stake_amount(&mut staker_info, amount, env.block.height);
 
     store_state(deps.storage, &state)?;
     store_staker_info(deps.storage, &sender_raw, &staker_info)?;
 
     let mut msgs: Vec<CosmosMsg> = vec![];
-    if !bbro_staking_reward.is_zero() {
+    if !bbro_stake_reward.is_zero() {
         msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: deps
                 .api
@@ -111,20 +111,20 @@ pub fn bond(
             funds: vec![],
             msg: to_binary(&BbroMintMsg::Mint {
                 recipient: sender_addr.to_string(),
-                amount: bbro_staking_reward,
+                amount: bbro_stake_reward,
             })?,
         }))
     }
 
     Ok(Response::new().add_messages(msgs).add_attributes(vec![
-        ("action", "bond"),
+        ("action", "stake"),
         ("staker", &sender_addr.to_string()),
         ("amount", &amount.to_string()),
     ]))
 }
 
 /// ## Description
-/// Unbond staked amount of tokens. Tokens will be claimable only after passing unbonding period.
+/// Unstake staked amount of tokens. Tokens will be claimable only after passing the unstaking period.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
@@ -135,7 +135,7 @@ pub fn bond(
 /// * **info** is an object of type [`MessageInfo`]
 ///
 /// * **amount** is an object of type [`Uint128`]
-pub fn unbond(
+pub fn unstake(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
@@ -147,21 +147,21 @@ pub fn unbond(
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
 
-    if staker_info.bond_amount < amount {
-        return Err(ContractError::ForbiddenToUnbondMoreThanBonded {});
+    if staker_info.stake_amount < amount {
+        return Err(ContractError::ForbiddenToUnstakeMoreThanStaked {});
     }
 
     // calculate bbro reward using current bro staked amount
-    let bbro_staking_reward = staker_info.compute_staker_bbro_reward(
+    let bbro_stake_reward = staker_info.compute_staker_bbro_reward(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
         &state,
     )?;
 
     staker_info.compute_staker_reward(&state)?;
-    state.decrease_bond_amount(&mut staker_info, amount, env.block.height)?;
+    state.decrease_stake_amount(&mut staker_info, amount, env.block.height)?;
 
-    if staker_info.pending_reward.is_zero() && staker_info.bond_amount.is_zero() {
+    if staker_info.pending_reward.is_zero() && staker_info.stake_amount.is_zero() {
         remove_staker_info(deps.storage, &sender_addr_raw);
     } else {
         store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
@@ -170,7 +170,7 @@ pub fn unbond(
     store_state(deps.storage, &state)?;
 
     // create withdrawal info
-    let claimable_at = Expiration::AtHeight(env.block.height + config.unbond_period_blocks);
+    let claimable_at = Expiration::AtHeight(env.block.height + config.unstake_period_blocks);
     let mut staker_withdrawals = load_withdrawals(deps.storage, &sender_addr_raw)?;
     staker_withdrawals.push(WithdrawalInfo {
         amount,
@@ -180,7 +180,7 @@ pub fn unbond(
     store_withdrawals(deps.storage, &sender_addr_raw, &staker_withdrawals)?;
 
     let mut msgs: Vec<CosmosMsg> = vec![];
-    if !bbro_staking_reward.is_zero() {
+    if !bbro_stake_reward.is_zero() {
         msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: deps
                 .api
@@ -189,20 +189,20 @@ pub fn unbond(
             funds: vec![],
             msg: to_binary(&BbroMintMsg::Mint {
                 recipient: info.sender.to_string(),
-                amount: bbro_staking_reward,
+                amount: bbro_stake_reward,
             })?,
         }))
     }
 
     Ok(Response::new().add_messages(msgs).add_attributes(vec![
-        ("action", "unbond"),
+        ("action", "unstake"),
         ("staker", &info.sender.to_string()),
         ("amount", &amount.to_string()),
     ]))
 }
 
 /// ## Description
-/// Withdraw amount of tokens which have already passed unbonding period.
+/// Withdraw amount of tokens which have already passed the unstaking period.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
@@ -216,7 +216,7 @@ pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
 
     let mut amount = Uint128::zero();
-    // if withdrawal passed unbonding period add claimable amount and remove it from withdrawals list
+    // if withdrawal passed unstaking period add claimable amount and remove it from withdrawals list
     let staker_withdrawals: Vec<WithdrawalInfo> = load_withdrawals(deps.storage, &sender_addr_raw)?
         .into_iter()
         .filter(|c| {
@@ -282,7 +282,7 @@ pub fn claim_rewards(
 
     staker_info.pending_reward = Uint128::zero();
 
-    if staker_info.bond_amount.is_zero() {
+    if staker_info.stake_amount.is_zero() {
         remove_staker_info(deps.storage, &sender_addr_raw);
     } else {
         store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;

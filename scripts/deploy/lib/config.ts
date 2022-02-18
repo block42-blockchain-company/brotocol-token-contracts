@@ -108,7 +108,7 @@ export interface StakingV1Config {
     rewards_pool_contract: string,
     bbro_minter_contract: string,
     epoch_manager_contract: string,
-    unbond_period_blocks: number,
+    unstake_period_blocks: number,
 }
 
 export interface BondingV1Config {

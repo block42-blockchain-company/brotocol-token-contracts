@@ -13,7 +13,7 @@ or open an issue in this repository.
 
 ## Architecture Diagram
 
-![architecture diagram](./assets/architecture.png "Architecture Diagram")
+![architecture diagram](./assets/architecture.jpg "Architecture Diagram")
 
 ## Contracts
 

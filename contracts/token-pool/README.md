@@ -1,6 +1,6 @@
-# Community pool
+# Token pool
 
-The Community Contract holds the funds of the Community Pool.
+The Token pool Contract holds the funds for distributions.
 
 ---
 
@@ -59,7 +59,7 @@ Message params are optional.
 
 ### `config`
 
-Returns community pool contract config.
+Returns token pool contract config.
 
 ```json
 {

@@ -12,10 +12,10 @@ use crate::{
     state::{load_config, store_config, Config},
 };
 
-use services::community::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::token_pool::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 /// Contract name that is used for migration.
-const CONTRACT_NAME: &str = "brotocol-community";
+const CONTRACT_NAME: &str = "brotocol-token-pool";
 /// Contract version that is used for migration.
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -128,7 +128,7 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 ///
 /// ## Queries
 ///
-/// * **QueryMsg::Config {}** Returns community pool contract config
+/// * **QueryMsg::Config {}** Returns token pool contract config
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {

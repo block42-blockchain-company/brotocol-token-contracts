@@ -2,7 +2,7 @@ use cosmwasm_std::{Deps, StdResult};
 
 use crate::state::load_config;
 
-use services::community::ConfigResponse;
+use services::token_pool::ConfigResponse;
 
 /// ## Description
 /// Returns bonding contract config in the [`ConfigResponse`] object

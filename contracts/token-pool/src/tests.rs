@@ -6,7 +6,7 @@ use cw20::Cw20ExecuteMsg;
 
 use services::{
     bonding::ExecuteMsg as TestExecuteMsg,
-    community::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg},
+    token_pool::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg},
 };
 
 #[test]

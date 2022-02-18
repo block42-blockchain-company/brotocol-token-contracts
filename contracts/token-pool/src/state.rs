@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 static CONFIG: Item<Config> = Item::new("config");
 
 /// ## Description
-/// This structure describes the main control config of community pool contract.
+/// This structure describes the main control config of token pool contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Config {
     /// contract/multisig address that allowed to control settings

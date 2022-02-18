@@ -7,12 +7,12 @@ import {
     BbroMinter,
     BbroToken,
     BondingV1,
-    Community,
     deployContract,
     DistributorV1,
     EpochManager,
     RewardsPool,
     StakingV1,
+    TokenPool,
     Treasury,
     Vesting,
     WhitelistSale
@@ -67,9 +67,9 @@ async function main() {
     const treasuryContract = new Treasury(terraClient, config.treasury, artifact);
     await deployContract(chainID, artifact, treasuryContract, admin);
 
-    // Deploy community pool
-    const communityContract = new Community(terraClient, config.community, artifact);
-    await deployContract(chainID, artifact, communityContract, admin);
+    // Deploy token pool
+    const tokenPoolContract = new TokenPool(terraClient, config.token_pool, artifact);
+    await deployContract(chainID, artifact, tokenPoolContract, admin);
 
     // Deploy epoch manager
     const epochManagerContract = new EpochManager(terraClient, config.epoch_manager, artifact);

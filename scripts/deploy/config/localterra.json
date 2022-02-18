@@ -37,7 +37,7 @@
     "treasury": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"
     },
-    "community": {
+    "token_pool": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"
     },
     "epoch_manager": {

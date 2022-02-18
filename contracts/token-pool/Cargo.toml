@@ -1,9 +1,9 @@
 [package]
-name = "brotocol-community"
+name = "brotocol-token-pool"
 version = "1.0.0"
 authors = ["block42"]
 edition = "2018"
-description = "A Community pool contract for Brotocol"
+description = "A Token pool contract for Brotocol"
 repository = "https://github.com/block42-blockchain-company/brotocol-token-contracts"
 license = "MIT"
 

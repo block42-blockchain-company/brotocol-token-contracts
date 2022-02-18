@@ -1,4 +1,4 @@
-import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, CommunityConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TreasuryConfig, VestingConfig, WhitelistSaleConfig } from "./config.js";
+import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TokenPoolConfig, TreasuryConfig, VestingConfig, WhitelistSaleConfig } from "./config.js";
 import { TerraClient } from "./client.js";
 import { Artifact, writeArtifact } from "./artifact.js";
 
@@ -351,25 +351,25 @@ export class Treasury implements Contract {
     }
 }
 
-// community pool
-export class Community implements Contract {
+// token pool
+export class TokenPool implements Contract {
     public client: TerraClient;
     public artifact: string;
-    public instantiateMsg: CommunityConfig;
+    public instantiateMsg: TokenPoolConfig;
     public address: string;
 
-    constructor(client: TerraClient, config: CommunityConfig, artifact: Artifact) {
+    constructor(client: TerraClient, config: TokenPoolConfig, artifact: Artifact) {
         this.client = client;
-        this.artifact = "brotocol_community.wasm";
+        this.artifact = "brotocol_token_pool.wasm";
         this.instantiateMsg = this.setInstantiateMsg(config, artifact);;
-        this.address = artifact.community;
+        this.address = artifact.token_pool;
     }
 
     public setArtifactData(artifact: Artifact): void {
-        artifact.community = this.address;
+        artifact.token_pool = this.address;
     }
 
-    private setInstantiateMsg(config: CommunityConfig, artifact: Artifact): CommunityConfig {
+    private setInstantiateMsg(config: TokenPoolConfig, artifact: Artifact): TokenPoolConfig {
         config.bro_token = artifact.bro_token;
         return config;
     }

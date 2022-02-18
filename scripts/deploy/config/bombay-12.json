@@ -37,7 +37,7 @@
     "treasury": {
         "owner": ""
     },
-    "community": {
+    "token_pool": {
         "owner": ""
     },
     "epoch_manager": {

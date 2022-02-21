@@ -143,6 +143,7 @@ fn distribute() {
     let _res = execute(deps.as_mut(), env.clone(), info, msg.clone()).unwrap();
 
     // distribute rewards
+    env.block.height = 12630;
     let msg = ExecuteMsg::Distribute {};
     let info = mock_info("addr0000", &[]);
     let res = execute(deps.as_mut(), env.clone(), info, msg.clone()).unwrap();
@@ -172,6 +173,16 @@ fn distribute() {
             })
             .unwrap(),
         })),
+    );
+
+    assert_eq!(
+        from_binary::<LastDistributionResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::LastDistribution {}).unwrap()
+        )
+        .unwrap(),
+        LastDistributionResponse {
+            last_distribution_block: 12600,
+        },
     );
 }
 

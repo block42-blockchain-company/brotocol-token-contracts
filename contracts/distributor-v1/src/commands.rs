@@ -76,7 +76,7 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
                             .to_string(),
                         amount: staking_distribution_amount,
                         msg: to_binary(&StakingHookMsg::DistributeReward {
-                            distributed_at_block: env.block.height,
+                            distributed_at_block: state.last_distribution_block,
                         })?,
                     },
                     DistributeRewardMsg {

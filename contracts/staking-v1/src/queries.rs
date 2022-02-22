@@ -1,8 +1,8 @@
 use cosmwasm_std::{Deps, Env, StdResult};
 
 use services::staking::{
-    ConfigResponse, StakerAccruedRewardsResponse, StakerInfoResponse, StateResponse,
-    WithdrawalInfoResponse, WithdrawalsResponse,
+    ConfigResponse, LockupConfigResponse, LockupInfoResponse, StakerAccruedRewardsResponse,
+    StakerInfoResponse, StateResponse, WithdrawalInfoResponse, WithdrawalsResponse,
 };
 
 use crate::state::{load_config, load_state, load_withdrawals, read_staker_info};
@@ -28,6 +28,13 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
             .addr_humanize(&config.epoch_manager_contract)?
             .to_string(),
         unstake_period_blocks: config.unstake_period_blocks,
+        lockup_config: LockupConfigResponse {
+            min_lockup_period_epochs: config.lockup_config.min_lockup_period_epochs,
+            max_lockup_period_epochs: config.lockup_config.max_lockup_period_epochs,
+            base_rate: config.lockup_config.base_rate,
+            linear_growth: config.lockup_config.linear_growth,
+            exponential_growth: config.lockup_config.exponential_growth,
+        },
     };
 
     Ok(resp)
@@ -61,13 +68,23 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
     let state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &staker_raw, env.block.height)?;
 
-    staker_info.compute_staker_reward(&state)?;
+    staker_info.compute_staking_reward(&state)?;
+    staker_info.unlock_expired_lockups(&env.block)?;
     let resp = StakerInfoResponse {
         staker,
         reward_index: staker_info.reward_index,
-        stake_amount: staker_info.stake_amount,
+        unlocked_stake_amount: staker_info.unlocked_stake_amount,
+        locked_stake_amount: staker_info.locked_stake_amount,
         pending_reward: staker_info.pending_reward,
         last_balance_update: staker_info.last_balance_update,
+        lockups: staker_info
+            .lockups
+            .into_iter()
+            .map(|l| LockupInfoResponse {
+                amount: l.amount,
+                unlocked_at: l.unlocked_at,
+            })
+            .collect(),
     };
 
     Ok(resp)
@@ -92,13 +109,13 @@ pub fn query_staker_accrued_rewards(
     let state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &staker_addr_raw, env.block.height)?;
 
-    let bbro_stake_reward = staker_info.compute_staker_bbro_reward(
+    let bbro_stake_reward = staker_info.compute_normal_bbro_reward(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
         &state,
     )?;
 
-    staker_info.compute_staker_reward(&state)?;
+    staker_info.compute_staking_reward(&state)?;
     let resp = StakerAccruedRewardsResponse {
         rewards: staker_info.pending_reward,
         bbro_stake_reward,

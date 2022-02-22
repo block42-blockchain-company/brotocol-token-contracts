@@ -13,7 +13,12 @@ Also bBRO tokens will be minted as a reward for staking BRO.
     "rewards_pool_contract": "terra1...",
     "bbro_minter_contract": "terra1...",
     "epoch_manager_contract": "terra1...",
-    "unstake_period_blocks": 100
+    "unstake_period_blocks": 100,
+    "min_lockup_period_epochs": 1,
+    "max_lockup_period_epochs": 10,
+    "base_rate": "0.005",
+    "linear_growth": "0.0001",
+    "exponential_growth": "0.000075"
 }
 ```
 
@@ -51,7 +56,24 @@ Deposits specified amount of tokens to get reward shares.
 
 ```json
 {
-    "stake": {}
+    "stake": {
+        "stake_type": {
+            "unlocked": {}
+        }
+    }
+}
+```
+
+### `lockup_staked`
+
+Lockup unlocked staked amount.
+
+```json
+{
+    "lockup_staked": {
+        "amount": "100",
+        "epochs_locked": 10
+    }
 }
 ```
 
@@ -69,7 +91,7 @@ Unstake staked amount of tokens. Tokens will be claimable only after passing uns
 
 ### `withdraw`
 
-Withdraw amount of tokens which have already passed unstaking period.
+Withdraw the amount of tokens that have already passed the unstaking period.
 
 ```json
 {
@@ -77,13 +99,23 @@ Withdraw amount of tokens which have already passed unstaking period.
 }
 ```
 
-### `claim_rewards`
+### `claim_staking_rewards`
 
-Claim available reward amount.
+Claim available bro reward amount.
 
 ```json
 {
     "claim_rewards": {}
+}
+```
+
+### `claim_bbro_rewards`
+
+im availalble bbro reward amount.
+
+```json
+{
+    "claim_bbro_rewards": {}
 }
 ```
 

@@ -11,7 +11,7 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, store_state, Config, State},
+    state::{load_config, store_config, store_state, Config, LockupConfig, State},
 };
 
 use services::staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
@@ -50,6 +50,13 @@ pub fn instantiate(
             bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
             epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
             unstake_period_blocks: msg.unstake_period_blocks,
+            lockup_config: LockupConfig {
+                min_lockup_period_epochs: msg.min_lockup_period_epochs,
+                max_lockup_period_epochs: msg.max_lockup_period_epochs,
+                base_rate: msg.base_rate,
+                linear_growth: msg.linear_growth,
+                exponential_growth: msg.exponential_growth,
+            },
         },
     )?;
 
@@ -81,11 +88,18 @@ pub fn instantiate(
 /// * **ExecuteMsg::Receive(msg)** Receives a message of type [`Cw20ReceiveMsg`]
 /// and processes it depending on the received template
 ///
+/// * **ExecuteMsg::LockupStaked {
+///         amount,
+///         epochs_locked,
+///     }** Lockup unlocked staked amount
+///
 /// * **ExecuteMsg::Unstake { amount }** Unstake staked amount of tokens
 ///
-/// * **ExecuteMsg::Withdraw {}** Withdraw amount of tokens which have already passed unstaking period
+/// * **ExecuteMsg::Withdraw {}** Withdraw the amount of tokens that have already passed the unstaking period
 ///
-/// * **ExecuteMsg::ClaimRewards {}** Claim availalble reward amount
+/// * **ExecuteMsg::ClaimStakingRewards {}** Claim availalble bro reward amount
+///
+/// * **ExecuteMsg::ClaimBbroRewards {}** Claim availalble bbro reward amount
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -95,9 +109,14 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
+        ExecuteMsg::LockupStaked {
+            amount,
+            epochs_locked,
+        } => commands::lockup_staked(deps, env, info, amount, epochs_locked),
         ExecuteMsg::Unstake { amount } => commands::unstake(deps, env, info, amount),
         ExecuteMsg::Withdraw {} => commands::withdraw(deps, env, info),
-        ExecuteMsg::ClaimRewards {} => commands::claim_rewards(deps, env, info),
+        ExecuteMsg::ClaimStakingRewards {} => commands::claim_staking_rewards(deps, env, info),
+        ExecuteMsg::ClaimBbroRewards {} => commands::claim_bbro_rewards(deps, env, info),
     }
 }
 
@@ -135,9 +154,9 @@ pub fn receive_cw20(
 
             commands::distribute_reward(deps, cw20_msg.amount, distributed_at_block)
         }
-        Ok(Cw20HookMsg::Stake {}) => {
+        Ok(Cw20HookMsg::Stake { stake_type }) => {
             let cw20_sender = deps.api.addr_validate(&cw20_msg.sender)?;
-            commands::stake(deps, env, cw20_sender, cw20_msg.amount)
+            commands::stake(deps, env, cw20_sender, cw20_msg.amount, stake_type)
         }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }

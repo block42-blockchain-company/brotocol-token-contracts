@@ -1,8 +1,13 @@
-use cosmwasm_std::{Addr, CanonicalAddr, Decimal, QuerierWrapper, StdResult, Storage, Uint128};
+use cosmwasm_std::{
+    Addr, BlockInfo, CanonicalAddr, Decimal, QuerierWrapper, StdResult, Storage, Uint128,
+};
 use cw20::Expiration;
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use crate::math::{decimal_mul_in_256, decimal_sub_in_256, decimal_sum_in_256};
+
 use services::querier::query_epoch_info;
 
 /// ## Description
@@ -35,6 +40,38 @@ pub struct Config {
     pub epoch_manager_contract: CanonicalAddr,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
+    /// lockup config
+    pub lockup_config: LockupConfig,
+}
+
+/// ## Description
+/// This structure describes lockup config of staking contract.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct LockupConfig {
+    /// min lockup period
+    pub min_lockup_period_epochs: u64,
+    /// max lockup period
+    pub max_lockup_period_epochs: u64,
+    /// base rate for bbro premium reward calculation
+    pub base_rate: Decimal,
+    /// linear growth for bbro premium reward calculation
+    pub linear_growth: Decimal,
+    /// exponential growth for bbro premium reward calculation
+    pub exponential_growth: Decimal,
+}
+
+impl LockupConfig {
+    /// ## Description
+    /// Validates that passed lockup period is valid
+    pub fn valid_lockup_period(&self, epochs_locked: u64) -> bool {
+        if epochs_locked < self.min_lockup_period_epochs
+            || epochs_locked > self.max_lockup_period_epochs
+        {
+            return false;
+        }
+
+        true
+    }
 }
 
 /// ## Description
@@ -49,34 +86,14 @@ pub struct State {
     pub last_distribution_block: u64,
 }
 
-impl State {
-    /// ## Description
-    /// Increases total staking amount and staker staking amount
-    pub fn increase_stake_amount(
-        &mut self,
-        staker_info: &mut StakerInfo,
-        amount: Uint128,
-        current_block: u64,
-    ) {
-        self.total_stake_amount += amount;
-        staker_info.stake_amount += amount;
-        staker_info.last_balance_update = current_block;
-    }
-
-    /// ## Description
-    /// Decreases total staking amount and staker staking amount
-    pub fn decrease_stake_amount(
-        &mut self,
-        staker_info: &mut StakerInfo,
-        amount: Uint128,
-        current_block: u64,
-    ) -> StdResult<()> {
-        self.total_stake_amount = self.total_stake_amount.checked_sub(amount)?;
-        staker_info.stake_amount = staker_info.stake_amount.checked_sub(amount)?;
-        staker_info.last_balance_update = current_block;
-
-        Ok(())
-    }
+/// ## Description
+/// This structure describes lockup info of staking contract.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct LockupInfo {
+    /// locked amount
+    pub amount: Uint128,
+    /// block at which amount will be unlocked
+    pub unlocked_at: Expiration,
 }
 
 /// ## Description
@@ -85,20 +102,33 @@ impl State {
 pub struct StakerInfo {
     /// reward index of staker
     pub reward_index: Decimal,
-    /// amount of BRO tokens staked by staker
-    pub stake_amount: Uint128,
+    /// amount of unlocked BRO tokens staked by staker
+    pub unlocked_stake_amount: Uint128,
+    /// amount of locked BRO tokens staked by staker
+    pub locked_stake_amount: Uint128,
     /// amount of pending rewards of staker
     pub pending_reward: Uint128,
     /// last balance update(stake, unstake) block
     pub last_balance_update: u64,
+    /// amounts locked for specified amount of epochs
+    pub lockups: Vec<LockupInfo>,
 }
 
 impl StakerInfo {
     /// ## Description
+    /// Returns total staked amount(unlocked+locked)
+    pub fn total_staked(&self) -> StdResult<Uint128> {
+        Ok(self
+            .unlocked_stake_amount
+            .checked_add(self.locked_stake_amount)?)
+    }
+
+    /// ## Description
     /// Computes staking reward and adds it to pending_reward
-    pub fn compute_staker_reward(&mut self, state: &State) -> StdResult<()> {
-        let pending_reward = (self.stake_amount * state.global_reward_index)
-            .checked_sub(self.stake_amount * self.reward_index)?;
+    pub fn compute_staking_reward(&mut self, state: &State) -> StdResult<()> {
+        let stake_amount = self.total_staked()?;
+        let pending_reward = (stake_amount * state.global_reward_index)
+            .checked_sub(stake_amount * self.reward_index)?;
 
         self.reward_index = state.global_reward_index;
         self.pending_reward += pending_reward;
@@ -106,14 +136,16 @@ impl StakerInfo {
     }
 
     /// ## Description
-    /// Computes staker bbro reward
-    pub fn compute_staker_bbro_reward(
+    /// Computes staker normal bbro reward
+    pub fn compute_normal_bbro_reward(
         &self,
         querier: &QuerierWrapper,
         epoch_manager_contract: Addr,
         state: &State,
     ) -> StdResult<Uint128> {
-        if self.stake_amount.is_zero() || state.last_distribution_block < self.last_balance_update {
+        let stake_amount = self.total_staked()?;
+
+        if stake_amount.is_zero() || state.last_distribution_block < self.last_balance_update {
             return Ok(Uint128::zero());
         }
 
@@ -122,13 +154,93 @@ impl StakerInfo {
         let epochs_staked = Uint128::from(state.last_distribution_block - self.last_balance_update)
             .checked_div(Uint128::from(epoch_info.epoch))?;
 
-        let bbro_per_epoch_reward = self
-            .stake_amount
-            .checked_div(epoch_info.epochs_per_year())?
-            * epoch_info.bbro_emission_rate;
+        let bbro_per_epoch_reward =
+            stake_amount.checked_div(epoch_info.epochs_per_year())? * epoch_info.bbro_emission_rate;
 
         let bbro_reward = bbro_per_epoch_reward.checked_mul(epochs_staked)?;
         Ok(bbro_reward)
+    }
+
+    /// ## Description
+    /// Computes staker premium bbro reward for locking balance using next formula:
+    /// ((base_rate+linear_growth*epochs_locked+exponential_growth*epochs_locked^2)-0.0005)*bro_locked_amount
+    pub fn compute_premium_bbro_reward(
+        &self,
+        lockup_config: &LockupConfig,
+        epochs_locked: u64,
+        amount: Uint128,
+    ) -> Uint128 {
+        let epochs_locked: u128 = epochs_locked.into();
+
+        let linear_growth = decimal_mul_in_256(
+            lockup_config.linear_growth,
+            Decimal::from_ratio(Uint128::from(epochs_locked), Uint128::from(1u128)),
+        );
+
+        let exponential_growth = decimal_mul_in_256(
+            lockup_config.exponential_growth,
+            Decimal::from_ratio(
+                Uint128::from((epochs_locked * epochs_locked) as u128),
+                Uint128::from(1u128),
+            ),
+        );
+
+        let bbro_rate = decimal_sub_in_256(
+            decimal_sum_in_256(
+                lockup_config.base_rate,
+                decimal_sum_in_256(linear_growth, exponential_growth),
+            ),
+            Decimal::from_ratio(Uint128::from(5u128), Uint128::from(10000u128)),
+        );
+
+        bbro_rate * amount
+    }
+
+    /// ## Description
+    /// Adds new lockup period for staker
+    pub fn add_lockup(
+        &mut self,
+        querier: &QuerierWrapper,
+        epoch_manager_contract: Addr,
+        current_block: u64,
+        amount: Uint128,
+        epochs_locked: u64,
+    ) -> StdResult<()> {
+        let epoch_blocks = query_epoch_info(querier, epoch_manager_contract)?.epoch;
+        let unlocked_at_block = current_block + (epoch_blocks * epochs_locked);
+
+        self.locked_stake_amount = self.locked_stake_amount.checked_add(amount)?;
+        self.lockups.push(LockupInfo {
+            amount,
+            unlocked_at: Expiration::AtHeight(unlocked_at_block),
+        });
+
+        Ok(())
+    }
+
+    /// ## Description
+    /// Removes passed lockups for list and updates balances
+    pub fn unlock_expired_lockups(&mut self, current_block: &BlockInfo) -> StdResult<()> {
+        let mut unlocked_amount = Uint128::zero();
+        let lockups: Vec<LockupInfo> = self
+            .lockups
+            .clone()
+            .into_iter()
+            .filter(|l| {
+                if l.unlocked_at.is_expired(current_block) {
+                    unlocked_amount += l.amount;
+                    false
+                } else {
+                    true
+                }
+            })
+            .collect();
+
+        self.locked_stake_amount = self.locked_stake_amount.checked_sub(unlocked_amount)?;
+        self.unlocked_stake_amount = self.unlocked_stake_amount.checked_add(unlocked_amount)?;
+        self.lockups = lockups;
+
+        Ok(())
     }
 }
 
@@ -213,9 +325,11 @@ pub fn read_staker_info(
         Some(info) => Ok(info),
         None => Ok(StakerInfo {
             reward_index: Decimal::zero(),
-            stake_amount: Uint128::zero(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: current_block,
+            lockups: vec![],
         }),
     }
 }

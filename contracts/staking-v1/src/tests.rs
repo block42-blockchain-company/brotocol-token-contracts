@@ -1,11 +1,12 @@
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
+use crate::math::{decimal_mul_in_256, decimal_sub_in_256, decimal_sum_in_256};
 use crate::mock_querier::mock_dependencies;
 use services::bbro_minter::ExecuteMsg as BbroMintMsg;
 use services::staking::{
-    ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, QueryMsg,
-    StakerAccruedRewardsResponse, StakerInfoResponse, StateResponse, WithdrawalInfoResponse,
-    WithdrawalsResponse,
+    ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, LockupConfigResponse, QueryMsg,
+    StakeType, StakerAccruedRewardsResponse, StakerInfoResponse, StateResponse,
+    WithdrawalInfoResponse, WithdrawalsResponse,
 };
 
 use cosmwasm_std::testing::{mock_env, mock_info};
@@ -24,6 +25,11 @@ fn proper_initialization() {
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
         unstake_period_blocks: 10,
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
     };
 
     let info = mock_info("addr0000", &[]);
@@ -40,6 +46,13 @@ fn proper_initialization() {
             bbro_minter_contract: "bbrominter0000".to_string(),
             epoch_manager_contract: "epoch0000".to_string(),
             unstake_period_blocks: 10,
+            lockup_config: LockupConfigResponse {
+                min_lockup_period_epochs: 1,
+                max_lockup_period_epochs: 365,
+                base_rate: Decimal::from_str("0.0001").unwrap(),
+                linear_growth: Decimal::from_str("0.0005").unwrap(),
+                exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+            }
         }
     );
 
@@ -57,6 +70,45 @@ fn proper_initialization() {
 }
 
 #[test]
+fn test_decimal_math() {
+    // test_decimal_multiplication
+    let a = Uint128::from(100u128);
+    let b = Decimal::from_ratio(Uint128::from(1111111u128), Uint128::from(10000000u128));
+    let multiplication = decimal_mul_in_256(Decimal::from_ratio(a, Uint128::from(1u128)), b);
+    assert_eq!(multiplication.to_string(), "11.11111");
+
+    // test_decimal_sumation
+    let a = Decimal::from_ratio(Uint128::from(20u128), Uint128::from(50u128));
+    let b = Decimal::from_ratio(Uint128::from(10u128), Uint128::from(50u128));
+    let res = decimal_sum_in_256(a, b);
+    assert_eq!(res.to_string(), "0.6");
+
+    // test_decimal_subtraction
+    let a = Decimal::from_ratio(Uint128::from(20u128), Uint128::from(50u128));
+    let b = Decimal::from_ratio(Uint128::from(10u128), Uint128::from(50u128));
+    let res = decimal_sub_in_256(a, b);
+    assert_eq!(res.to_string(), "0.2");
+
+    // test_decimal_multiplication_in_256
+    let a = Uint128::from(100u128);
+    let b = Decimal::from_ratio(Uint128::from(1111111u128), Uint128::from(10000000u128));
+    let multiplication = decimal_mul_in_256(Decimal::from_ratio(a, Uint128::from(1u128)), b);
+    assert_eq!(multiplication.to_string(), "11.11111");
+
+    // test_decimal_sumation_in_256
+    let a = Decimal::from_ratio(Uint128::from(20u128), Uint128::from(50u128));
+    let b = Decimal::from_ratio(Uint128::from(10u128), Uint128::from(50u128));
+    let res = decimal_sum_in_256(a, b);
+    assert_eq!(res.to_string(), "0.6");
+
+    // test_decimal_subtraction_in_256
+    let a = Decimal::from_ratio(Uint128::from(20u128), Uint128::from(50u128));
+    let b = Decimal::from_ratio(Uint128::from(10u128), Uint128::from(50u128));
+    let res = decimal_sub_in_256(a, b);
+    assert_eq!(res.to_string(), "0.2");
+}
+
+#[test]
 fn test_fractional_rewards() {
     let mut deps = mock_dependencies(&[]);
 
@@ -70,6 +122,11 @@ fn test_fractional_rewards() {
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
         unstake_period_blocks: 10,
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
     };
 
     let info = mock_info("addr0000", &[]);
@@ -86,7 +143,10 @@ fn test_fractional_rewards() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {
+            stake_type: StakeType::Unlocked {},
+        })
+        .unwrap(),
     });
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -96,7 +156,10 @@ fn test_fractional_rewards() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0001".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {
+            stake_type: StakeType::Unlocked {},
+        })
+        .unwrap(),
     });
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -106,7 +169,10 @@ fn test_fractional_rewards() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0002".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {
+            stake_type: StakeType::Unlocked {},
+        })
+        .unwrap(),
     });
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -144,9 +210,11 @@ fn test_fractional_rewards() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(10u128, 3u128),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::from(333u128),
             last_balance_update: 12346,
+            lockups: vec![],
         }
     );
 
@@ -166,9 +234,11 @@ fn test_fractional_rewards() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::from_ratio(10u128, 3u128),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::from(333u128),
             last_balance_update: 12347,
+            lockups: vec![],
         }
     );
 
@@ -188,9 +258,11 @@ fn test_fractional_rewards() {
         StakerInfoResponse {
             staker: "addr0002".to_string(),
             reward_index: Decimal::from_ratio(10u128, 3u128),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::from(333u128),
             last_balance_update: 12348,
+            lockups: vec![],
         }
     );
 
@@ -242,15 +314,17 @@ fn test_fractional_rewards() {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(10u128, 1u128)
                 - Decimal::from_ratio(1u128, 1000000000000000000u128),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::from(999u128),
             last_balance_update: 12346,
+            lockups: vec![],
         }
     );
 }
 
 #[test]
-fn test_stake_tokens() {
+fn test_unlocked_stake_tokens() {
     let mut deps = mock_dependencies(&[]);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -263,6 +337,11 @@ fn test_stake_tokens() {
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
         unstake_period_blocks: 10,
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
     };
 
     let info = mock_info("addr0000", &[]);
@@ -301,9 +380,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::zero(),
-            stake_amount: Uint128::zero(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: 12345,
+            lockups: vec![],
         }
     );
 
@@ -329,7 +410,10 @@ fn test_stake_tokens() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {
+            stake_type: StakeType::Unlocked {},
+        })
+        .unwrap(),
     });
     let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
@@ -350,9 +434,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::zero(),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: env.block.height,
+            lockups: vec![],
         }
     );
 
@@ -375,7 +461,10 @@ fn test_stake_tokens() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0001".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
+        msg: to_binary(&Cw20HookMsg::Stake {
+            stake_type: StakeType::Unlocked {},
+        })
+        .unwrap(),
     });
     env.block.height += 1;
 
@@ -398,9 +487,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::zero(),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: env.block.height,
+            lockups: vec![],
         }
     );
 
@@ -470,9 +561,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::from(500u128),
             last_balance_update: 12346,
+            lockups: vec![],
         }
     );
 
@@ -513,7 +606,7 @@ fn test_stake_tokens() {
 
     let info = mock_info("addr0000", &[]);
 
-    let msg = ExecuteMsg::ClaimRewards {};
+    let msg = ExecuteMsg::ClaimStakingRewards {};
     env.block.height += 1;
 
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -559,9 +652,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: 12346,
+            lockups: vec![],
         }
     );
 
@@ -583,7 +678,7 @@ fn test_stake_tokens() {
 
     let info = mock_info("addr0000", &[]);
 
-    let msg = ExecuteMsg::ClaimRewards {};
+    let msg = ExecuteMsg::ClaimStakingRewards {};
 
     match execute(deps.as_mut(), env.clone(), info, msg) {
         Err(ContractError::NothingToClaim {}) => (),
@@ -603,7 +698,7 @@ fn test_stake_tokens() {
     };
 
     match execute(deps.as_mut(), env.clone(), info, msg) {
-        Err(ContractError::ForbiddenToUnstakeMoreThanStaked {}) => (),
+        Err(ContractError::ForbiddenToUnstakeMoreThanUnlocked {}) => (),
         _ => panic!("expecting failure due to unstaking too much"),
     }
 
@@ -660,9 +755,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128),
-            stake_amount: Uint128::from(50u128),
+            unlocked_stake_amount: Uint128::from(50u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: 12350,
+            lockups: vec![],
         }
     );
 
@@ -732,9 +829,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0000".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128) + Decimal::from_ratio(100u128, 15u128),
-            stake_amount: Uint128::from(50u128),
+            unlocked_stake_amount: Uint128::from(50u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::from(333u128),
             last_balance_update: 12350,
+            lockups: vec![],
         }
     );
 
@@ -753,9 +852,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128) + Decimal::from_ratio(100u128, 15u128),
-            stake_amount: Uint128::from(100u128),
+            unlocked_stake_amount: Uint128::from(100u128),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::from(1166u128),
             last_balance_update: 12347,
+            lockups: vec![],
         }
     );
 
@@ -878,9 +979,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128) + Decimal::from_ratio(100u128, 15u128),
-            stake_amount: Uint128::from(0u128),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::from(1166u128),
             last_balance_update: 12362,
+            lockups: vec![],
         }
     );
 
@@ -924,7 +1027,7 @@ fn test_stake_tokens() {
 
     let info = mock_info("addr0001", &[]);
 
-    let msg = ExecuteMsg::ClaimRewards {};
+    let msg = ExecuteMsg::ClaimStakingRewards {};
     env.block.height += 1;
 
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -954,9 +1057,11 @@ fn test_stake_tokens() {
         StakerInfoResponse {
             staker: "addr0001".to_string(),
             reward_index: Decimal::from_ratio(5u128, 1u128) + Decimal::from_ratio(100u128, 15u128),
-            stake_amount: Uint128::zero(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::zero(),
             pending_reward: Uint128::zero(),
             last_balance_update: 12363,
+            lockups: vec![],
         }
     );
 }

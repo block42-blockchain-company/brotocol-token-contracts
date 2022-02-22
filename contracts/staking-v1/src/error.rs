@@ -17,9 +17,15 @@ pub enum ContractError {
     #[error("Invalid receive hook msg")]
     InvalidHookData {},
 
-    #[error("Cannot unstake more than staked amount")]
-    ForbiddenToUnstakeMoreThanStaked {},
+    #[error("Cannot unstake more than unlocked staked amount")]
+    ForbiddenToUnstakeMoreThanUnlocked {},
 
-    #[error("Nothing to claim, wait for unstaking period")]
+    #[error("Nothing to claim")]
     NothingToClaim {},
+
+    #[error("Invalid lockup period")]
+    InvalidLockupPeriod {},
+
+    #[error("Forbidden to lockup more than unlocked")]
+    ForbiddenToLockupMoreThanUnlocked {},
 }

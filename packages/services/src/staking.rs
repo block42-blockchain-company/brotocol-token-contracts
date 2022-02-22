@@ -17,6 +17,16 @@ pub struct InstantiateMsg {
     pub epoch_manager_contract: String,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
+    /// min lockup period
+    pub min_lockup_period_epochs: u64,
+    /// max lockup period
+    pub max_lockup_period_epochs: u64,
+    /// base rate for bbro premium reward calculation
+    pub base_rate: Decimal,
+    /// linear growth for bbro premium reward calculation
+    pub linear_growth: Decimal,
+    /// exponential growth for bbro premium reward calculation
+    pub exponential_growth: Decimal,
 }
 
 /// ## ExecuteMsg
@@ -29,6 +39,14 @@ pub enum ExecuteMsg {
     /// template.
     Receive(Cw20ReceiveMsg),
     /// ## Description
+    /// Lockup unlocked staked amount
+    LockupStaked {
+        /// amount of tokens to lock
+        amount: Uint128,
+        /// how many epochs specified amount will be locked
+        epochs_locked: u64,
+    },
+    /// ## Description
     /// Unstake staked amount of tokens.
     /// Tokens will be claimable only after passing the unstaking period.
     Unstake {
@@ -36,11 +54,14 @@ pub enum ExecuteMsg {
         amount: Uint128,
     },
     /// ## Description
-    /// Withdraw amount of tokens which have already passed the unstaking period.
+    /// Withdraw the amount of tokens that have already passed the unstaking period.
     Withdraw {},
     /// ## Description
-    /// Claim availalble reward amount
-    ClaimRewards {},
+    /// Claim availalble bro reward amount
+    ClaimStakingRewards {},
+    /// ## Description
+    /// Claim availalble bbro reward amount
+    ClaimBbroRewards {},
 }
 
 /// ## Cw20HookMsg
@@ -56,7 +77,27 @@ pub enum Cw20HookMsg {
     },
     /// ## Description
     /// Deposits specified amount of tokens to get reward shares
-    Stake {},
+    Stake {
+        /// staking type
+        stake_type: StakeType,
+    },
+}
+
+/// ## StakeType
+/// This structure describes the stake type.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum StakeType {
+    /// ## Description
+    /// Type of staking when staked amount will be unlocked
+    Unlocked {},
+    /// ## Description
+    /// Type of staking when staked amount will be locked
+    /// for specified amount of epochs
+    Locked {
+        /// how many epochs specified amount will be locked
+        epochs_locked: u64,
+    },
 }
 
 /// ## QueryMsg
@@ -112,6 +153,24 @@ pub struct ConfigResponse {
     pub epoch_manager_contract: String,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
+    /// lockup config
+    pub lockup_config: LockupConfigResponse,
+}
+
+/// ## LockupConfigResponse
+/// This structure describes the fields for lockup config response message.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct LockupConfigResponse {
+    /// min lockup period
+    pub min_lockup_period_epochs: u64,
+    /// max lockup period
+    pub max_lockup_period_epochs: u64,
+    /// base rate for bbro premium reward calculation
+    pub base_rate: Decimal,
+    /// linear growth for bbro premium reward calculation
+    pub linear_growth: Decimal,
+    /// exponential growth for bbro premium reward calculation
+    pub exponential_growth: Decimal,
 }
 
 /// ## StateResponse
@@ -134,12 +193,26 @@ pub struct StakerInfoResponse {
     pub staker: String,
     /// reward index of staker
     pub reward_index: Decimal,
-    /// amount of BRO tokens staked by staker
-    pub stake_amount: Uint128,
+    /// amount of unlocked BRO tokens staked by staker
+    pub unlocked_stake_amount: Uint128,
+    /// amount of locked BRO tokens staked by staker
+    pub locked_stake_amount: Uint128,
     /// amount of pending rewards of staker
     pub pending_reward: Uint128,
     /// last balance update(stake, unstake) block
     pub last_balance_update: u64,
+    /// amounts locked for specified amount of epochs
+    pub lockups: Vec<LockupInfoResponse>,
+}
+
+/// ## Description
+/// This structure describes the fields for lockup info response message.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct LockupInfoResponse {
+    /// locked amount
+    pub amount: Uint128,
+    /// block at which amount will be unlocked
+    pub unlocked_at: Expiration,
 }
 
 /// ## StakerAccruedRewardsResponse

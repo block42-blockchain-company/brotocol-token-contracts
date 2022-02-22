@@ -11,7 +11,7 @@ use crate::{
     },
 };
 
-use services::bbro_minter::ExecuteMsg as BbroMintMsg;
+use services::{bbro_minter::ExecuteMsg as BbroMintMsg, staking::StakeType};
 
 /// ## Description
 /// Distributes received reward.
@@ -76,11 +76,14 @@ pub fn distribute_reward(
 /// * **sender_addr** is an object of type [`Addr`]
 ///
 /// * **amount** is an object of type [`Uint128`]
+///
+/// * **stake_type** is an object of type [`StakeType`]
 pub fn stake(
     deps: DepsMut,
     env: Env,
     sender_addr: Addr,
     amount: Uint128,
+    stake_type: StakeType,
 ) -> Result<Response, ContractError> {
     let sender_raw = deps.api.addr_canonicalize(&sender_addr.to_string())?;
 
@@ -88,21 +91,51 @@ pub fn stake(
     let mut state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
 
-    // calculate bbro reward using current bro staked amount
-    let bbro_stake_reward = staker_info.compute_staker_bbro_reward(
+    let epoch_manager_contract = deps.api.addr_humanize(&config.epoch_manager_contract)?;
+    let mut bbro_normal_reward = staker_info.compute_normal_bbro_reward(
         &deps.querier,
-        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+        epoch_manager_contract.clone(),
         &state,
     )?;
 
-    staker_info.compute_staker_reward(&state)?;
-    state.increase_stake_amount(&mut staker_info, amount, env.block.height);
+    staker_info.compute_staking_reward(&state)?;
 
-    store_state(deps.storage, &state)?;
+    match stake_type {
+        StakeType::Unlocked {} => {
+            staker_info.unlocked_stake_amount =
+                staker_info.unlocked_stake_amount.checked_add(amount)?;
+        }
+        StakeType::Locked { epochs_locked } => {
+            if !config.lockup_config.valid_lockup_period(epochs_locked) {
+                return Err(ContractError::InvalidLockupPeriod {});
+            }
+
+            let bbro_premium_lockup_reward = staker_info.compute_premium_bbro_reward(
+                &config.lockup_config,
+                epochs_locked,
+                amount,
+            );
+            bbro_normal_reward = bbro_normal_reward.checked_add(bbro_premium_lockup_reward)?;
+
+            staker_info.add_lockup(
+                &deps.querier,
+                epoch_manager_contract,
+                env.block.height,
+                amount,
+                epochs_locked,
+            )?;
+        }
+    };
+    staker_info.last_balance_update = env.block.height;
+    staker_info.unlock_expired_lockups(&env.block)?;
     store_staker_info(deps.storage, &sender_raw, &staker_info)?;
 
+    // increase total stake amount
+    state.total_stake_amount = state.total_stake_amount.checked_add(amount)?;
+    store_state(deps.storage, &state)?;
+
     let mut msgs: Vec<CosmosMsg> = vec![];
-    if !bbro_stake_reward.is_zero() {
+    if !bbro_normal_reward.is_zero() {
         msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: deps
                 .api
@@ -111,7 +144,7 @@ pub fn stake(
             funds: vec![],
             msg: to_binary(&BbroMintMsg::Mint {
                 recipient: sender_addr.to_string(),
-                amount: bbro_stake_reward,
+                amount: bbro_normal_reward,
             })?,
         }))
     }
@@ -121,6 +154,77 @@ pub fn stake(
         ("staker", &sender_addr.to_string()),
         ("amount", &amount.to_string()),
     ]))
+}
+
+/// ## Description
+/// Lockup unlocked staked amount.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **info** is an object of type [`MessageInfo`]
+///
+/// * **amount** is an object of type [`Uint128`]
+///
+/// * **epochs_locked** is a field of type [`u64`]
+pub fn lockup_staked(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    amount: Uint128,
+    epochs_locked: u64,
+) -> Result<Response, ContractError> {
+    let sender_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
+
+    let config = load_config(deps.storage)?;
+    let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
+
+    staker_info.unlock_expired_lockups(&env.block)?;
+    if staker_info.unlocked_stake_amount < amount {
+        return Err(ContractError::ForbiddenToLockupMoreThanUnlocked {});
+    }
+
+    if !config.lockup_config.valid_lockup_period(epochs_locked) {
+        return Err(ContractError::InvalidLockupPeriod {});
+    }
+
+    let bbro_premium_lockup_reward =
+        staker_info.compute_premium_bbro_reward(&config.lockup_config, epochs_locked, amount);
+
+    staker_info.add_lockup(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+        env.block.height,
+        amount,
+        epochs_locked,
+    )?;
+    staker_info.unlocked_stake_amount = staker_info.unlocked_stake_amount.checked_sub(amount)?;
+    store_staker_info(deps.storage, &sender_raw, &staker_info)?;
+
+    Ok(Response::new()
+        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: deps
+                .api
+                .addr_humanize(&config.bbro_minter_contract)?
+                .to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: info.sender.to_string(),
+                amount: bbro_premium_lockup_reward,
+            })?,
+        })])
+        .add_attributes(vec![
+            ("action", "lockup_staked"),
+            ("sender", &info.sender.to_string()),
+            ("lockup_amount", &amount.to_string()),
+            (
+                "bbro_premium_lockup_reward",
+                &bbro_premium_lockup_reward.to_string(),
+            ),
+        ]))
 }
 
 /// ## Description
@@ -147,23 +251,27 @@ pub fn unstake(
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
 
-    if staker_info.stake_amount < amount {
-        return Err(ContractError::ForbiddenToUnstakeMoreThanStaked {});
+    staker_info.unlock_expired_lockups(&env.block)?;
+    if staker_info.unlocked_stake_amount < amount {
+        return Err(ContractError::ForbiddenToUnstakeMoreThanUnlocked {});
     }
 
-    // calculate bbro reward using current bro staked amount
-    let bbro_stake_reward = staker_info.compute_staker_bbro_reward(
+    let bbro_stake_reward = staker_info.compute_normal_bbro_reward(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
         &state,
     )?;
 
-    staker_info.compute_staker_reward(&state)?;
-    state.decrease_stake_amount(&mut staker_info, amount, env.block.height)?;
+    staker_info.compute_staking_reward(&state)?;
 
-    if staker_info.pending_reward.is_zero() && staker_info.stake_amount.is_zero() {
+    // decrease stake amount
+    state.total_stake_amount = state.total_stake_amount.checked_sub(amount)?;
+    staker_info.unlocked_stake_amount = staker_info.unlocked_stake_amount.checked_sub(amount)?;
+
+    if staker_info.pending_reward.is_zero() && staker_info.total_staked()?.is_zero() {
         remove_staker_info(deps.storage, &sender_addr_raw);
     } else {
+        staker_info.last_balance_update = env.block.height;
         store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
     }
 
@@ -202,7 +310,7 @@ pub fn unstake(
 }
 
 /// ## Description
-/// Withdraw amount of tokens which have already passed the unstaking period.
+/// Withdraw the amount of tokens that have already passed the unstaking period.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
@@ -252,7 +360,7 @@ pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
 }
 
 /// ## Description
-/// Claim availalble reward amount.
+/// Claim availalble bro reward amount.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
@@ -261,7 +369,7 @@ pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
 /// * **env** is an object of type [`Env`]
 ///
 /// * **info** is an object of type [`MessageInfo`]
-pub fn claim_rewards(
+pub fn claim_staking_rewards(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
@@ -272,17 +380,17 @@ pub fn claim_rewards(
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
 
-    staker_info.compute_staker_reward(&state)?;
+    staker_info.compute_staking_reward(&state)?;
 
     let amount = staker_info.pending_reward;
-
     if amount == Uint128::zero() {
         return Err(ContractError::NothingToClaim {});
     }
 
     staker_info.pending_reward = Uint128::zero();
+    staker_info.unlock_expired_lockups(&env.block)?;
 
-    if staker_info.stake_amount.is_zero() {
+    if staker_info.total_staked()?.is_zero() {
         remove_staker_info(deps.storage, &sender_addr_raw);
     } else {
         store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
@@ -302,4 +410,58 @@ pub fn claim_rewards(
             ("staker", &info.sender.to_string()),
             ("amount", &amount.to_string()),
         ]))
+}
+
+/// ## Description
+/// Claim availalble bbro reward amount.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **info** is an object of type [`MessageInfo`]
+pub fn claim_bbro_rewards(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+) -> Result<Response, ContractError> {
+    let config = load_config(deps.storage)?;
+    let state = load_state(deps.storage)?;
+
+    let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
+    let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
+
+    let bbro_normal_reward = staker_info.compute_normal_bbro_reward(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+        &state,
+    )?;
+
+    if bbro_normal_reward.is_zero() {
+        return Err(ContractError::NothingToClaim {});
+    }
+
+    staker_info.unlock_expired_lockups(&env.block)?;
+    staker_info.last_balance_update = env.block.height;
+    store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
+
+    return Ok(Response::new()
+        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: deps
+                .api
+                .addr_humanize(&config.bbro_minter_contract)?
+                .to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: info.sender.to_string(),
+                amount: bbro_normal_reward,
+            })?,
+        })])
+        .add_attributes(vec![
+            ("action", "claim_bbro_rewards"),
+            ("staker", &info.sender.to_string()),
+            ("bbro_normal_reward", &bbro_normal_reward.to_string()),
+        ]));
 }

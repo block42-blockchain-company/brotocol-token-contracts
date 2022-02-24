@@ -135,7 +135,7 @@ impl StakerInfo {
             .checked_sub(stake_amount * self.reward_index)?;
 
         self.reward_index = state.global_reward_index;
-        self.pending_reward += pending_reward;
+        self.pending_reward = self.pending_reward.checked_add(pending_reward)?;
         Ok(())
     }
 

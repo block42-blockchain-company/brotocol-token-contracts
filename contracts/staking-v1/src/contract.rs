@@ -1,8 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
-    Uint128,
+    from_binary, to_binary, Addr, Api, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response,
+    StdResult, Storage, Uint128,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -45,6 +45,7 @@ pub fn instantiate(
     store_config(
         deps.storage,
         &Config {
+            owner: deps.api.addr_canonicalize(&msg.owner)?,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
             rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
             bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
@@ -101,6 +102,17 @@ pub fn instantiate(
 /// * **ExecuteMsg::ClaimStakingRewards {}** Claim availalble bro reward amount
 ///
 /// * **ExecuteMsg::ClaimBbroRewards {}** Claim availalble bbro reward amount
+///
+/// * **ExecuteMsg::UpdateConfig {
+///         owner,
+///         unstake_period_blocks,
+///         min_staking_amount,
+///         min_lockup_period_epochs,
+///         max_lockup_period_epochs,
+///         base_rate,
+///         linear_growth,
+///         exponential_growth,
+///     }** Updates contract settings
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -118,6 +130,29 @@ pub fn execute(
         ExecuteMsg::Withdraw {} => commands::withdraw(deps, env, info),
         ExecuteMsg::ClaimStakingRewards {} => commands::claim_staking_rewards(deps, env, info),
         ExecuteMsg::ClaimBbroRewards {} => commands::claim_bbro_rewards(deps, env, info),
+        ExecuteMsg::UpdateConfig {
+            owner,
+            unstake_period_blocks,
+            min_staking_amount,
+            min_lockup_period_epochs,
+            max_lockup_period_epochs,
+            base_rate,
+            linear_growth,
+            exponential_growth,
+        } => {
+            assert_owner(deps.storage, deps.api, info.sender)?;
+            commands::update_config(
+                deps,
+                owner,
+                unstake_period_blocks,
+                min_staking_amount,
+                min_lockup_period_epochs,
+                max_lockup_period_epochs,
+                base_rate,
+                linear_growth,
+                exponential_growth,
+            )
+        }
     }
 }
 
@@ -161,6 +196,23 @@ pub fn receive_cw20(
         }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }
+}
+
+/// ## Description
+/// Verifies that message sender is a contract owner.
+/// Returns [`Ok`] if address is valid, otherwise returns [`ContractError`]
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+///
+/// * **api** is an object of type [`Api`]
+///
+/// * **sender** is an object of type [`Addr`]
+fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
+    if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    Ok(())
 }
 
 /// ## Description

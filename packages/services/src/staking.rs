@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 /// This structure describes the basic settings for creating a contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
+    /// contract/multisig address that allowed to control settings
+    pub owner: String,
     /// bro token address
     pub bro_token: String,
     /// rewards pool address
@@ -64,6 +66,28 @@ pub enum ExecuteMsg {
     /// ## Description
     /// Claim availalble bbro reward amount
     ClaimBbroRewards {},
+    /// ## Description
+    /// Updates contract settings
+    /// ## Executor
+    /// Only owner can execute this function
+    UpdateConfig {
+        /// contract/multisig address that allowed to control settings
+        owner: Option<String>,
+        /// vesting period for withdrawal
+        unstake_period_blocks: Option<u64>,
+        /// minimum staking amount
+        min_staking_amount: Option<Uint128>,
+        /// min lockup period
+        min_lockup_period_epochs: Option<u64>,
+        /// max lockup period
+        max_lockup_period_epochs: Option<u64>,
+        /// base rate for bbro premium reward calculation
+        base_rate: Option<Decimal>,
+        /// linear growth for bbro premium reward calculation
+        linear_growth: Option<Decimal>,
+        /// exponential growth for bbro premium reward calculation
+        exponential_growth: Option<Decimal>,
+    },
 }
 
 /// ## Cw20HookMsg
@@ -145,6 +169,8 @@ pub struct MigrateMsg {}
 /// This structure describes the fields for config response message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ConfigResponse {
+    /// contract/multisig address that allowed to control settings
+    pub owner: String,
     /// bro token address
     pub bro_token: String,
     /// rewards pool address

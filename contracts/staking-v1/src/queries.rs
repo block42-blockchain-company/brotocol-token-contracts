@@ -14,6 +14,7 @@ use crate::state::{load_config, load_state, load_withdrawals, read_staker_info};
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
+        owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         bro_token: deps.api.addr_humanize(&config.bro_token)?.to_string(),
         rewards_pool_contract: deps
             .api

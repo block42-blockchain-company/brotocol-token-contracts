@@ -7,7 +7,7 @@ use crate::{
     error::ContractError,
     state::{
         load_config, load_state, load_withdrawals, read_staker_info, remove_staker_info,
-        store_staker_info, store_state, store_withdrawals, WithdrawalInfo,
+        store_config, store_staker_info, store_state, store_withdrawals, WithdrawalInfo,
     },
 };
 
@@ -468,4 +468,77 @@ pub fn claim_bbro_rewards(
             ("staker", &info.sender.to_string()),
             ("bbro_normal_reward", &bbro_normal_reward.to_string()),
         ]));
+}
+
+/// ## Description
+/// Updates contract settings.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **owner** is an [`Option`] of type [`String`]
+///
+/// * **unstake_period_blocks** is an [`Option`] of type [`u64`]
+///
+/// * **min_staking_amount** is an [`Option`] of type [`Uint128`]
+///
+/// * **min_lockup_period_epochs** is an [`Option`] of type [`u64`]
+///
+/// * **max_lockup_period_epochs** is an [`Option`] of type [`u64`]
+///
+/// * **base_rate** is an [`Option`] of type [`Decimal`]
+///
+/// * **linear_growth** is an [`Option`] of type [`Decimal`]
+///
+/// * **exponential_growth** is an [`Option`] of type [`Decimal`]
+#[allow(clippy::too_many_arguments)]
+pub fn update_config(
+    deps: DepsMut,
+    owner: Option<String>,
+    unstake_period_blocks: Option<u64>,
+    min_staking_amount: Option<Uint128>,
+    min_lockup_period_epochs: Option<u64>,
+    max_lockup_period_epochs: Option<u64>,
+    base_rate: Option<Decimal>,
+    linear_growth: Option<Decimal>,
+    exponential_growth: Option<Decimal>,
+) -> Result<Response, ContractError> {
+    let mut config = load_config(deps.storage)?;
+
+    if let Some(owner) = owner {
+        config.owner = deps.api.addr_canonicalize(&owner)?;
+    }
+
+    if let Some(unstake_period_blocks) = unstake_period_blocks {
+        config.unstake_period_blocks = unstake_period_blocks;
+    }
+
+    if let Some(min_staking_amount) = min_staking_amount {
+        config.min_staking_amount = min_staking_amount;
+    }
+
+    if let Some(min_lockup_period_epochs) = min_lockup_period_epochs {
+        config.lockup_config.min_lockup_period_epochs = min_lockup_period_epochs;
+    }
+
+    if let Some(max_lockup_period_epochs) = max_lockup_period_epochs {
+        config.lockup_config.max_lockup_period_epochs = max_lockup_period_epochs;
+    }
+
+    if let Some(base_rate) = base_rate {
+        config.lockup_config.base_rate = base_rate;
+    }
+
+    if let Some(linear_growth) = linear_growth {
+        config.lockup_config.linear_growth = linear_growth;
+    }
+
+    if let Some(exponential_growth) = exponential_growth {
+        config.lockup_config.exponential_growth = exponential_growth;
+    }
+
+    store_config(deps.storage, &config)?;
+
+    Ok(Response::new().add_attributes(vec![("action", "update_config")]))
 }

@@ -9,11 +9,13 @@ Also bBRO tokens will be minted as a reward for staking BRO.
 
 ```json
 {
+    "owner": "terra1...",
     "bro_token": "terra1...",
     "rewards_pool_contract": "terra1...",
     "bbro_minter_contract": "terra1...",
     "epoch_manager_contract": "terra1...",
     "unstake_period_blocks": 100,
+    "min_staking_amount": "100",
     "min_lockup_period_epochs": 1,
     "max_lockup_period_epochs": 10,
     "base_rate": "0.005",
@@ -116,6 +118,23 @@ im availalble bbro reward amount.
 ```json
 {
     "claim_bbro_rewards": {}
+}
+```
+
+### `update_config`
+
+Updates staking contract config. Can be executed only by owner.
+Message params are optional.
+
+```json
+{
+    "unstake_period_blocks": 1,
+    "min_staking_amount": "100",
+    "min_lockup_period_epochs": 1,
+    "max_lockup_period_epochs": 10,
+    "base_rate": "0.1",
+    "linear_growth": "0.2",
+    "exponential_growth": "0.3"
 }
 ```
 

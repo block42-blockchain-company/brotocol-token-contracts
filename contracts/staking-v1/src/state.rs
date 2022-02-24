@@ -40,6 +40,8 @@ pub struct Config {
     pub epoch_manager_contract: CanonicalAddr,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
+    /// minimum staking amount
+    pub min_staking_amount: Uint128,
     /// lockup config
     pub lockup_config: LockupConfig,
 }

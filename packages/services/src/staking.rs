@@ -17,6 +17,8 @@ pub struct InstantiateMsg {
     pub epoch_manager_contract: String,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
+    /// minimum staking amount
+    pub min_staking_amount: Uint128,
     /// min lockup period
     pub min_lockup_period_epochs: u64,
     /// max lockup period
@@ -153,6 +155,8 @@ pub struct ConfigResponse {
     pub epoch_manager_contract: String,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
+    /// minimum staking amount
+    pub min_staking_amount: Uint128,
     /// lockup config
     pub lockup_config: LockupConfigResponse,
 }

@@ -91,6 +91,10 @@ pub fn stake(
     let mut state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
 
+    if amount < config.min_staking_amount {
+        return Err(ContractError::StakingAmountMustBeHigherThanMinAmount {});
+    }
+
     let epoch_manager_contract = deps.api.addr_humanize(&config.epoch_manager_contract)?;
     let mut bbro_normal_reward = staker_info.compute_normal_bbro_reward(
         &deps.querier,

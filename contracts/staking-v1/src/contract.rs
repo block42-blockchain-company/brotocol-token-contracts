@@ -50,6 +50,7 @@ pub fn instantiate(
             bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
             epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
             unstake_period_blocks: msg.unstake_period_blocks,
+            min_staking_amount: msg.min_staking_amount,
             lockup_config: LockupConfig {
                 min_lockup_period_epochs: msg.min_lockup_period_epochs,
                 max_lockup_period_epochs: msg.max_lockup_period_epochs,
@@ -155,10 +156,6 @@ pub fn receive_cw20(
             commands::distribute_reward(deps, cw20_msg.amount, distributed_at_block)
         }
         Ok(Cw20HookMsg::Stake { stake_type }) => {
-            if cw20_msg.amount.is_zero() {
-                return Err(ContractError::StakingAmountMustBeHigherThanZero {});
-            }
-
             let cw20_sender = deps.api.addr_validate(&cw20_msg.sender)?;
             commands::stake(deps, env, cw20_sender, cw20_msg.amount, stake_type)
         }

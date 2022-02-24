@@ -28,6 +28,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
             .addr_humanize(&config.epoch_manager_contract)?
             .to_string(),
         unstake_period_blocks: config.unstake_period_blocks,
+        min_staking_amount: config.min_staking_amount,
         lockup_config: LockupConfigResponse {
             min_lockup_period_epochs: config.lockup_config.min_lockup_period_epochs,
             max_lockup_period_epochs: config.lockup_config.max_lockup_period_epochs,

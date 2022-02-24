@@ -25,6 +25,7 @@ fn proper_initialization() {
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
         unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
         max_lockup_period_epochs: 365,
         base_rate: Decimal::from_str("0.0001").unwrap(),
@@ -46,6 +47,7 @@ fn proper_initialization() {
             bbro_minter_contract: "bbrominter0000".to_string(),
             epoch_manager_contract: "epoch0000".to_string(),
             unstake_period_blocks: 10,
+            min_staking_amount: Uint128::zero(),
             lockup_config: LockupConfigResponse {
                 min_lockup_period_epochs: 1,
                 max_lockup_period_epochs: 365,
@@ -122,6 +124,7 @@ fn test_fractional_rewards() {
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
         unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
         max_lockup_period_epochs: 365,
         base_rate: Decimal::from_str("0.0001").unwrap(),
@@ -337,6 +340,7 @@ fn test_unlocked_stake_tokens() {
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
         unstake_period_blocks: 10,
+        min_staking_amount: Uint128::from(1u128),
         min_lockup_period_epochs: 1,
         max_lockup_period_epochs: 365,
         base_rate: Decimal::from_str("0.0001").unwrap(),
@@ -416,8 +420,8 @@ fn test_unlocked_stake_tokens() {
     });
 
     match execute(deps.as_mut(), env.clone(), info, msg) {
-        Err(ContractError::StakingAmountMustBeHigherThanZero {}) => (),
-        _ => panic!("expecting ContractError::StakingAmountMustBeHigherThanZero"),
+        Err(ContractError::StakingAmountMustBeHigherThanMinAmount {}) => (),
+        _ => panic!("expecting ContractError::StakingAmountMustBeHigherThanMinAmount"),
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1096,6 +1100,7 @@ fn test_locked_stake_tokens() {
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
         unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
         max_lockup_period_epochs: 365,
         base_rate: Decimal::from_str("0.0001").unwrap(),

@@ -17,8 +17,8 @@ pub enum ContractError {
     #[error("Invalid receive hook msg")]
     InvalidHookData {},
 
-    #[error("Staking amount must be higher than zero")]
-    StakingAmountMustBeHigherThanZero {},
+    #[error("Staking amount must be higher than min amount")]
+    StakingAmountMustBeHigherThanMinAmount {},
 
     #[error("Cannot unstake more than unlocked staked amount")]
     ForbiddenToUnstakeMoreThanUnlocked {},

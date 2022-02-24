@@ -104,11 +104,18 @@ export interface EpochManagerConfig {
 }
 
 export interface StakingV1Config {
+    owner: string,
     bro_token: string,
     rewards_pool_contract: string,
     bbro_minter_contract: string,
     epoch_manager_contract: string,
     unstake_period_blocks: number,
+    min_staking_amount: string,
+    min_lockup_period_epochs: number,
+    max_lockup_period_epochs: number,
+    base_rate: string,
+    linear_growth: string,
+    exponential_growth: string,
 }
 
 export interface BondingV1Config {

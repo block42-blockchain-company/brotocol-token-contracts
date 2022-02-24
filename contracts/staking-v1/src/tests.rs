@@ -4,9 +4,9 @@ use crate::math::{decimal_mul_in_256, decimal_sub_in_256, decimal_sum_in_256};
 use crate::mock_querier::mock_dependencies;
 use services::bbro_minter::ExecuteMsg as BbroMintMsg;
 use services::staking::{
-    ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, LockupConfigResponse, QueryMsg,
-    StakeType, StakerAccruedRewardsResponse, StakerInfoResponse, StateResponse,
-    WithdrawalInfoResponse, WithdrawalsResponse,
+    ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, LockupConfigResponse,
+    LockupInfoResponse, QueryMsg, StakeType, StakerAccruedRewardsResponse, StakerInfoResponse,
+    StateResponse, WithdrawalInfoResponse, WithdrawalsResponse,
 };
 
 use cosmwasm_std::testing::{mock_env, mock_info};
@@ -401,11 +401,30 @@ fn test_unlocked_stake_tokens() {
     );
 
     ////////////////////////////////////////////////////////////////////////////
+    /////// addr0000 is trying to stake 0 BRO tokens
+    ////////////////////////////////////////////////////////////////////////////
+    let info = mock_info("bro0000", &[]);
+    env.block.height += 1;
+
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "addr0000".to_string(),
+        amount: Uint128::from(0u128),
+        msg: to_binary(&Cw20HookMsg::Stake {
+            stake_type: StakeType::Unlocked {},
+        })
+        .unwrap(),
+    });
+
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::StakingAmountMustBeHigherThanZero {}) => (),
+        _ => panic!("expecting ContractError::StakingAmountMustBeHigherThanZero"),
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     /////// addr0000 stakes 100 tokens, but keep the reward pool at 0
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("bro0000", &[]);
-    env.block.height += 1;
 
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
@@ -861,7 +880,7 @@ fn test_unlocked_stake_tokens() {
     );
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0000 whithdaws 50 BRO too early
+    /////// addr0000 withdaws 50 BRO too early
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("addr0000", &[]);
@@ -875,7 +894,7 @@ fn test_unlocked_stake_tokens() {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    /////// addr0000 whithdaws 50 BRO successfully
+    /////// addr0000 withdaws 50 BRO successfully
     ////////////////////////////////////////////////////////////////////////////
 
     let info = mock_info("addr0000", &[]);
@@ -1063,5 +1082,288 @@ fn test_unlocked_stake_tokens() {
             last_balance_update: 12363,
             lockups: vec![],
         }
+    );
+}
+
+#[test]
+fn test_locked_stake_tokens() {
+    let mut deps = mock_dependencies(&[]);
+    let mut env = mock_env();
+
+    let msg = InstantiateMsg {
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    // stake tokens with locked type
+    env.block.height += 1;
+
+    let addr1 = "addr0001".to_string();
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: addr1.clone(),
+        amount: Uint128::from(1_000000u128),
+        msg: to_binary(&Cw20HookMsg::Stake {
+            stake_type: StakeType::Locked { epochs_locked: 1 },
+        })
+        .unwrap(),
+    });
+
+    let info = mock_info("bro0000", &[]);
+    let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    let bbro_premium_reward_msg = res.messages.get(0).expect("no message");
+    assert_eq!(
+        bbro_premium_reward_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: "bbrominter0000".to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: addr1.clone(),
+                amount: Uint128::from(107u128),
+            })
+            .unwrap(),
+        }))
+    );
+
+    assert_eq!(
+        from_binary::<StakerInfoResponse>(
+            &query(
+                deps.as_ref(),
+                env.clone(),
+                QueryMsg::StakerInfo {
+                    staker: addr1.clone(),
+                },
+            )
+            .unwrap(),
+        )
+        .unwrap(),
+        StakerInfoResponse {
+            staker: addr1.clone(),
+            reward_index: Decimal::zero(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::from(1_000000u128),
+            pending_reward: Uint128::zero(),
+            last_balance_update: 12346,
+            lockups: vec![LockupInfoResponse {
+                amount: Uint128::from(1_000000u128),
+                unlocked_at: Expiration::AtHeight(12347),
+            }],
+        },
+    );
+
+    // stake more tokens with locked type, previos lock must move to unlocked
+    env.block.height += 1;
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: addr1.clone(),
+        amount: Uint128::from(1_000000u128),
+        msg: to_binary(&Cw20HookMsg::Stake {
+            stake_type: StakeType::Locked { epochs_locked: 5 },
+        })
+        .unwrap(),
+    });
+
+    let info = mock_info("bro0000", &[]);
+    let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    let bbro_premium_reward_msg = res.messages.get(0).expect("no message");
+    assert_eq!(
+        bbro_premium_reward_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: "bbrominter0000".to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: addr1.clone(),
+                amount: Uint128::from(2287u128),
+            })
+            .unwrap(),
+        }))
+    );
+
+    assert_eq!(
+        from_binary::<StakerInfoResponse>(
+            &query(
+                deps.as_ref(),
+                env.clone(),
+                QueryMsg::StakerInfo {
+                    staker: addr1.clone(),
+                },
+            )
+            .unwrap(),
+        )
+        .unwrap(),
+        StakerInfoResponse {
+            staker: addr1.clone(),
+            reward_index: Decimal::zero(),
+            unlocked_stake_amount: Uint128::from(1_000000u128),
+            locked_stake_amount: Uint128::from(1_000000u128),
+            pending_reward: Uint128::zero(),
+            last_balance_update: 12347,
+            lockups: vec![LockupInfoResponse {
+                amount: Uint128::from(1_000000u128),
+                unlocked_at: Expiration::AtHeight(12352),
+            }],
+        },
+    );
+
+    assert_eq!(
+        from_binary::<StateResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+        )
+        .unwrap(),
+        StateResponse {
+            total_stake_amount: Uint128::from(2_000000u128),
+            global_reward_index: Decimal::zero(),
+            last_distribution_block: 12345,
+        },
+    );
+
+    // distribute tokens for claiming bbro reward
+    let info = mock_info("bro0000", &[]);
+
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "reward0000".to_string(),
+        amount: Uint128::from(1000u128),
+        msg: to_binary(&Cw20HookMsg::DistributeReward {
+            distributed_at_block: 12348,
+        })
+        .unwrap(),
+    });
+
+    let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    // claim bbro reward for the whole staked amount
+    env.block.height = 12352;
+
+    let msg = ExecuteMsg::ClaimBbroRewards {};
+    let info = mock_info(&addr1, &[]);
+    let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    let bbro_reward_msg = res.messages.get(0).expect("no message");
+    assert_eq!(
+        bbro_reward_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: "bbrominter0000".to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: addr1.clone(),
+                amount: Uint128::from(600000u128),
+            })
+            .unwrap(),
+        }))
+    );
+
+    // all locks must be released
+    assert_eq!(
+        from_binary::<StakerInfoResponse>(
+            &query(
+                deps.as_ref(),
+                env.clone(),
+                QueryMsg::StakerInfo {
+                    staker: addr1.clone(),
+                },
+            )
+            .unwrap(),
+        )
+        .unwrap(),
+        StakerInfoResponse {
+            staker: addr1.clone(),
+            reward_index: Decimal::from_str("0.0005").unwrap(),
+            unlocked_stake_amount: Uint128::from(2_000000u128),
+            locked_stake_amount: Uint128::zero(),
+            pending_reward: Uint128::from(1000u128),
+            last_balance_update: 12352,
+            lockups: vec![],
+        },
+    );
+
+    // try to claim twice
+    let msg = ExecuteMsg::ClaimBbroRewards {};
+    let info = mock_info(&addr1, &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::NothingToClaim {}) => (),
+        _ => panic!("expecting ContractError::NothingToClaim"),
+    }
+
+    // try to lockup more than unlocked
+    let msg = ExecuteMsg::LockupStaked {
+        amount: Uint128::from(3_000000u128),
+        epochs_locked: 5,
+    };
+    let info = mock_info(&addr1, &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::ForbiddenToLockupMoreThanUnlocked {}) => (),
+        _ => panic!("expecting ContractError::ForbiddenToLockupMoreThanUnlocked"),
+    }
+
+    // pass invalid epoch amount
+    let msg = ExecuteMsg::LockupStaked {
+        amount: Uint128::from(2_000000u128),
+        epochs_locked: 366,
+    };
+    let info = mock_info(&addr1, &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::InvalidLockupPeriod {}) => (),
+        _ => panic!("expecting ContractError::InvalidLockupPeriod"),
+    }
+
+    // proper lockup
+    env.block.height = 12370;
+    let msg = ExecuteMsg::LockupStaked {
+        amount: Uint128::from(2_000000u128),
+        epochs_locked: 5,
+    };
+
+    let info = mock_info(&addr1, &[]);
+    let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    let bbro_premium_reward_msg = res.messages.get(0).expect("no message");
+    assert_eq!(
+        bbro_premium_reward_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: "bbrominter0000".to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: addr1.clone(),
+                amount: Uint128::from(4575u128),
+            })
+            .unwrap(),
+        }))
+    );
+
+    assert_eq!(
+        from_binary::<StakerInfoResponse>(
+            &query(
+                deps.as_ref(),
+                env.clone(),
+                QueryMsg::StakerInfo {
+                    staker: addr1.clone(),
+                },
+            )
+            .unwrap(),
+        )
+        .unwrap(),
+        StakerInfoResponse {
+            staker: addr1.clone(),
+            reward_index: Decimal::from_str("0.0005").unwrap(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::from(2_000000u128),
+            pending_reward: Uint128::from(1000u128),
+            last_balance_update: 12352,
+            lockups: vec![LockupInfoResponse {
+                amount: Uint128::from(2_000000u128),
+                unlocked_at: Expiration::AtHeight(12375),
+            }],
+        },
     );
 }

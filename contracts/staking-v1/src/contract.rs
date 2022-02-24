@@ -155,6 +155,10 @@ pub fn receive_cw20(
             commands::distribute_reward(deps, cw20_msg.amount, distributed_at_block)
         }
         Ok(Cw20HookMsg::Stake { stake_type }) => {
+            if cw20_msg.amount.is_zero() {
+                return Err(ContractError::StakingAmountMustBeHigherThanZero {});
+            }
+
             let cw20_sender = deps.api.addr_validate(&cw20_msg.sender)?;
             commands::stake(deps, env, cw20_sender, cw20_msg.amount, stake_type)
         }

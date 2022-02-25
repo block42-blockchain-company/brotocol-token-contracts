@@ -451,7 +451,7 @@ pub fn claim_bbro_rewards(
     staker_info.last_balance_update = env.block.height;
     store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
 
-    return Ok(Response::new()
+    Ok(Response::new()
         .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: deps
                 .api
@@ -467,7 +467,7 @@ pub fn claim_bbro_rewards(
             ("action", "claim_bbro_rewards"),
             ("staker", &info.sender.to_string()),
             ("bbro_normal_reward", &bbro_normal_reward.to_string()),
-        ]));
+        ]))
 }
 
 /// ## Description

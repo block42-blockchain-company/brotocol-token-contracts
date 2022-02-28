@@ -7,7 +7,7 @@
     "last_balance_update",
     "locked_stake_amount",
     "lockups",
-    "pending_reward",
+    "pending_bro_reward",
     "reward_index",
     "staker",
     "unlocked_stake_amount"
@@ -34,8 +34,8 @@
         "$ref": "#/definitions/LockupInfoResponse"
       }
     },
-    "pending_reward": {
-      "description": "amount of pending rewards of staker",
+    "pending_bro_reward": {
+      "description": "amount of pending bro rewards of staker",
       "allOf": [
         {
           "$ref": "#/definitions/Uint128"

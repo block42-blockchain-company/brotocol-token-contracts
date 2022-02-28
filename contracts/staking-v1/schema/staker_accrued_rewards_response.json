@@ -4,20 +4,20 @@
   "description": "This structure describes the fields for staker accrued rewards response message.",
   "type": "object",
   "required": [
-    "bbro_stake_reward",
-    "rewards"
+    "pending_bbro_reward",
+    "pending_bro_reward"
   ],
   "properties": {
-    "bbro_stake_reward": {
-      "description": "amount of bBRO reward from staking BRO tokens",
+    "pending_bbro_reward": {
+      "description": "amount of pending bbro rewards of staker",
       "allOf": [
         {
           "$ref": "#/definitions/Uint128"
         }
       ]
     },
-    "rewards": {
-      "description": "amount of pending rewards of staker",
+    "pending_bro_reward": {
+      "description": "amount of pending bro rewards of staker",
       "allOf": [
         {
           "$ref": "#/definitions/Uint128"

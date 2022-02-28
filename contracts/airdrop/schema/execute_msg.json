@@ -42,7 +42,7 @@
     },
     {
       "title": "Description",
-      "description": "Claims availalble amount for message sender at specified airdrop round",
+      "description": "Claims available amount for message sender at specified airdrop round",
       "type": "object",
       "required": [
         "claim"

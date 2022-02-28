@@ -639,7 +639,7 @@ fn test_unlocked_stake_tokens() {
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
     assert_eq!(res.attributes.len(), 3);
     assert_eq!(res.attributes[0].key, "action");
-    assert_eq!(res.attributes[0].value, "claim_rewards");
+    assert_eq!(res.attributes[0].value, "claim_bro_rewards");
     assert_eq!(res.attributes[1].key, "staker");
     assert_eq!(res.attributes[1].value, "addr0000");
     assert_eq!(res.attributes[2].key, "amount");
@@ -1060,7 +1060,7 @@ fn test_unlocked_stake_tokens() {
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
     assert_eq!(res.attributes.len(), 3);
     assert_eq!(res.attributes[0].key, "action");
-    assert_eq!(res.attributes[0].value, "claim_rewards");
+    assert_eq!(res.attributes[0].value, "claim_bro_rewards");
     assert_eq!(res.attributes[1].key, "staker");
     assert_eq!(res.attributes[1].value, "addr0001");
     assert_eq!(res.attributes[2].key, "amount");

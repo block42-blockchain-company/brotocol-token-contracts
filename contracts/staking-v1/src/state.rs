@@ -49,7 +49,7 @@ pub struct Config {
 }
 
 /// ## Description
-/// This structure describes lockup config of staking contract.
+/// This structure describes the lockup config of staking contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct LockupConfig {
     /// min lockup period
@@ -79,7 +79,7 @@ impl LockupConfig {
 }
 
 /// ## Description
-/// This structure describes state of staking contract.
+/// This structure describes the state of staking contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
     /// global reward index for BRO staking rewards
@@ -91,7 +91,7 @@ pub struct State {
 }
 
 /// ## Description
-/// This structure describes lockup info of staking contract.
+/// This structure describes the lockup info of staking contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct LockupInfo {
     /// locked amount
@@ -101,7 +101,7 @@ pub struct LockupInfo {
 }
 
 /// ## Description
-/// This structure describes staker info of staking contract.
+/// This structure describes the staker info of staking contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct StakerInfo {
     /// reward index of staker
@@ -140,7 +140,7 @@ impl StakerInfo {
     }
 
     /// ## Description
-    /// Computes staker normal bbro reward
+    /// Computes normal bbro reward for staked BRO
     pub fn compute_normal_bbro_reward(
         &self,
         querier: &QuerierWrapper,
@@ -166,7 +166,7 @@ impl StakerInfo {
     }
 
     /// ## Description
-    /// Computes staker premium bbro reward for locking balance using next formula:
+    /// Computes premium bbro reward when locking staked BRO using next formula:
     /// ((base_rate+linear_growth*epochs_locked+exponential_growth*epochs_locked^2)-0.0005)*bro_locked_amount
     pub fn compute_premium_bbro_reward(
         &self,
@@ -176,11 +176,13 @@ impl StakerInfo {
     ) -> Uint128 {
         let epochs_locked: u128 = epochs_locked.into();
 
+        // epochs_locked * linear_growth
         let linear_growth = decimal_mul_in_256(
             lockup_config.linear_growth,
             Decimal::from_ratio(Uint128::from(epochs_locked), Uint128::from(1u128)),
         );
 
+        // epochs_locked^2 * exponential_growth
         let exponential_growth = decimal_mul_in_256(
             lockup_config.exponential_growth,
             Decimal::from_ratio(
@@ -189,6 +191,7 @@ impl StakerInfo {
             ),
         );
 
+        // (base_rate + linear_growth * epochs_locked + exponential_growth * epochs_locked^2) - 0.0005
         let bbro_rate = decimal_sub_in_256(
             decimal_sum_in_256(
                 lockup_config.base_rate,
@@ -197,6 +200,7 @@ impl StakerInfo {
             Decimal::from_ratio(Uint128::from(5u128), Uint128::from(10000u128)),
         );
 
+        // (...) * bro_locked_amount
         bbro_rate * amount
     }
 
@@ -223,7 +227,7 @@ impl StakerInfo {
     }
 
     /// ## Description
-    /// Removes passed lockups for list and updates balances
+    /// Removes passed lockups from list and updates balances
     pub fn unlock_expired_lockups(&mut self, current_block: &BlockInfo) -> StdResult<()> {
         let mut unlocked_amount = Uint128::zero();
         let lockups: Vec<LockupInfo> = self

@@ -63,7 +63,7 @@
     },
     {
       "title": "Description",
-      "description": "Claims availalble amount for message sender",
+      "description": "Claims available amount for message sender",
       "type": "object",
       "required": [
         "claim"

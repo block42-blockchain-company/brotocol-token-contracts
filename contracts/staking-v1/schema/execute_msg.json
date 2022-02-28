@@ -94,7 +94,7 @@
     },
     {
       "title": "Description",
-      "description": "Claim availalble bro reward amount",
+      "description": "Claim available bro reward amount",
       "type": "object",
       "required": [
         "claim_staking_rewards"
@@ -108,7 +108,7 @@
     },
     {
       "title": "Description",
-      "description": "Claim availalble bbro reward amount",
+      "description": "Claim available bbro reward amount",
       "type": "object",
       "required": [
         "claim_bbro_rewards"

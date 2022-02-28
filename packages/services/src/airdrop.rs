@@ -31,7 +31,7 @@ pub enum ExecuteMsg {
         owner: Option<String>,
     },
     /// ## Description
-    /// Claims availalble amount for message sender at specified airdrop round
+    /// Claims available amount for message sender at specified airdrop round
     Claim {
         /// airdrop stage
         stage: u8,

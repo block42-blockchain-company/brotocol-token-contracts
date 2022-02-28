@@ -33,7 +33,7 @@
     },
     {
       "title": "Description",
-      "description": "Claim availalble reward amount.",
+      "description": "Claim available reward amount.",
       "type": "object",
       "required": [
         "claim"

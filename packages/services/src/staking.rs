@@ -61,10 +61,10 @@ pub enum ExecuteMsg {
     /// Withdraw the amount of tokens that have already passed the unstaking period.
     Withdraw {},
     /// ## Description
-    /// Claim availalble bro reward amount
+    /// Claim available bro reward amount
     ClaimStakingRewards {},
     /// ## Description
-    /// Claim availalble bbro reward amount
+    /// Claim available bbro reward amount
     ClaimBbroRewards {},
     /// ## Description
     /// Updates contract settings

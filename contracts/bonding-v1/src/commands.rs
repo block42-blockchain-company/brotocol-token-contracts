@@ -214,7 +214,7 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
 }
 
 /// ## Description
-/// Claim availalble reward amount.
+/// Claim available reward amount.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params

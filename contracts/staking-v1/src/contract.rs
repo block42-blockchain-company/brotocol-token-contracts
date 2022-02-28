@@ -99,9 +99,9 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::Withdraw {}** Withdraw the amount of tokens that have already passed the unstaking period
 ///
-/// * **ExecuteMsg::ClaimStakingRewards {}** Claim availalble bro reward amount
+/// * **ExecuteMsg::ClaimStakingRewards {}** Claim available bro reward amount
 ///
-/// * **ExecuteMsg::ClaimBbroRewards {}** Claim availalble bbro reward amount
+/// * **ExecuteMsg::ClaimBbroRewards {}** Claim available bbro reward amount
 ///
 /// * **ExecuteMsg::UpdateConfig {
 ///         owner,

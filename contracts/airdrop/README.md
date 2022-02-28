@@ -52,7 +52,7 @@ Message params are optional.
 
 ### `claim`
 
-Claims availalble amount for message sender at specified airdrop round.
+Claims available amount for message sender at specified airdrop round.
 
 ```json
 {

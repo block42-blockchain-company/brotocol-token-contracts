@@ -97,7 +97,7 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::UstBond {}** Bond bro tokens by providing ust amount
 ///
-/// * **ExecuteMsg::Claim {}** Claim availalble reward amount
+/// * **ExecuteMsg::Claim {}** Claim available reward amount
 ///
 /// * **ExecuteMsg::UpdateConfig {
 ///         owner,

@@ -59,7 +59,7 @@ pub fn register_merkle_root(deps: DepsMut, merkle_root: String) -> Result<Respon
 }
 
 /// ## Description
-/// Claims availalble amount for message sender at specified airdrop round.
+/// Claims available amount for message sender at specified airdrop round.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params

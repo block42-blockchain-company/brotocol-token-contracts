@@ -161,7 +161,7 @@ pub fn stake(
 }
 
 /// ## Description
-/// Lockup unlocked staked amount.
+/// Locks a staked amount that is unlocked.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
@@ -364,7 +364,7 @@ pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
 }
 
 /// ## Description
-/// Claim availalble bro reward amount.
+/// Claim available bro reward amount.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
@@ -410,14 +410,14 @@ pub fn claim_staking_rewards(
             })?,
         })])
         .add_attributes(vec![
-            ("action", "claim_rewards"),
+            ("action", "claim_bro_rewards"),
             ("staker", &info.sender.to_string()),
             ("amount", &amount.to_string()),
         ]))
 }
 
 /// ## Description
-/// Claim availalble bbro reward amount.
+/// Claim available bbro reward amount.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params

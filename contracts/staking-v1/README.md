@@ -107,13 +107,13 @@ Claim available bro reward amount.
 
 ```json
 {
-    "claim_rewards": {}
+    "claim_bro_rewards": {}
 }
 ```
 
 ### `claim_bbro_rewards`
 
-im availalble bbro reward amount.
+Claim available bbro reward amount.
 
 ```json
 {

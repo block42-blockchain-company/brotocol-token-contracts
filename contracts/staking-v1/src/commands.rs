@@ -96,7 +96,7 @@ pub fn stake(
     }
 
     let epoch_manager_contract = deps.api.addr_humanize(&config.epoch_manager_contract)?;
-    let mut bbro_normal_reward = staker_info.compute_normal_bbro_reward(
+    let mut bbro_staking_reward = staker_info.compute_normal_bbro_reward(
         &deps.querier,
         epoch_manager_contract.clone(),
         &state,
@@ -119,7 +119,7 @@ pub fn stake(
                 epochs_locked,
                 amount,
             );
-            bbro_normal_reward = bbro_normal_reward.checked_add(bbro_premium_lockup_reward)?;
+            bbro_staking_reward = bbro_staking_reward.checked_add(bbro_premium_lockup_reward)?;
 
             staker_info.add_lockup(
                 &deps.querier,
@@ -139,7 +139,7 @@ pub fn stake(
     store_state(deps.storage, &state)?;
 
     let mut msgs: Vec<CosmosMsg> = vec![];
-    if !bbro_normal_reward.is_zero() {
+    if !bbro_staking_reward.is_zero() {
         msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: deps
                 .api
@@ -148,7 +148,7 @@ pub fn stake(
             funds: vec![],
             msg: to_binary(&BbroMintMsg::Mint {
                 recipient: sender_addr.to_string(),
-                amount: bbro_normal_reward,
+                amount: bbro_staking_reward,
             })?,
         }))
     }

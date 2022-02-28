@@ -110,8 +110,10 @@ pub struct StakerInfo {
     pub unlocked_stake_amount: Uint128,
     /// amount of locked BRO tokens staked by staker
     pub locked_stake_amount: Uint128,
-    /// amount of pending rewards of staker
-    pub pending_reward: Uint128,
+    /// amount of pending bro rewards of staker
+    pub pending_bro_reward: Uint128,
+    /// amount of pending bbro rewards of staker
+    pub pending_bbro_reward: Uint128,
     /// last balance update(stake, unstake) block
     pub last_balance_update: u64,
     /// amounts locked for specified amount of epochs
@@ -131,26 +133,27 @@ impl StakerInfo {
     /// Computes staking reward and adds it to pending_reward
     pub fn compute_staking_reward(&mut self, state: &State) -> StdResult<()> {
         let stake_amount = self.total_staked()?;
-        let pending_reward = (stake_amount * state.global_reward_index)
+        let pending_bro_reward = (stake_amount * state.global_reward_index)
             .checked_sub(stake_amount * self.reward_index)?;
 
         self.reward_index = state.global_reward_index;
-        self.pending_reward = self.pending_reward.checked_add(pending_reward)?;
+        self.pending_bro_reward = self.pending_bro_reward.checked_add(pending_bro_reward)?;
         Ok(())
     }
 
     /// ## Description
     /// Computes normal bbro reward for staked BRO
     pub fn compute_normal_bbro_reward(
-        &self,
+        &mut self,
         querier: &QuerierWrapper,
         epoch_manager_contract: Addr,
         state: &State,
-    ) -> StdResult<Uint128> {
+        current_block: u64,
+    ) -> StdResult<()> {
         let stake_amount = self.total_staked()?;
 
         if stake_amount.is_zero() || state.last_distribution_block < self.last_balance_update {
-            return Ok(Uint128::zero());
+            return Ok(());
         }
 
         let epoch_info = query_epoch_info(querier, epoch_manager_contract)?;
@@ -162,7 +165,10 @@ impl StakerInfo {
             stake_amount.checked_div(epoch_info.epochs_per_year())? * epoch_info.bbro_emission_rate;
 
         let bbro_reward = bbro_per_epoch_reward.checked_mul(epochs_staked)?;
-        Ok(bbro_reward)
+        self.pending_bbro_reward = self.pending_bbro_reward.checked_add(bbro_reward)?;
+        self.last_balance_update = current_block;
+
+        Ok(())
     }
 
     /// ## Description
@@ -335,7 +341,8 @@ pub fn read_staker_info(
             reward_index: Decimal::zero(),
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::zero(),
-            pending_reward: Uint128::zero(),
+            pending_bro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::zero(),
             last_balance_update: current_block,
             lockups: vec![],
         }),

@@ -77,7 +77,7 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
         reward_index: staker_info.reward_index,
         unlocked_stake_amount: staker_info.unlocked_stake_amount,
         locked_stake_amount: staker_info.locked_stake_amount,
-        pending_reward: staker_info.pending_reward,
+        pending_bro_reward: staker_info.pending_bro_reward,
         last_balance_update: staker_info.last_balance_update,
         lockups: staker_info
             .lockups
@@ -111,16 +111,17 @@ pub fn query_staker_accrued_rewards(
     let state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &staker_addr_raw, env.block.height)?;
 
-    let bbro_stake_reward = staker_info.compute_normal_bbro_reward(
+    staker_info.compute_normal_bbro_reward(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
         &state,
+        env.block.height,
     )?;
 
     staker_info.compute_staking_reward(&state)?;
     let resp = StakerAccruedRewardsResponse {
-        rewards: staker_info.pending_reward,
-        bbro_stake_reward,
+        pending_bro_reward: staker_info.pending_bro_reward,
+        pending_bbro_reward: staker_info.pending_bbro_reward,
     };
 
     Ok(resp)

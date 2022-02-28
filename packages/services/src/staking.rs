@@ -227,8 +227,8 @@ pub struct StakerInfoResponse {
     pub unlocked_stake_amount: Uint128,
     /// amount of locked BRO tokens staked by staker
     pub locked_stake_amount: Uint128,
-    /// amount of pending rewards of staker
-    pub pending_reward: Uint128,
+    /// amount of pending bro rewards of staker
+    pub pending_bro_reward: Uint128,
     /// last balance update(stake, unstake) block
     pub last_balance_update: u64,
     /// amounts locked for specified amount of epochs
@@ -249,10 +249,10 @@ pub struct LockupInfoResponse {
 /// This structure describes the fields for staker accrued rewards response message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct StakerAccruedRewardsResponse {
-    /// amount of pending rewards of staker
-    pub rewards: Uint128,
-    /// amount of bBRO reward from staking BRO tokens
-    pub bbro_stake_reward: Uint128,
+    /// amount of pending bro rewards of staker
+    pub pending_bro_reward: Uint128,
+    /// amount of pending bbro rewards of staker
+    pub pending_bbro_reward: Uint128,
 }
 
 /// ## WithdrawalInfoResponse

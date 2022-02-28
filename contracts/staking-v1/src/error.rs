@@ -29,6 +29,9 @@ pub enum ContractError {
     #[error("Invalid lockup period")]
     InvalidLockupPeriod {},
 
+    #[error("Lockup premium reward is zero")]
+    LockupPremiumRewardIsZero {},
+
     #[error("Forbidden to lockup more than unlocked")]
     ForbiddenToLockupMoreThanUnlocked {},
 }

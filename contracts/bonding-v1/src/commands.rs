@@ -148,7 +148,11 @@ pub fn lp_bond(
                 msg: to_binary(&OracleExecuteMsg::UpdatePrice {})?,
             }),
         ])
-        .add_attributes(vec![("action", "lp_bond")]))
+        .add_attributes(vec![
+            ("action", "lp_bond"),
+            ("lp_amount", &lp_amount.to_string()),
+            ("bro_payout", &bro_payout.to_string()),
+        ]))
 }
 
 /// ## Description
@@ -210,7 +214,10 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
                 msg: to_binary(&OracleExecuteMsg::UpdatePrice {})?,
             }),
         ])
-        .add_attributes(vec![("action", "ust_bond")]))
+        .add_attributes(vec![
+            ("action", "ust_bond"),
+            ("bro_payout", &bro_payout.to_string()),
+        ]))
 }
 
 /// ## Description
@@ -257,7 +264,7 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
                 amount,
             })?,
         })])
-        .add_attributes(vec![("action", "claim")]))
+        .add_attributes(vec![("action", "claim"), ("amount", &amount.to_string())]))
 }
 
 /// ## Description

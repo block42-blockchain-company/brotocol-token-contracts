@@ -5,6 +5,10 @@ For local deploy:
 1) deploy astroport
 2) specify astro factory address in config
 
+*When deploying astroport, and it fails, try specifying a `multisigAddress` in `artifacts/localterra.json.*
+
+*Will work with this dummy address `"multisigAddress": "terra1c7m6j8ya58a2fkkptn8fgudx8sqjqvc8azq0ex"`*
+
 For testnet/mainnet:
 1) specify astro factory address in config
 
@@ -17,7 +21,7 @@ CHAINID=localterra
 ADMIN_ADDRESS="terra1..."
 ```
 
-For local development this will be enough
+For local development this will be enough, you can use any address for `ADMIN_ADDRESS`
 ```env
 CHAINID=localterra
 ADMIN_ADDRESS="terra1..."
@@ -32,7 +36,7 @@ npm install
 Config template can be found in config/template.json.
 For example if you want to deploy contracts to the localterra you need to create file with following name `localterra.json` and fill all the params with preffered data.
 
-Supported configs: `localterra.json`(local), `bombay-12.json`(testnet), `columbus-5.json`(mainnet).
+Supported configs: `localterra.json` (local), `bombay-12.json` (testnet), `columbus-5.json` (mainnet).
 
 ## Deploy
 

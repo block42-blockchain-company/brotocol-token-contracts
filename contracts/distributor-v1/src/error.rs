@@ -22,4 +22,7 @@ pub enum ContractError {
 
     #[error("Rewards pool balance is lower than distribution amount")]
     NotEnoughBalanceForRewards {},
+
+    #[error("Contract is paused")]
+    ContractIsPaused {},
 }

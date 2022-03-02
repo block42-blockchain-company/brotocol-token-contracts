@@ -40,6 +40,7 @@ Message params are optional.
 ```json
 {
     "owner": "terra1...",
+    "paused": false,
     "distribution_genesis_block": 12500,
     "epoch_manager_contract": "terra1...",
     "rewards_contract": "terra1...",

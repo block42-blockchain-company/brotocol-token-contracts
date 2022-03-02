@@ -44,6 +44,7 @@ pub fn instantiate(
         deps.storage,
         &Config {
             owner: deps.api.addr_canonicalize(&msg.owner)?,
+            paused: false,
             distribution_genesis_block: msg.distribution_genesis_block,
             epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
             rewards_contract: deps.api.addr_canonicalize(&msg.rewards_contract)?,
@@ -81,6 +82,7 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::UpdateConfig {
 ///         owner,
+///         paused,
 ///         epoch_manager_contract,
 ///         rewards_contract,
 ///         staking_contract,
@@ -99,6 +101,7 @@ pub fn execute(
         ExecuteMsg::Distribute {} => commands::distribute(deps, env),
         ExecuteMsg::UpdateConfig {
             owner,
+            paused,
             epoch_manager_contract,
             rewards_contract,
             staking_contract,
@@ -110,6 +113,7 @@ pub fn execute(
             commands::update_config(
                 deps,
                 owner,
+                paused,
                 epoch_manager_contract,
                 rewards_contract,
                 staking_contract,

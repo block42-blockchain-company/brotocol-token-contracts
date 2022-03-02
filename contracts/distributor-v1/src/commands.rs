@@ -22,6 +22,10 @@ use services::{
 /// * **env** is an object of type [`Env`]
 pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
+    if config.paused {
+        return Err(ContractError::ContractIsPaused {});
+    }
+
     let mut state = load_state(deps.storage)?;
 
     if config.distribution_genesis_block > env.block.height {
@@ -102,6 +106,8 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
 ///
 /// * **owner** is an [`Option`] of type [`String`]. Sets new contract owner address
 ///
+/// * **paused** is an [`Option`] of type [`bool`]. Sets either contract paused or not
+///
 /// * **epoch_manager_contract** is an [`Option`] of type [`String`]. Sets new epoch manager contract address
 ///
 /// * **rewards_contract** is an [`Option`] of type [`String`]. Sets new rewards pool contract address
@@ -117,6 +123,7 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
 pub fn update_config(
     deps: DepsMut,
     owner: Option<String>,
+    paused: Option<bool>,
     epoch_manager_contract: Option<String>,
     rewards_contract: Option<String>,
     staking_contract: Option<String>,
@@ -128,6 +135,10 @@ pub fn update_config(
 
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+    }
+
+    if let Some(paused) = paused {
+        config.paused = paused;
     }
 
     if let Some(epoch_manager_contract) = epoch_manager_contract {

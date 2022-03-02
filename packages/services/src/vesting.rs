@@ -40,7 +40,7 @@ pub enum ExecuteMsg {
         vesting_accounts: Vec<VestingAccount>,
     },
     /// ## Description
-    /// Claims availalble amount for message sender
+    /// Claims available amount for message sender
     Claim {},
 }
 

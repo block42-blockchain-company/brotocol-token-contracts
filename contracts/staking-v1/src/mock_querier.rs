@@ -44,10 +44,7 @@ impl Querier for WasmMockQuerier {
 impl WasmMockQuerier {
     pub fn handle_query(&self, request: &QueryRequest<Empty>) -> QuerierResult {
         match &request {
-            QueryRequest::Wasm(WasmQuery::Smart {
-                contract_addr: _,
-                msg,
-            }) => match from_binary(msg) {
+            QueryRequest::Wasm(WasmQuery::Smart { msg, .. }) => match from_binary(msg) {
                 Ok(QueryMsg::EpochInfo {}) => {
                     SystemResult::Ok(ContractResult::from(to_binary(&EpochInfoResponse {
                         bbro_emission_rate: Decimal::from_ratio(3u128, 1u128),

@@ -73,6 +73,8 @@ pub enum ExecuteMsg {
     UpdateConfig {
         /// contract/multisig address that allowed to control settings
         owner: Option<String>,
+        /// defines either contract paused or not
+        paused: Option<bool>,
         /// vesting period for withdrawal
         unstake_period_blocks: Option<u64>,
         /// minimum staking amount
@@ -171,6 +173,8 @@ pub struct MigrateMsg {}
 pub struct ConfigResponse {
     /// contract/multisig address that allowed to control settings
     pub owner: String,
+    /// defines either contract paused or not
+    pub paused: bool,
     /// bro token address
     pub bro_token: String,
     /// rewards pool address

@@ -46,6 +46,7 @@ pub fn instantiate(
         deps.storage,
         &Config {
             owner: deps.api.addr_canonicalize(&msg.owner)?,
+            paused: false,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
             rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
             bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
@@ -105,6 +106,7 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::UpdateConfig {
 ///         owner,
+///         paused,
 ///         unstake_period_blocks,
 ///         min_staking_amount,
 ///         min_lockup_period_epochs,
@@ -121,17 +123,36 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
+        ExecuteMsg::Receive(msg) => {
+            assert_not_paused(deps.storage)?;
+            receive_cw20(deps, env, info, msg)
+        }
         ExecuteMsg::LockupStaked {
             amount,
             epochs_locked,
-        } => commands::lockup_staked(deps, env, info, amount, epochs_locked),
-        ExecuteMsg::Unstake { amount } => commands::unstake(deps, env, info, amount),
-        ExecuteMsg::Withdraw {} => commands::withdraw(deps, env, info),
-        ExecuteMsg::ClaimBroRewards {} => commands::claim_bro_rewards(deps, env, info),
-        ExecuteMsg::ClaimBbroRewards {} => commands::claim_bbro_rewards(deps, env, info),
+        } => {
+            assert_not_paused(deps.storage)?;
+            commands::lockup_staked(deps, env, info, amount, epochs_locked)
+        }
+        ExecuteMsg::Unstake { amount } => {
+            assert_not_paused(deps.storage)?;
+            commands::unstake(deps, env, info, amount)
+        }
+        ExecuteMsg::Withdraw {} => {
+            assert_not_paused(deps.storage)?;
+            commands::withdraw(deps, env, info)
+        }
+        ExecuteMsg::ClaimBroRewards {} => {
+            assert_not_paused(deps.storage)?;
+            commands::claim_bro_rewards(deps, env, info)
+        }
+        ExecuteMsg::ClaimBbroRewards {} => {
+            assert_not_paused(deps.storage)?;
+            commands::claim_bbro_rewards(deps, env, info)
+        }
         ExecuteMsg::UpdateConfig {
             owner,
+            paused,
             unstake_period_blocks,
             min_staking_amount,
             min_lockup_period_epochs,
@@ -144,6 +165,7 @@ pub fn execute(
             commands::update_config(
                 deps,
                 owner,
+                paused,
                 unstake_period_blocks,
                 min_staking_amount,
                 min_lockup_period_epochs,
@@ -210,6 +232,19 @@ pub fn receive_cw20(
 fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
     if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
         return Err(ContractError::Unauthorized {});
+    }
+
+    Ok(())
+}
+
+/// ## Description
+/// Verifies that contract is not paused.
+/// Returns [`Ok`] if address is valid, otherwise returns [`ContractError`]
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+fn assert_not_paused(storage: &dyn Storage) -> Result<(), ContractError> {
+    if load_config(storage)?.paused {
+        return Err(ContractError::ContractIsPaused {});
     }
 
     Ok(())

@@ -28,7 +28,11 @@ ADMIN_ADDRESS="terra1..."
 npm install
 ```
 
-### 3. Edit .json config file for preferred chain
+### 3. Create .json config file in ./config dir
+Config template can be found in config/template.json.
+For example if you want to deploy contracts to the localterra you need to create file with following name `localterra.json` and fill all the params with preffered data.
+
+Supported configs: `localterra.json`(local), `bombay-12.json`(testnet), `columbus-5.json`(mainnet).
 
 ## Deploy
 

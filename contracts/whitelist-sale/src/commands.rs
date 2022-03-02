@@ -140,6 +140,7 @@ pub fn purchase(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
         ])
         .add_attributes(vec![
             ("action", "purchase"),
+            ("sender", &info.sender.to_string()),
             ("purchase_amount", &purchase_amount.to_string()),
         ]))
 }

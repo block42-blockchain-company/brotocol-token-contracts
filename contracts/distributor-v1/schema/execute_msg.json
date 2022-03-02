@@ -60,6 +60,13 @@
                 "null"
               ]
             },
+            "paused": {
+              "description": "defines either contract paused or not",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
             "rewards_contract": {
               "description": "rewards pool contract address",
               "type": [

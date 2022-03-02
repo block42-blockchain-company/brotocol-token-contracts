@@ -1,6 +1,11 @@
 import * as fs from 'fs';
 
 export function loadConfig(chainID: string): Config {
+    const filePath = `./config/${chainID}.json`;
+    if (!fs.existsSync(filePath)) {
+        throw Error(`config file for ${chainID} does not exists`);
+    }
+
     const data = fs.readFileSync(`./config/${chainID}.json`, 'utf8');
     return JSON.parse(data);
 }

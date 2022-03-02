@@ -77,7 +77,7 @@ pub fn instantiate(
 ///         stage,
 ///         amount,
 ///         proof,
-///     }** Claims availalble amount for message sender at specified airdrop round
+///     }** Claims available amount for message sender at specified airdrop round
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,

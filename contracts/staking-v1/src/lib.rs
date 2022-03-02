@@ -1,6 +1,7 @@
 pub mod commands;
 pub mod contract;
 mod error;
+pub mod math;
 pub mod queries;
 pub mod state;
 

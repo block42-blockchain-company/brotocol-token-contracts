@@ -47,7 +47,14 @@
         "bbro_emission_rate": "1.0"
     },
     "stakingv1": {
-        "unstake_period_blocks": 30
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+        "unstake_period_blocks": 30,
+        "min_staking_amount": "1",
+        "min_lockup_period_epochs": 1,
+        "max_lockup_period_epochs": 365,
+        "base_rate": "0.0001",
+        "linear_growth": "0.0005",
+        "exponential_growth": "0.0000075"
     },
     "bondingv1": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",

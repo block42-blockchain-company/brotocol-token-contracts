@@ -37,10 +37,70 @@
       ],
       "properties": {
         "stake": {
-          "type": "object"
+          "type": "object",
+          "required": [
+            "stake_type"
+          ],
+          "properties": {
+            "stake_type": {
+              "description": "staking type",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/StakeType"
+                }
+              ]
+            }
+          }
         }
       },
       "additionalProperties": false
     }
-  ]
+  ],
+  "definitions": {
+    "StakeType": {
+      "title": "StakeType",
+      "description": "This structure describes the stake type.",
+      "oneOf": [
+        {
+          "title": "Description",
+          "description": "Type of staking when staked amount will be unlocked",
+          "type": "object",
+          "required": [
+            "unlocked"
+          ],
+          "properties": {
+            "unlocked": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "title": "Description",
+          "description": "Type of staking when staked amount will be locked for specified amount of epochs",
+          "type": "object",
+          "required": [
+            "locked"
+          ],
+          "properties": {
+            "locked": {
+              "type": "object",
+              "required": [
+                "epochs_locked"
+              ],
+              "properties": {
+                "epochs_locked": {
+                  "description": "how many epochs specified amount will be locked",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
 }

@@ -73,7 +73,7 @@ Bond bro tokens by providing ust amount.
 
 ### `claim`
 
-Claim availalble reward amount.
+Claim available reward amount.
 
 ```json
 {

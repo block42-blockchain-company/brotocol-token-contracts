@@ -73,7 +73,7 @@ pub fn instantiate(
 /// * **RegisterVestingAccounts { vesting_accounts }** Registers vesting accounts
 /// for future distribution
 ///
-/// * **ExecuteMsg::Claim {}** Claims availalble amount for message sender
+/// * **ExecuteMsg::Claim {}** Claims available amount for message sender
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,

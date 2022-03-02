@@ -48,7 +48,7 @@ pub enum ExecuteMsg {
     /// Bond bro tokens by providing ust amount.
     UstBond {},
     /// ## Description
-    /// Claim availalble reward amount.
+    /// Claim available reward amount.
     Claim {},
     /// ## Description
     /// Updates contract settings

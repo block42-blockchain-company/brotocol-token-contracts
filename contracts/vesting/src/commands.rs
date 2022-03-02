@@ -11,7 +11,7 @@ use crate::{
 use services::vesting::{VestingAccount, VestingInfo, VestingSchedule};
 
 /// ## Description
-/// Claims availalble amount for message sender.
+/// Claims available amount for message sender.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params

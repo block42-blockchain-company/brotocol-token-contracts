@@ -705,7 +705,7 @@ fn test_unlocked_stake_tokens() {
 
     let info = mock_info("addr0000", &[]);
 
-    let msg = ExecuteMsg::ClaimStakingRewards {};
+    let msg = ExecuteMsg::ClaimBroRewards {};
     env.block.height += 1;
 
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -777,7 +777,7 @@ fn test_unlocked_stake_tokens() {
 
     let info = mock_info("addr0000", &[]);
 
-    let msg = ExecuteMsg::ClaimStakingRewards {};
+    let msg = ExecuteMsg::ClaimBroRewards {};
 
     match execute(deps.as_mut(), env.clone(), info, msg) {
         Err(ContractError::NothingToClaim {}) => (),
@@ -1130,7 +1130,7 @@ fn test_unlocked_stake_tokens() {
 
     let info = mock_info("addr0001", &[]);
 
-    let msg = ExecuteMsg::ClaimStakingRewards {};
+    let msg = ExecuteMsg::ClaimBroRewards {};
     env.block.height += 1;
 
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();

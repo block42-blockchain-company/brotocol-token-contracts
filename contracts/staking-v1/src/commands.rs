@@ -103,7 +103,7 @@ pub fn stake(
         env.block.height,
     )?;
 
-    staker_info.compute_staking_reward(&state)?;
+    staker_info.compute_bro_reward(&state)?;
 
     let msgs: Vec<CosmosMsg> = match stake_type {
         StakeType::Unlocked {} => {
@@ -270,7 +270,7 @@ pub fn unstake(
         env.block.height,
     )?;
 
-    staker_info.compute_staking_reward(&state)?;
+    staker_info.compute_bro_reward(&state)?;
 
     // decrease stake amount
     state.total_stake_amount = state.total_stake_amount.checked_sub(amount)?;
@@ -361,7 +361,7 @@ pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
 /// * **env** is an object of type [`Env`]
 ///
 /// * **info** is an object of type [`MessageInfo`]
-pub fn claim_staking_rewards(
+pub fn claim_bro_rewards(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
@@ -372,7 +372,7 @@ pub fn claim_staking_rewards(
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
 
-    staker_info.compute_staking_reward(&state)?;
+    staker_info.compute_bro_reward(&state)?;
 
     let amount = staker_info.pending_bro_reward;
     if amount == Uint128::zero() {

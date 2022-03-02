@@ -62,7 +62,7 @@ pub enum ExecuteMsg {
     Withdraw {},
     /// ## Description
     /// Claim available bro reward amount
-    ClaimStakingRewards {},
+    ClaimBroRewards {},
     /// ## Description
     /// Claim available bbro reward amount
     ClaimBbroRewards {},

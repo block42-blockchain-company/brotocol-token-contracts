@@ -99,7 +99,7 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::Withdraw {}** Withdraw the amount of tokens that have already passed the unstaking period
 ///
-/// * **ExecuteMsg::ClaimStakingRewards {}** Claim available bro reward amount
+/// * **ExecuteMsg::ClaimBroRewards {}** Claim available bro reward amount
 ///
 /// * **ExecuteMsg::ClaimBbroRewards {}** Claim available bbro reward amount
 ///
@@ -128,7 +128,7 @@ pub fn execute(
         } => commands::lockup_staked(deps, env, info, amount, epochs_locked),
         ExecuteMsg::Unstake { amount } => commands::unstake(deps, env, info, amount),
         ExecuteMsg::Withdraw {} => commands::withdraw(deps, env, info),
-        ExecuteMsg::ClaimStakingRewards {} => commands::claim_staking_rewards(deps, env, info),
+        ExecuteMsg::ClaimBroRewards {} => commands::claim_bro_rewards(deps, env, info),
         ExecuteMsg::ClaimBbroRewards {} => commands::claim_bbro_rewards(deps, env, info),
         ExecuteMsg::UpdateConfig {
             owner,

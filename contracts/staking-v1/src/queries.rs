@@ -70,7 +70,7 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
     let state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &staker_raw, env.block.height)?;
 
-    staker_info.compute_staking_reward(&state)?;
+    staker_info.compute_bro_reward(&state)?;
     staker_info.unlock_expired_lockups(&env.block)?;
     let resp = StakerInfoResponse {
         staker,
@@ -118,7 +118,7 @@ pub fn query_staker_accrued_rewards(
         env.block.height,
     )?;
 
-    staker_info.compute_staking_reward(&state)?;
+    staker_info.compute_bro_reward(&state)?;
     let resp = StakerAccruedRewardsResponse {
         pending_bro_reward: staker_info.pending_bro_reward,
         pending_bbro_reward: staker_info.pending_bbro_reward,

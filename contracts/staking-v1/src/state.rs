@@ -130,8 +130,8 @@ impl StakerInfo {
     }
 
     /// ## Description
-    /// Computes staking reward and adds it to pending_reward
-    pub fn compute_staking_reward(&mut self, state: &State) -> StdResult<()> {
+    /// Computes bro staking reward and adds it to pending_reward
+    pub fn compute_bro_reward(&mut self, state: &State) -> StdResult<()> {
         let stake_amount = self.total_staked()?;
         let pending_bro_reward = (stake_amount * state.global_reward_index)
             .checked_sub(stake_amount * self.reward_index)?;

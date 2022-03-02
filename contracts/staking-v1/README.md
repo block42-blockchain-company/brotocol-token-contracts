@@ -101,7 +101,7 @@ Withdraw the amount of tokens that have already passed the unstaking period.
 }
 ```
 
-### `claim_staking_rewards`
+### `claim_bro_rewards`
 
 Claim available bro reward amount.
 

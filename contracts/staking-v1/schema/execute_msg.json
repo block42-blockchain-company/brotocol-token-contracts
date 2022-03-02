@@ -97,10 +97,10 @@
       "description": "Claim available bro reward amount",
       "type": "object",
       "required": [
-        "claim_staking_rewards"
+        "claim_bro_rewards"
       ],
       "properties": {
-        "claim_staking_rewards": {
+        "claim_bro_rewards": {
           "type": "object"
         }
       },

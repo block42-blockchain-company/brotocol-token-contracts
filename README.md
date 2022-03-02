@@ -54,7 +54,7 @@ Build the schema json files with
 ./scripts/build_schema.sh
 ```
 
-For **deployment** follow this README: `./scripts/deploy/README.md`
+### For **deployment** please follow this [`README`](scripts/deploy)
 
 
 ## Docs

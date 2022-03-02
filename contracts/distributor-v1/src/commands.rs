@@ -94,7 +94,18 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
                 ],
             })?,
         })])
-        .add_attributes(vec![("action", "distribute")]))
+        .add_attributes(vec![
+            ("action", "distribute"),
+            ("passed_epochs", &passed_epochs.to_string()),
+            (
+                "staking_distribution_amount",
+                &staking_distribution_amount.to_string(),
+            ),
+            (
+                "bonding_distribution_amount",
+                &bonding_distribution_amount.to_string(),
+            ),
+        ]))
 }
 
 /// ## Description

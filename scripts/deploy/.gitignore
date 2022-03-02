@@ -3,3 +3,5 @@ node_modules/
 artifacts/**
 
 config/localterra.json
+config/bombay-12.json
+config/columbus-5.json

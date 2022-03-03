@@ -32,6 +32,8 @@ static WITHDRAWALS: Map<&[u8], Vec<WithdrawalInfo>> = Map::new("withdrawals");
 pub struct Config {
     /// contract/multisig address that allowed to control settings
     pub owner: CanonicalAddr,
+    /// defines whether the contract is paused or not
+    pub paused: bool,
     /// bro token address
     pub bro_token: CanonicalAddr,
     /// rewards pool address

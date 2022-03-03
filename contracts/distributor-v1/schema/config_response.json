@@ -9,6 +9,7 @@
     "distribution_genesis_block",
     "epoch_manager_contract",
     "owner",
+    "paused",
     "rewards_contract",
     "staking_contract",
     "staking_distribution_amount"
@@ -39,6 +40,10 @@
     "owner": {
       "description": "contract/multisig address that allowed to control settings",
       "type": "string"
+    },
+    "paused": {
+      "description": "defines either contract paused or not",
+      "type": "boolean"
     },
     "rewards_contract": {
       "description": "rewards pool contract address",

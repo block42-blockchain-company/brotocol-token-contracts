@@ -39,6 +39,8 @@ pub enum ExecuteMsg {
     UpdateConfig {
         /// contract/multisig address that allowed to control settings
         owner: Option<String>,
+        /// defines either contract paused or not
+        paused: Option<bool>,
         /// epoch manager contract addresss
         epoch_manager_contract: Option<String>,
         /// rewards pool contract address
@@ -79,6 +81,8 @@ pub struct MigrateMsg {}
 pub struct ConfigResponse {
     /// contract/multisig address that allowed to control settings
     pub owner: String,
+    /// defines either contract paused or not
+    pub paused: bool,
     /// genesis block for destribution start
     pub distribution_genesis_block: u64,
     /// epoch manager contract addresss

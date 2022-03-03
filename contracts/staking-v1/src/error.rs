@@ -14,6 +14,9 @@ pub enum ContractError {
     #[error("Unauthorized")]
     Unauthorized {},
 
+    #[error("Contract is paused")]
+    ContractIsPaused {},
+
     #[error("Invalid receive hook msg")]
     InvalidHookData {},
 

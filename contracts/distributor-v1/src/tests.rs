@@ -58,6 +58,7 @@ fn proper_initialization() {
         .unwrap(),
         ConfigResponse {
             owner: "owner".to_string(),
+            paused: false,
             distribution_genesis_block: 12500,
             epoch_manager_contract: MOCK_EPOCH_MANAGER_ADDR.to_string(),
             rewards_contract: MOCK_REWARDS_POOL_ADDR.to_string(),
@@ -131,6 +132,7 @@ fn distribute() {
     // update distribution amounts
     let msg = ExecuteMsg::UpdateConfig {
         owner: None,
+        paused: None,
         epoch_manager_contract: None,
         rewards_contract: None,
         staking_contract: None,
@@ -184,6 +186,30 @@ fn distribute() {
             last_distribution_block: 12600,
         },
     );
+
+    // pause contract
+    let msg = ExecuteMsg::UpdateConfig {
+        owner: None,
+        paused: Some(true),
+        epoch_manager_contract: None,
+        rewards_contract: None,
+        staking_contract: None,
+        staking_distribution_amount: None,
+        bonding_contract: None,
+        bonding_distribution_amount: None,
+    };
+
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), env.clone(), info, msg.clone()).unwrap();
+
+    // error: contract is paused
+    let msg = ExecuteMsg::Distribute {};
+    let info = mock_info("addr0000", &[]);
+    let res = execute(deps.as_mut(), env.clone(), info, msg.clone());
+    match res {
+        Err(ContractError::ContractIsPaused {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
 }
 
 #[test]
@@ -207,6 +233,7 @@ fn update_config() {
     // unauthorized: only owner allowed to execute
     let msg = ExecuteMsg::UpdateConfig {
         owner: Some("new_owner".to_string()),
+        paused: Some(true),
         epoch_manager_contract: Some("new_epochmanager".to_string()),
         rewards_contract: Some("new_rewards".to_string()),
         staking_contract: Some("new_staking".to_string()),
@@ -233,6 +260,7 @@ fn update_config() {
         .unwrap(),
         ConfigResponse {
             owner: "new_owner".to_string(),
+            paused: true,
             distribution_genesis_block: 12500,
             epoch_manager_contract: "new_epochmanager".to_string(),
             rewards_contract: "new_rewards".to_string(),

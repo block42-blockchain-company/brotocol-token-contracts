@@ -469,6 +469,8 @@ pub fn claim_bbro_rewards(
 ///
 /// * **owner** is an [`Option`] of type [`String`]
 ///
+/// * **paused** is an [`Option`] of type [`bool`]
+///
 /// * **unstake_period_blocks** is an [`Option`] of type [`u64`]
 ///
 /// * **min_staking_amount** is an [`Option`] of type [`Uint128`]
@@ -486,6 +488,7 @@ pub fn claim_bbro_rewards(
 pub fn update_config(
     deps: DepsMut,
     owner: Option<String>,
+    paused: Option<bool>,
     unstake_period_blocks: Option<u64>,
     min_staking_amount: Option<Uint128>,
     min_lockup_period_epochs: Option<u64>,
@@ -498,6 +501,10 @@ pub fn update_config(
 
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+    }
+
+    if let Some(paused) = paused {
+        config.paused = paused;
     }
 
     if let Some(unstake_period_blocks) = unstake_period_blocks {

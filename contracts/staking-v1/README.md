@@ -128,6 +128,8 @@ Message params are optional.
 
 ```json
 {
+    "owner": "terra1...",
+    "paused": false,
     "unstake_period_blocks": 1,
     "min_staking_amount": "100",
     "min_lockup_period_epochs": 1,

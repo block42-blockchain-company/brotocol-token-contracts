@@ -44,6 +44,7 @@ fn proper_initialization() {
         .unwrap(),
         ConfigResponse {
             owner: "owner".to_string(),
+            paused: false,
             bro_token: "bro0000".to_string(),
             rewards_pool_contract: "reward0000".to_string(),
             bbro_minter_contract: "bbrominter0000".to_string(),
@@ -1583,6 +1584,7 @@ fn update_config() {
     // unauthorized: only owner allowed to execute
     let msg = ExecuteMsg::UpdateConfig {
         owner: None,
+        paused: None,
         unstake_period_blocks: None,
         min_staking_amount: None,
         min_lockup_period_epochs: None,
@@ -1602,6 +1604,7 @@ fn update_config() {
     // proper execution
     let msg = ExecuteMsg::UpdateConfig {
         owner: Some("new_owner".to_string()),
+        paused: Some(true),
         unstake_period_blocks: Some(11),
         min_staking_amount: Some(Uint128::from(1u128)),
         min_lockup_period_epochs: Some(2),
@@ -1621,6 +1624,7 @@ fn update_config() {
         .unwrap(),
         ConfigResponse {
             owner: "new_owner".to_string(),
+            paused: true,
             bro_token: "bro0000".to_string(),
             rewards_pool_contract: "reward0000".to_string(),
             bbro_minter_contract: "bbrominter0000".to_string(),
@@ -1633,6 +1637,117 @@ fn update_config() {
                 base_rate: Decimal::from_str("0.0002").unwrap(),
                 linear_growth: Decimal::from_str("0.0006").unwrap(),
                 exponential_growth: Decimal::from_str("0.0000076").unwrap(),
+            }
+        }
+    );
+}
+
+#[test]
+fn pause_contract() {
+    let mut deps = mock_dependencies(&[]);
+    let env = mock_env();
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    // pause contract
+    let msg = ExecuteMsg::UpdateConfig {
+        owner: None,
+        paused: Some(true),
+        unstake_period_blocks: None,
+        min_staking_amount: None,
+        min_lockup_period_epochs: None,
+        max_lockup_period_epochs: None,
+        base_rate: None,
+        linear_growth: None,
+        exponential_growth: None,
+    };
+
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // all user functions must return err
+    let msgs = vec![
+        ExecuteMsg::Receive(Cw20ReceiveMsg {
+            sender: "reward0000".to_string(),
+            amount: Uint128::from(1000u128),
+            msg: to_binary(&Cw20HookMsg::DistributeReward {
+                distributed_at_block: 12348,
+            })
+            .unwrap(),
+        }),
+        ExecuteMsg::LockupStaked {
+            amount: Uint128::zero(),
+            epochs_locked: 1,
+        },
+        ExecuteMsg::Unstake {
+            amount: Uint128::zero(),
+        },
+        ExecuteMsg::Withdraw {},
+        ExecuteMsg::ClaimBroRewards {},
+        ExecuteMsg::ClaimBbroRewards {},
+    ];
+
+    for msg in msgs {
+        let info = mock_info("addr0000", &[]);
+        let res = execute(deps.as_mut(), mock_env(), info, msg);
+        match res {
+            Err(ContractError::ContractIsPaused {}) => assert_eq!(true, true),
+            _ => panic!("DO NOT ENTER HERE"),
+        }
+    }
+
+    // unpause contract
+    let msg = ExecuteMsg::UpdateConfig {
+        owner: None,
+        paused: Some(false),
+        unstake_period_blocks: None,
+        min_staking_amount: None,
+        min_lockup_period_epochs: None,
+        max_lockup_period_epochs: None,
+        base_rate: None,
+        linear_growth: None,
+        exponential_growth: None,
+    };
+
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner".to_string(),
+            paused: false,
+            bro_token: "bro0000".to_string(),
+            rewards_pool_contract: "reward0000".to_string(),
+            bbro_minter_contract: "bbrominter0000".to_string(),
+            epoch_manager_contract: "epoch0000".to_string(),
+            unstake_period_blocks: 10,
+            min_staking_amount: Uint128::zero(),
+            lockup_config: LockupConfigResponse {
+                min_lockup_period_epochs: 1,
+                max_lockup_period_epochs: 365,
+                base_rate: Decimal::from_str("0.0001").unwrap(),
+                linear_growth: Decimal::from_str("0.0005").unwrap(),
+                exponential_growth: Decimal::from_str("0.0000075").unwrap(),
             }
         }
     );

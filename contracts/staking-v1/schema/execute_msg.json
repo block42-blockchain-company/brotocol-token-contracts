@@ -200,6 +200,13 @@
                 "null"
               ]
             },
+            "paused": {
+              "description": "defines either contract paused or not",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
             "unstake_period_blocks": {
               "description": "vesting period for withdrawal",
               "type": [

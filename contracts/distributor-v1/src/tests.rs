@@ -119,6 +119,14 @@ fn distribute() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    assert_eq!(
+        from_binary::<bool>(
+            &query(deps.as_ref(), env.clone(), QueryMsg::IsReadyToTrigger {}).unwrap()
+        )
+        .unwrap(),
+        false,
+    );
+
     // error: not enough balance in rewards pool for distribution
     env.block.height = 12600;
     let info = mock_info("addr0000", &[]);
@@ -145,6 +153,14 @@ fn distribute() {
     let _res = execute(deps.as_mut(), env.clone(), info, msg.clone()).unwrap();
 
     // distribute rewards
+    assert_eq!(
+        from_binary::<bool>(
+            &query(deps.as_ref(), env.clone(), QueryMsg::IsReadyToTrigger {}).unwrap()
+        )
+        .unwrap(),
+        true,
+    );
+
     env.block.height = 12630;
     let msg = ExecuteMsg::Distribute {};
     let info = mock_info("addr0000", &[]);

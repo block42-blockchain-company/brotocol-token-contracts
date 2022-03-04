@@ -67,6 +67,9 @@ pub enum QueryMsg {
     /// ## Description
     /// Returns information about last distribution in the [`LastDistributionResponse`] object
     LastDistribution {},
+    /// ## Description
+    /// Returns a [`bool`] type whether the contract is ready to be triggered or not
+    IsReadyToTrigger {},
 }
 
 /// ## MigrateMsg

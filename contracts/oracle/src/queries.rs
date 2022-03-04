@@ -1,5 +1,5 @@
 use cosmwasm_bignumber::{Decimal256, Uint256};
-use cosmwasm_std::{Deps, StdError, StdResult, Uint128};
+use cosmwasm_std::{Deps, StdError, StdResult, Uint128, Env};
 
 use crate::state::{load_config, load_price_cumulative_last};
 
@@ -77,4 +77,23 @@ pub fn consult_price(
     Ok(ConsultPriceResponse {
         amount: consult_price.into(),
     })
+}
+
+/// ## Description
+/// Returns a [`bool`] type whether prices are ready to be updated or not
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+pub fn is_ready_to_trigger(deps: Deps, env: Env) -> StdResult<bool> {
+    let config = load_config(deps.storage)?;
+    let price_last = load_price_cumulative_last(deps.storage)?;
+
+    let current_time = env.block.time.seconds();
+    let time_elapsed = current_time - price_last.last_price_update_timestamp;
+
+    // can be triggered if one full period has passed since the last update
+    if time_elapsed < config.price_update_interval {
+        Ok(false)
+    } else {
+        Ok(true)
+    }
 }

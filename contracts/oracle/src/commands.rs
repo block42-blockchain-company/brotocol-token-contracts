@@ -54,7 +54,7 @@ pub fn update_price(deps: DepsMut, env: Env) -> Result<Response, ContractError> 
 
     // ensure that at least one full period has passed since the last update
     if time_elapsed < config.price_update_interval {
-        return Err(ContractError::UpdatePriceIntervalError {})
+        return Err(ContractError::UpdatePriceIntervalError {});
     }
 
     let prices = query_cumulative_prices(&deps.querier, config.pair.contract_addr)?;

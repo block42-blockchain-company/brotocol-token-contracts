@@ -156,7 +156,7 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 /// * **QueryMsg::Config {}** Returns distributor contract config
 ///
 /// * **QueryMsg::LastDistribution {}** Returns information about last distribution
-/// 
+///
 /// * **QueryMsg::IsReadyToTrigger {}** Returns whether funds can be distributed or not
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {

@@ -1,7 +1,7 @@
-use cosmwasm_std::{Deps, StdResult, Env};
+use cosmwasm_std::{Deps, Env, StdResult};
 use services::{
     distributor::{ConfigResponse, LastDistributionResponse},
-    querier::{query_epoch_info},
+    querier::query_epoch_info,
 };
 
 use crate::state::{load_config, load_state};
@@ -58,13 +58,13 @@ pub fn query_last_distribution_block(deps: Deps) -> StdResult<LastDistributionRe
 pub fn is_ready_to_trigger(deps: Deps, env: Env) -> StdResult<bool> {
     let config = load_config(deps.storage)?;
     if config.paused {
-        return Ok(false)
+        return Ok(false);
     }
 
     let state = load_state(deps.storage)?;
-    
+
     if config.distribution_genesis_block > env.block.height {
-        return Ok(false)
+        return Ok(false);
     }
 
     // query epoch from epoch_manager contract

@@ -1,5 +1,5 @@
 use cosmwasm_bignumber::{Decimal256, Uint256};
-use cosmwasm_std::{Deps, StdError, StdResult, Uint128, Env};
+use cosmwasm_std::{Deps, Env, StdError, StdResult, Uint128};
 
 use crate::state::{load_config, load_price_cumulative_last};
 

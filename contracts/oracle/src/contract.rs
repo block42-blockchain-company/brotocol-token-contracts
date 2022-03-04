@@ -151,7 +151,7 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 /// * **QueryMsg::Config {}** Returns oracle contract config
 ///
 /// * **QueryMsg::ConsultPrice { asset, amount }** Returns calculated average amount with updated precision
-/// 
+///
 /// * **QueryMsg::IsReadyToTrigger {}** Returns a [`bool`] type whether prices are ready to be updated or not
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
@@ -159,10 +159,8 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::ConsultPrice { asset, amount } => {
             to_binary(&queries::consult_price(deps, asset, amount)?)
-        },
-        QueryMsg::IsReadyToTrigger {} => {
-            to_binary(&queries::is_ready_to_trigger(deps, env)?)
         }
+        QueryMsg::IsReadyToTrigger {} => to_binary(&queries::is_ready_to_trigger(deps, env)?),
     }
 }
 

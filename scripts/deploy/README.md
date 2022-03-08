@@ -1,7 +1,7 @@
 # Deploy scripts
 
 ### Requirements
-For local deploy: 
+For local deployment: 
 1) deploy astroport
 2) specify astro factory address in config
 

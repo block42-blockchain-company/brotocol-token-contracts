@@ -78,6 +78,17 @@ Converts specified asset amount into other using average price.
 }
 ```
 
+### `is_ready_to_trigger`
+
+Returns whether oracle can be updated or not
+
+```json
+{
+    "is_ready_to_trigger": {}
+}
+```
+```
+
 ## MigrateMsg
 
 ```json

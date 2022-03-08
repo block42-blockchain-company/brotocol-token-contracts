@@ -1,5 +1,8 @@
-use cosmwasm_std::{Deps, StdResult};
-use services::distributor::{ConfigResponse, LastDistributionResponse};
+use cosmwasm_std::{Deps, Env, StdResult};
+use services::{
+    distributor::{ConfigResponse, LastDistributionResponse},
+    querier::query_epoch_info,
+};
 
 use crate::state::{load_config, load_state};
 
@@ -46,4 +49,39 @@ pub fn query_last_distribution_block(deps: Deps) -> StdResult<LastDistributionRe
     };
 
     Ok(resp)
+}
+
+/// ## Description
+/// Returns a [`bool`] type whether funds can be distributed or not
+/// ## Params
+/// * **deps** is an object of type [`Deps`]
+///
+/// * **env** is an object of type [`Env`].
+pub fn is_ready_to_trigger(deps: Deps, env: Env) -> StdResult<bool> {
+    let config = load_config(deps.storage)?;
+    if config.paused {
+        return Ok(false);
+    }
+
+    let state = load_state(deps.storage)?;
+
+    if config.distribution_genesis_block > env.block.height {
+        return Ok(false);
+    }
+
+    // query epoch from epoch_manager contract
+    let epoch_blocks = query_epoch_info(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+    )?
+    .epoch;
+
+    // only ready to be triggered if some epochs passed
+    let blocks_since_last_distribution = env.block.height - state.last_distribution_block;
+    let passed_epochs = blocks_since_last_distribution / epoch_blocks;
+    if passed_epochs == 0 {
+        Ok(false)
+    } else {
+        Ok(true)
+    }
 }

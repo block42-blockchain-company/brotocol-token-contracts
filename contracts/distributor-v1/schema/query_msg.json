@@ -30,6 +30,20 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Returns a [`bool`] type whether the contract is ready to be triggered or not",
+      "type": "object",
+      "required": [
+        "is_ready_to_trigger"
+      ],
+      "properties": {
+        "is_ready_to_trigger": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

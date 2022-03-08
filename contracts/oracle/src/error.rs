@@ -10,4 +10,7 @@ pub enum ContractError {
 
     #[error("Unauthorized")]
     Unauthorized {},
+
+    #[error("Price cannot be updated because update interval has not passed")]
+    UpdatePriceIntervalError {},
 }

@@ -59,8 +59,9 @@ Build the schema json files with
 
 ## Docs
 Generate docs by running:
-
-```cargo doc --no-deps```
+```
+cargo doc --no-deps
+```
 
 ## Github Pipelines
 - basic.yml - runs unit tests(cargo test) and linter commands (cargo fmt, cargo clippy)

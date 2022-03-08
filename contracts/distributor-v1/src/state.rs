@@ -17,8 +17,6 @@ static STATE: Item<State> = Item::new("state");
 pub struct Config {
     /// contract/multisig address that allowed to control settings
     pub owner: CanonicalAddr,
-    /// defines either contract paused or not
-    pub paused: bool,
     /// genesis block for destribution start
     pub distribution_genesis_block: u64,
     /// epoch manager contract addresss

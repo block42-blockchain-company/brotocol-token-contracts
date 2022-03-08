@@ -5,6 +5,7 @@ use crate::{
     state::{load_config, load_state, store_config, store_state},
 };
 
+use cw_helpers::pause::store_pause;
 use services::{
     bonding::Cw20HookMsg as BondingHookMsg,
     querier::{query_epoch_info, query_rewards_pool_balance},
@@ -22,9 +23,6 @@ use services::{
 /// * **env** is an object of type [`Env`]
 pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
-    if config.paused {
-        return Err(ContractError::ContractIsPaused {});
-    }
 
     let mut state = load_state(deps.storage)?;
 
@@ -149,7 +147,7 @@ pub fn update_config(
     }
 
     if let Some(paused) = paused {
-        config.paused = paused;
+        store_pause(deps.storage, &paused)?;
     }
 
     if let Some(epoch_manager_contract) = epoch_manager_contract {

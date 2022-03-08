@@ -12,6 +12,7 @@ use crate::{
     state::{load_config, store_config, store_state, Config, State},
 };
 
+use cw_helpers::pause::{assert_not_paused, store_pause};
 use services::distributor::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 /// Contract name that is used for migration.
@@ -40,11 +41,12 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
+    store_pause(deps.storage, &false)?;
+
     store_config(
         deps.storage,
         &Config {
             owner: deps.api.addr_canonicalize(&msg.owner)?,
-            paused: false,
             distribution_genesis_block: msg.distribution_genesis_block,
             epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
             rewards_contract: deps.api.addr_canonicalize(&msg.rewards_contract)?,
@@ -98,7 +100,10 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Distribute {} => commands::distribute(deps, env),
+        ExecuteMsg::Distribute {} => {
+            assert_not_paused(deps.storage).map_err(|_| ContractError::ContractIsPaused {})?;
+            commands::distribute(deps, env)
+        }
         ExecuteMsg::UpdateConfig {
             owner,
             paused,

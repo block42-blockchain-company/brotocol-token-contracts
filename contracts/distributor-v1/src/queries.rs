@@ -3,6 +3,8 @@ use services::distributor::{ConfigResponse, LastDistributionResponse};
 
 use crate::state::{load_config, load_state};
 
+use cw_helpers::pause::load_pause;
+
 /// ## Description
 /// Returns distributor contract config in the [`ConfigResponse`] object
 /// ## Params
@@ -11,7 +13,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
     let resp = ConfigResponse {
         owner: deps.api.addr_humanize(&config.owner)?.to_string(),
-        paused: config.paused,
+        paused: load_pause(deps.storage)?,
         distribution_genesis_block: config.distribution_genesis_block,
         epoch_manager_contract: deps
             .api

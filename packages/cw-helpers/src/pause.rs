@@ -14,3 +14,7 @@ pub fn assert_not_paused(storage: &dyn Storage) -> StdResult<()> {
 pub fn store_pause(storage: &mut dyn Storage, pause: &bool) -> StdResult<()> {
     PAUSE.save(storage, pause)
 }
+
+pub fn load_pause(storage: &dyn Storage) -> StdResult<bool> {
+    PAUSE.load(storage)
+}

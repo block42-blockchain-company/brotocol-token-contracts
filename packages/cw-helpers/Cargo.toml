@@ -1,14 +1,11 @@
 [package]
-name = "brotocol-bbro-minter"
+name = "cw-helpers"
 version = "1.0.0"
 authors = ["block42"]
 edition = "2018"
-description = "A bbro minter contract for Brotocol"
+description = "CosmWasm helpers for contracts"
 repository = "https://github.com/block42-blockchain-company/brotocol-token-contracts"
 license = "MIT"
-
-[lib]
-crate-type = ["cdylib", "rlib"]
 
 [profile.release]
 opt-level = 3
@@ -34,8 +31,3 @@ cw20 = "0.8.1"
 schemars = "0.8.3"
 serde = { version = "1.0.127", default-features = false, features = ["derive"] }
 thiserror = { version = "1.0.26" }
-services = { path = "../../packages/services", default-features = false, version = "1.0.0" }
-cw-helpers = { path = "../../packages/cw-helpers", default-features = false, version = "1.0.0" }
-
-[dev-dependencies]
-cosmwasm-schema = { version = "0.16.0" }

@@ -36,6 +36,7 @@ schemars = "0.8.3"
 serde = { version = "1.0.127", default-features = false, features = ["derive"] }
 thiserror = { version = "1.0.26" }
 services = { path = "../../packages/services", default-features = false, version = "1.0.0" }
+cw-helpers = { path = "../../packages/cw-helpers", default-features = false, version = "1.0.0" }
 
 [dev-dependencies]
 cosmwasm-schema = { version = "0.16.0" }

@@ -1,7 +1,5 @@
-use cosmwasm_std::{
-    to_binary, Addr, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, Uint128, WasmMsg,
-};
-use cw20::{Cw20ExecuteMsg, Expiration};
+use cosmwasm_std::{Addr, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, Uint128};
+use cw20::Expiration;
 
 use crate::{
     error::ContractError,
@@ -11,7 +9,11 @@ use crate::{
     },
 };
 
-use services::{bbro_minter::ExecuteMsg as BbroMintMsg, staking::StakeType};
+use cw_helpers::{
+    address::Address,
+    cw20_msgs::{mint_msg, transfer_msg},
+};
+use services::staking::StakeType;
 
 /// ## Description
 /// Distributes received reward.
@@ -35,17 +37,11 @@ pub fn distribute_reward(
     // we send it back to rewards pool
     if state.total_stake_amount.is_zero() {
         return Ok(Response::new()
-            .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
-                funds: vec![],
-                msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                    recipient: deps
-                        .api
-                        .addr_humanize(&config.rewards_pool_contract)?
-                        .to_string(),
-                    amount: reward_amount,
-                })?,
-            })])
+            .add_messages(vec![transfer_msg(
+                &Address::Canonical(config.bro_token, deps.api),
+                &Address::Canonical(config.rewards_pool_contract, deps.api),
+                reward_amount,
+            )?])
             .add_attributes(vec![
                 ("action", "distribute_reward"),
                 ("reward_amount", "0"),
@@ -85,11 +81,12 @@ pub fn stake(
     amount: Uint128,
     stake_type: StakeType,
 ) -> Result<Response, ContractError> {
-    let sender_raw = deps.api.addr_canonicalize(&sender_addr.to_string())?;
+    let sender = Address::Addr(sender_addr, deps.api);
 
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
-    let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
+    let mut staker_info =
+        read_staker_info(deps.storage, &sender.to_canonical()?, env.block.height)?;
 
     if amount < config.min_staking_amount {
         return Err(ContractError::StakingAmountMustBeHigherThanMinAmount {});
@@ -131,22 +128,16 @@ pub fn stake(
                 epochs_locked,
             )?;
 
-            vec![CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: deps
-                    .api
-                    .addr_humanize(&config.bbro_minter_contract)?
-                    .to_string(),
-                funds: vec![],
-                msg: to_binary(&BbroMintMsg::Mint {
-                    recipient: sender_addr.to_string(),
-                    amount: bbro_premium_lockup_reward,
-                })?,
-            })]
+            vec![mint_msg(
+                &Address::Canonical(config.bbro_minter_contract, deps.api),
+                &sender,
+                bbro_premium_lockup_reward,
+            )?]
         }
     };
 
     staker_info.unlock_expired_lockups(&env.block)?;
-    store_staker_info(deps.storage, &sender_raw, &staker_info)?;
+    store_staker_info(deps.storage, &sender.to_canonical()?, &staker_info)?;
 
     // increase total stake amount
     state.total_stake_amount = state.total_stake_amount.checked_add(amount)?;
@@ -154,7 +145,7 @@ pub fn stake(
 
     Ok(Response::new().add_messages(msgs).add_attributes(vec![
         ("action", "stake"),
-        ("staker", &sender_addr.to_string()),
+        ("staker", &sender.to_string()?),
         ("amount", &amount.to_string()),
     ]))
 }
@@ -180,10 +171,11 @@ pub fn lockup_staked(
     amount: Uint128,
     epochs_locked: u64,
 ) -> Result<Response, ContractError> {
-    let sender_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
+    let sender = Address::Addr(info.sender, deps.api);
 
     let config = load_config(deps.storage)?;
-    let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
+    let mut staker_info =
+        read_staker_info(deps.storage, &sender.to_canonical()?, env.block.height)?;
 
     staker_info.unlock_expired_lockups(&env.block)?;
     if staker_info.unlocked_stake_amount < amount {
@@ -209,23 +201,17 @@ pub fn lockup_staked(
         epochs_locked,
     )?;
     staker_info.unlocked_stake_amount = staker_info.unlocked_stake_amount.checked_sub(amount)?;
-    store_staker_info(deps.storage, &sender_raw, &staker_info)?;
+    store_staker_info(deps.storage, &sender.to_canonical()?, &staker_info)?;
 
     Ok(Response::new()
-        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: deps
-                .api
-                .addr_humanize(&config.bbro_minter_contract)?
-                .to_string(),
-            funds: vec![],
-            msg: to_binary(&BbroMintMsg::Mint {
-                recipient: info.sender.to_string(),
-                amount: bbro_premium_lockup_reward,
-            })?,
-        })])
+        .add_messages(vec![mint_msg(
+            &Address::Canonical(config.bbro_minter_contract, deps.api),
+            &sender,
+            bbro_premium_lockup_reward,
+        )?])
         .add_attributes(vec![
             ("action", "lockup_staked"),
-            ("sender", &info.sender.to_string()),
+            ("sender", &sender.to_string()?),
             ("lockup_amount", &amount.to_string()),
             (
                 "bbro_premium_lockup_reward",
@@ -255,8 +241,9 @@ pub fn unstake(
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
-    let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
+    let sender = Address::Addr(info.sender, deps.api);
+    let mut staker_info =
+        read_staker_info(deps.storage, &sender.to_canonical()?, env.block.height)?;
 
     staker_info.unlock_expired_lockups(&env.block)?;
     if staker_info.unlocked_stake_amount < amount {
@@ -277,26 +264,26 @@ pub fn unstake(
     staker_info.unlocked_stake_amount = staker_info.unlocked_stake_amount.checked_sub(amount)?;
 
     if staker_info.pending_bro_reward.is_zero() && staker_info.total_staked()?.is_zero() {
-        remove_staker_info(deps.storage, &sender_addr_raw);
+        remove_staker_info(deps.storage, &sender.to_canonical()?);
     } else {
-        store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
+        store_staker_info(deps.storage, &sender.to_canonical()?, &staker_info)?;
     }
 
     store_state(deps.storage, &state)?;
 
     // create withdrawal info
     let claimable_at = Expiration::AtHeight(env.block.height + config.unstake_period_blocks);
-    let mut staker_withdrawals = load_withdrawals(deps.storage, &sender_addr_raw)?;
+    let mut staker_withdrawals = load_withdrawals(deps.storage, &sender.to_canonical()?)?;
     staker_withdrawals.push(WithdrawalInfo {
         amount,
         claimable_at,
     });
 
-    store_withdrawals(deps.storage, &sender_addr_raw, &staker_withdrawals)?;
+    store_withdrawals(deps.storage, &sender.to_canonical()?, &staker_withdrawals)?;
 
     Ok(Response::new().add_attributes(vec![
         ("action", "unstake"),
-        ("staker", &info.sender.to_string()),
+        ("staker", &sender.to_string()?),
         ("amount", &amount.to_string()),
     ]))
 }
@@ -313,40 +300,38 @@ pub fn unstake(
 /// * **info** is an object of type [`MessageInfo`]
 pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
-    let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
+    let sender = Address::Addr(info.sender, deps.api);
 
     let mut amount = Uint128::zero();
     // if withdrawal passed unstaking period add claimable amount and remove it from withdrawals list
-    let staker_withdrawals: Vec<WithdrawalInfo> = load_withdrawals(deps.storage, &sender_addr_raw)?
-        .into_iter()
-        .filter(|c| {
-            if c.claimable_at.is_expired(&env.block) {
-                amount += c.amount;
-                false
-            } else {
-                true
-            }
-        })
-        .collect();
+    let staker_withdrawals: Vec<WithdrawalInfo> =
+        load_withdrawals(deps.storage, &sender.to_canonical()?)?
+            .into_iter()
+            .filter(|c| {
+                if c.claimable_at.is_expired(&env.block) {
+                    amount += c.amount;
+                    false
+                } else {
+                    true
+                }
+            })
+            .collect();
 
     if amount.is_zero() {
         return Err(ContractError::NothingToClaim {});
     }
 
-    store_withdrawals(deps.storage, &sender_addr_raw, &staker_withdrawals)?;
+    store_withdrawals(deps.storage, &sender.to_canonical()?, &staker_withdrawals)?;
 
     Ok(Response::new()
-        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
-            funds: vec![],
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                recipient: info.sender.to_string(),
-                amount,
-            })?,
-        })])
+        .add_messages(vec![transfer_msg(
+            &Address::Canonical(config.bro_token, deps.api),
+            &sender,
+            amount,
+        )?])
         .add_attributes(vec![
             ("action", "withdraw"),
-            ("staker", &info.sender.to_string()),
+            ("staker", &sender.to_string()?),
             ("amount", &amount.to_string()),
         ]))
 }
@@ -369,8 +354,9 @@ pub fn claim_bro_rewards(
     let config = load_config(deps.storage)?;
     let state = load_state(deps.storage)?;
 
-    let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
-    let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
+    let sender = Address::Addr(info.sender, deps.api);
+    let mut staker_info =
+        read_staker_info(deps.storage, &sender.to_canonical()?, env.block.height)?;
 
     staker_info.compute_bro_reward(&state)?;
 
@@ -383,23 +369,20 @@ pub fn claim_bro_rewards(
     staker_info.unlock_expired_lockups(&env.block)?;
 
     if staker_info.total_staked()?.is_zero() {
-        remove_staker_info(deps.storage, &sender_addr_raw);
+        remove_staker_info(deps.storage, &sender.to_canonical()?);
     } else {
-        store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
+        store_staker_info(deps.storage, &sender.to_canonical()?, &staker_info)?;
     }
 
     Ok(Response::new()
-        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
-            funds: vec![],
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                recipient: info.sender.to_string(),
-                amount,
-            })?,
-        })])
+        .add_messages(vec![transfer_msg(
+            &Address::Canonical(config.bro_token, deps.api),
+            &sender,
+            amount,
+        )?])
         .add_attributes(vec![
             ("action", "claim_bro_rewards"),
-            ("staker", &info.sender.to_string()),
+            ("staker", &sender.to_string()?),
             ("amount", &amount.to_string()),
         ]))
 }
@@ -422,8 +405,9 @@ pub fn claim_bbro_rewards(
     let config = load_config(deps.storage)?;
     let state = load_state(deps.storage)?;
 
-    let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
-    let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
+    let sender = Address::Addr(info.sender, deps.api);
+    let mut staker_info =
+        read_staker_info(deps.storage, &sender.to_canonical()?, env.block.height)?;
 
     staker_info.compute_normal_bbro_reward(
         &deps.querier,
@@ -439,23 +423,17 @@ pub fn claim_bbro_rewards(
 
     staker_info.pending_bbro_reward = Uint128::zero();
     staker_info.unlock_expired_lockups(&env.block)?;
-    store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
+    store_staker_info(deps.storage, &sender.to_canonical()?, &staker_info)?;
 
     Ok(Response::new()
-        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: deps
-                .api
-                .addr_humanize(&config.bbro_minter_contract)?
-                .to_string(),
-            funds: vec![],
-            msg: to_binary(&BbroMintMsg::Mint {
-                recipient: info.sender.to_string(),
-                amount: bbro_reward,
-            })?,
-        })])
+        .add_messages(vec![mint_msg(
+            &Address::Canonical(config.bbro_minter_contract, deps.api),
+            &sender,
+            bbro_reward,
+        )?])
         .add_attributes(vec![
             ("action", "claim_bbro_rewards"),
-            ("staker", &info.sender.to_string()),
+            ("staker", &sender.to_string()?),
             ("bbro_reward", &bbro_reward.to_string()),
         ]))
 }

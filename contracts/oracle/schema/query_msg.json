@@ -52,6 +52,20 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Returns a [`bool`] type whether prices are ready to be updated or not",
+      "type": "object",
+      "required": [
+        "is_ready_to_trigger"
+      ],
+      "properties": {
+        "is_ready_to_trigger": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

@@ -171,8 +171,25 @@ fn update_price() {
     let info = mock_info("owner", &[]);
     let _res = instantiate(deps.as_mut(), env.clone(), info, msg).unwrap();
 
+    assert_eq!(
+        from_binary::<bool>(
+            &query(deps.as_ref(), env.clone(), QueryMsg::IsReadyToTrigger {}).unwrap()
+        )
+        .unwrap(),
+        false,
+    );
+
     // update prices
     env.block.time = env.block.time.plus_seconds(121);
+
+    assert_eq!(
+        from_binary::<bool>(
+            &query(deps.as_ref(), env.clone(), QueryMsg::IsReadyToTrigger {}).unwrap()
+        )
+        .unwrap(),
+        true,
+    );
+
     deps.querier.set_cumulative_price(
         Addr::unchecked(MOCK_PAIR_ADDR),
         assets.clone(),

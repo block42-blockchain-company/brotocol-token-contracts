@@ -52,6 +52,9 @@ pub enum QueryMsg {
         /// amount of specified asset
         amount: Uint128,
     },
+    /// ## Description
+    /// Returns a [`bool`] type whether prices are ready to be updated or not
+    IsReadyToTrigger {},
 }
 
 /// ## MigrateMsg

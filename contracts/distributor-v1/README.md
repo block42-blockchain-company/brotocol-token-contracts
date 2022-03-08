@@ -72,6 +72,17 @@ Returns information about last distribution.
     "last_distribution": {}
 }
 ```
+
+### `is_ready_to_trigger`
+
+Returns whether funds can be distributed or not
+
+```json
+{
+    "is_ready_to_trigger": {}
+}
+```
+
 ## MigrateMsg
 
 ```json

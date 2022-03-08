@@ -1,8 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Api, Binary, CanonicalAddr, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Storage,
+    to_binary, Binary, CanonicalAddr, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
 };
 use cw2::set_contract_version;
 
@@ -10,9 +9,10 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, Config},
+    state::{store_config, Config},
 };
 
+use cw_helpers::ownership::{assert_owner, store_owner};
 use services::bbro_minter::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 /// Contract name that is used for migration.
@@ -47,10 +47,11 @@ pub fn instantiate(
         .map(|w| deps.api.addr_canonicalize(&w))
         .collect::<StdResult<Vec<CanonicalAddr>>>()?;
 
+    store_owner(deps.storage, &deps.api.addr_canonicalize(&msg.owner)?)?;
+
     store_config(
         deps.storage,
         &Config {
-            owner: deps.api.addr_canonicalize(&msg.owner)?,
             bbro_token: None,
             whitelist,
         },
@@ -93,37 +94,23 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::UpdateConfig { owner, bbro_token } => {
-            assert_owner(deps.storage, deps.api, info.sender)?;
+            assert_owner(deps.storage, deps.api, info.sender)
+                .map_err(|_| ContractError::Unauthorized {})?;
             commands::update_config(deps, owner, bbro_token)
         }
         ExecuteMsg::AddMinter { minter } => {
-            assert_owner(deps.storage, deps.api, info.sender)?;
+            assert_owner(deps.storage, deps.api, info.sender)
+                .map_err(|_| ContractError::Unauthorized {})?;
             commands::add_minter(deps, minter)
         }
         ExecuteMsg::RemoveMinter { minter } => {
-            assert_owner(deps.storage, deps.api, info.sender)?;
+            assert_owner(deps.storage, deps.api, info.sender)
+                .map_err(|_| ContractError::Unauthorized {})?;
             commands::remove_minter(deps, minter)
         }
         ExecuteMsg::Mint { recipient, amount } => commands::mint(deps, info, recipient, amount),
         ExecuteMsg::Burn { owner, amount } => commands::burn(deps, info, owner, amount),
     }
-}
-
-/// ## Description
-/// Verifies that message sender is a contract owner.
-/// Returns [`Ok`] if address is valid, otherwise returns [`ContractError`]
-/// ## Params
-/// * **storage** is an object of type [`Storage`]
-///
-/// * **api** is an object of type [`Api`]
-///
-/// * **sender** is an object of type [`Addr`]
-fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
-    if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
-        return Err(ContractError::Unauthorized {});
-    }
-
-    Ok(())
 }
 
 /// ## Description

@@ -8,6 +8,8 @@ use crate::{
     state::{load_config, store_config},
 };
 
+use cw_helpers::ownership::change_owner;
+
 /// ## Description
 /// Updates contract settings.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
@@ -26,7 +28,7 @@ pub fn update_config(
     let mut config = load_config(deps.storage)?;
 
     if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
+        change_owner(deps.storage, &deps.api.addr_canonicalize(&owner)?)?;
     }
 
     if let Some(bbro_token) = bbro_token {

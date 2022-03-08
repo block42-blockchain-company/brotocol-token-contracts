@@ -11,8 +11,6 @@ static CONFIG: Item<Config> = Item::new("config");
 /// This structure describes the main control config of bbro minter contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Config {
-    /// contract/multisig address that allowed to control settings
-    pub owner: CanonicalAddr,
     /// bbro token address
     pub bbro_token: Option<CanonicalAddr>,
     /// list of whitelisted addresses allowed to execute mint/burn functions

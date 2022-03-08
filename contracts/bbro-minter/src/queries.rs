@@ -3,6 +3,8 @@ use services::bbro_minter::ConfigResponse;
 
 use crate::state::load_config;
 
+use cw_helpers::ownership::load_owner_str;
+
 /// ## Description
 /// Returns bbro minter contract config in the [`ConfigResponse`] object
 /// ## Params
@@ -16,7 +18,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     };
 
     let resp = ConfigResponse {
-        owner: deps.api.addr_humanize(&config.owner)?.to_string(),
+        owner: load_owner_str(deps.storage, deps.api)?,
         bbro_token,
         whitelist: config
             .whitelist

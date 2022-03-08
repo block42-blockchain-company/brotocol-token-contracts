@@ -83,6 +83,8 @@ pub fn consult_price(
 /// Returns a [`bool`] type whether prices are ready to be updated or not
 /// ## Params
 /// * **deps** is an object of type [`Deps`]
+/// 
+/// * **env** is an object of type [`Env`].
 pub fn is_ready_to_trigger(deps: Deps, env: Env) -> StdResult<bool> {
     let config = load_config(deps.storage)?;
     let price_last = load_price_cumulative_last(deps.storage)?;

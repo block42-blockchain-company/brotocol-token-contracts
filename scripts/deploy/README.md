@@ -1,9 +1,7 @@
 # Deploy scripts
-ad:
-https://open.spotify.com/track/4DHATlv5A1Gs9pMaWSHDMb?si=2992e8651e884185…
-Same artist, a bi
+
 ### Requirements
-For local deploy: 
+For local deployment: 
 1) deploy astroport
 2) specify astro factory address in config
 

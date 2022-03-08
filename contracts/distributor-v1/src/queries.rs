@@ -55,6 +55,8 @@ pub fn query_last_distribution_block(deps: Deps) -> StdResult<LastDistributionRe
 /// Returns a [`bool`] type whether funds can be distributed or not
 /// ## Params
 /// * **deps** is an object of type [`Deps`]
+/// 
+/// * **env** is an object of type [`Env`].
 pub fn is_ready_to_trigger(deps: Deps, env: Env) -> StdResult<bool> {
     let config = load_config(deps.storage)?;
     if config.paused {

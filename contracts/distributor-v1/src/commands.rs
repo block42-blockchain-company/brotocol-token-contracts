@@ -1,4 +1,4 @@
-use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, Env, Response, Uint128, WasmMsg};
+use cosmwasm_std::{to_binary, Attribute, CosmosMsg, DepsMut, Env, Response, Uint128, WasmMsg};
 
 use crate::{
     error::ContractError,
@@ -144,39 +144,67 @@ pub fn update_config(
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
+    let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
+
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+        attributes.push(Attribute::new("owner_changed", &owner));
     }
 
     if let Some(paused) = paused {
         config.paused = paused;
+        attributes.push(Attribute::new("paused_changed", &paused.to_string()));
     }
 
     if let Some(epoch_manager_contract) = epoch_manager_contract {
         config.epoch_manager_contract = deps.api.addr_canonicalize(&epoch_manager_contract)?;
+        attributes.push(Attribute::new(
+            "epoch_manager_contract_changed",
+            &epoch_manager_contract,
+        ));
     }
 
     if let Some(rewards_contract) = rewards_contract {
         config.rewards_contract = deps.api.addr_canonicalize(&rewards_contract)?;
+        attributes.push(Attribute::new(
+            "rewards_contract_changed",
+            &rewards_contract,
+        ));
     }
 
     if let Some(staking_contract) = staking_contract {
         config.staking_contract = deps.api.addr_canonicalize(&staking_contract)?;
+        attributes.push(Attribute::new(
+            "staking_contract_changed",
+            &staking_contract,
+        ));
     }
 
     if let Some(staking_distribution_amount) = staking_distribution_amount {
         config.staking_distribution_amount = staking_distribution_amount;
+        attributes.push(Attribute::new(
+            "staking_distribution_amount_changed",
+            &staking_distribution_amount.to_string(),
+        ));
     }
 
     if let Some(bonding_contract) = bonding_contract {
         config.bonding_contract = deps.api.addr_canonicalize(&bonding_contract)?;
+        attributes.push(Attribute::new(
+            "bonding_contract_changed",
+            &bonding_contract,
+        ));
     }
 
     if let Some(bonding_distribution_amount) = bonding_distribution_amount {
         config.bonding_distribution_amount = bonding_distribution_amount;
+        attributes.push(Attribute::new(
+            "bonding_distribution_amount_changed",
+            &bonding_distribution_amount.to_string(),
+        ));
     }
 
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new().add_attributes(vec![("action", "update_config")]))
+    Ok(Response::new().add_attributes(attributes))
 }

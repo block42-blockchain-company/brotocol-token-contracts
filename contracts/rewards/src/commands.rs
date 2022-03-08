@@ -1,5 +1,6 @@
 use cosmwasm_std::{
-    to_binary, CanonicalAddr, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg,
+    to_binary, Attribute, CanonicalAddr, CosmosMsg, DepsMut, MessageInfo, Response, Uint128,
+    WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
 use services::rewards::DistributeRewardMsg;
@@ -26,17 +27,24 @@ pub fn update_config(
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
+    let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
+
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+        attributes.push(Attribute::new("owner_changed", &owner));
     }
 
     if let Some(spend_limit) = spend_limit {
         config.spend_limit = spend_limit;
+        attributes.push(Attribute::new(
+            "spend_limit_changed",
+            &spend_limit.to_string(),
+        ));
     }
 
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new().add_attribute("action", "update_config"))
+    Ok(Response::new().add_attributes(attributes))
 }
 
 /// ## Description

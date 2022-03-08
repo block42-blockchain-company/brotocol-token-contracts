@@ -1,6 +1,7 @@
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 use cosmwasm_std::{
-    attr, from_binary, to_binary, CosmosMsg, StdError, SubMsg, Timestamp, Uint128, WasmMsg,
+    attr, from_binary, to_binary, Attribute, CosmosMsg, StdError, SubMsg, Timestamp, Uint128,
+    WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
 
@@ -56,7 +57,10 @@ fn update_config() {
         genesis_time: None,
     };
     let info = mock_info("owner", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(res.attributes[1], Attribute::new("owner_changed", "owner2"));
 
     assert_eq!(
         from_binary::<ConfigResponse>(
@@ -86,7 +90,13 @@ fn update_config() {
         genesis_time: Some(1u64),
     };
     let info = mock_info("owner2", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(
+        res.attributes[1],
+        Attribute::new("genesis_time_changed", "1")
+    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(

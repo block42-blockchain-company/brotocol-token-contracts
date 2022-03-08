@@ -1,5 +1,6 @@
 use cosmwasm_std::{
-    to_binary, Addr, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, Uint128, WasmMsg,
+    to_binary, Addr, Attribute, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, Uint128,
+    WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Expiration};
 
@@ -499,43 +500,72 @@ pub fn update_config(
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
+    let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
+
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+        attributes.push(Attribute::new("owner_changed", &owner));
     }
 
     if let Some(paused) = paused {
         config.paused = paused;
+        attributes.push(Attribute::new("paused_changed", &paused.to_string()));
     }
 
     if let Some(unstake_period_blocks) = unstake_period_blocks {
         config.unstake_period_blocks = unstake_period_blocks;
+        attributes.push(Attribute::new(
+            "unstake_period_blocks_changed",
+            &unstake_period_blocks.to_string(),
+        ));
     }
 
     if let Some(min_staking_amount) = min_staking_amount {
         config.min_staking_amount = min_staking_amount;
+        attributes.push(Attribute::new(
+            "min_staking_amount_changed",
+            &min_staking_amount.to_string(),
+        ));
     }
 
     if let Some(min_lockup_period_epochs) = min_lockup_period_epochs {
         config.lockup_config.min_lockup_period_epochs = min_lockup_period_epochs;
+        attributes.push(Attribute::new(
+            "min_lockup_period_epochs_changed",
+            &min_lockup_period_epochs.to_string(),
+        ));
     }
 
     if let Some(max_lockup_period_epochs) = max_lockup_period_epochs {
         config.lockup_config.max_lockup_period_epochs = max_lockup_period_epochs;
+        attributes.push(Attribute::new(
+            "max_lockup_period_epochs_changed",
+            &max_lockup_period_epochs.to_string(),
+        ));
     }
 
     if let Some(base_rate) = base_rate {
         config.lockup_config.base_rate = base_rate;
+        attributes.push(Attribute::new("base_rate_changed", &base_rate.to_string()));
     }
 
     if let Some(linear_growth) = linear_growth {
         config.lockup_config.linear_growth = linear_growth;
+        attributes.push(Attribute::new(
+            "linear_growth_changed",
+            &linear_growth.to_string(),
+        ));
     }
 
     if let Some(exponential_growth) = exponential_growth {
         config.lockup_config.exponential_growth = exponential_growth;
+        attributes.push(Attribute::new(
+            "exponential_growth_changed",
+            &exponential_growth.to_string(),
+        ));
     }
 
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new().add_attributes(vec![("action", "update_config")]))
+    Ok(Response::new().add_attributes(attributes))
 }

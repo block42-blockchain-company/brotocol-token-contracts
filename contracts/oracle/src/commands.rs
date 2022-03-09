@@ -1,5 +1,5 @@
 use cosmwasm_bignumber::{Decimal256, Uint256};
-use cosmwasm_std::{DepsMut, Env, Response};
+use cosmwasm_std::{Attribute, DepsMut, Env, Response};
 
 use crate::{
     error::ContractError,
@@ -25,16 +25,23 @@ pub fn update_config(
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
+    let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
+
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+        attributes.push(Attribute::new("owner_changed", &owner));
     }
 
     if let Some(price_update_interval) = price_update_interval {
         config.price_update_interval = price_update_interval;
+        attributes.push(Attribute::new(
+            "price_update_interval_changed",
+            &price_update_interval.to_string(),
+        ));
     }
 
     store_config(deps.storage, &config)?;
-    Ok(Response::new().add_attribute("action", "update_config"))
+    Ok(Response::new().add_attributes(attributes))
 }
 
 /// ## Description

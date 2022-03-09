@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-use cosmwasm_std::{from_binary, Decimal};
+use cosmwasm_std::{from_binary, Attribute, Decimal};
 
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
@@ -74,7 +74,13 @@ fn update_config() {
 
     // proper execution
     let info = mock_info("addr0000", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(
+        res.attributes[1],
+        Attribute::new("owner_changed", "addr0001")
+    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(
@@ -125,7 +131,18 @@ fn update_state() {
 
     // proper execution
     let info = mock_info("addr0000", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_state"));
+    assert_eq!(res.attributes[1], Attribute::new("epoch_changed", "2000"));
+    assert_eq!(
+        res.attributes[2],
+        Attribute::new("blocks_per_year_changed", "100")
+    );
+    assert_eq!(
+        res.attributes[3],
+        Attribute::new("bbro_emission_rate_changed", "0.9")
+    );
 
     assert_eq!(
         from_binary::<EpochInfoResponse>(

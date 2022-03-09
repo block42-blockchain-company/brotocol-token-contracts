@@ -2,7 +2,7 @@ use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use astroport::asset::{Asset, AssetInfo};
 use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{from_binary, Addr, Uint128};
+use cosmwasm_std::{from_binary, Addr, Attribute, Uint128};
 
 use crate::mock_querier::{mock_dependencies, MOCK_FACTORY_ADDR, MOCK_PAIR_ADDR};
 
@@ -115,7 +115,17 @@ fn update_config() {
 
     // proper execution
     let info = mock_info("owner", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(
+        res.attributes[1],
+        Attribute::new("owner_changed", "new_owner")
+    );
+    assert_eq!(
+        res.attributes[2],
+        Attribute::new("price_update_interval_changed", "130")
+    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(

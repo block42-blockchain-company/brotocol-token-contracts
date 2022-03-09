@@ -5,7 +5,7 @@ use crate::error::ContractError;
 use crate::state::{load_claims, store_claims, BondType, ClaimInfo};
 use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{
-    from_binary, to_binary, BankMsg, Coin, CosmosMsg, Decimal, SubMsg, Uint128, WasmMsg,
+    from_binary, to_binary, Attribute, BankMsg, Coin, CosmosMsg, Decimal, SubMsg, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
 
@@ -812,7 +812,57 @@ fn update_config() {
 
     // proper execution
     let info = mock_info("owner", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(
+        res.attributes[1],
+        Attribute::new("owner_changed", "new_owner")
+    );
+    assert_eq!(
+        res.attributes[2],
+        Attribute::new("lp_token_changed", "new_lp")
+    );
+    assert_eq!(
+        res.attributes[3],
+        Attribute::new("rewards_pool_contract_changed", "new_rewards")
+    );
+    assert_eq!(
+        res.attributes[4],
+        Attribute::new("treasury_contract_changed", "new_treasury")
+    );
+    assert_eq!(
+        res.attributes[5],
+        Attribute::new("astroport_factory_changed", "new_astro")
+    );
+    assert_eq!(
+        res.attributes[6],
+        Attribute::new("oracle_contract_changed", "new_oracle")
+    );
+    assert_eq!(
+        res.attributes[7],
+        Attribute::new("ust_bonding_reward_ratio_changed", "0.61")
+    );
+    assert_eq!(
+        res.attributes[8],
+        Attribute::new("ust_bonding_discount_changed", "0.11")
+    );
+    assert_eq!(
+        res.attributes[9],
+        Attribute::new("lp_bonding_discount_changed", "0.06")
+    );
+    assert_eq!(
+        res.attributes[10],
+        Attribute::new("min_bro_payout_changed", "2")
+    );
+    assert_eq!(
+        res.attributes[11],
+        Attribute::new("vesting_period_blocks_changed", "11")
+    );
+    assert_eq!(
+        res.attributes[12],
+        Attribute::new("lp_bonding_enabled_changed", "false")
+    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(

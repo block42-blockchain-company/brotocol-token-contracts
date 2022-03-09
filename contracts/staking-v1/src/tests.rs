@@ -10,7 +10,9 @@ use services::staking::{
 };
 
 use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{from_binary, to_binary, CosmosMsg, Decimal, SubMsg, Uint128, WasmMsg};
+use cosmwasm_std::{
+    from_binary, to_binary, Attribute, CosmosMsg, Decimal, SubMsg, Uint128, WasmMsg,
+};
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
 
 use std::str::FromStr;
@@ -1615,7 +1617,42 @@ fn update_config() {
     };
 
     let info = mock_info("owner", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(
+        res.attributes[1],
+        Attribute::new("owner_changed", "new_owner")
+    );
+    assert_eq!(res.attributes[2], Attribute::new("paused_changed", "true"));
+    assert_eq!(
+        res.attributes[3],
+        Attribute::new("unstake_period_blocks_changed", "11")
+    );
+    assert_eq!(
+        res.attributes[4],
+        Attribute::new("min_staking_amount_changed", "1")
+    );
+    assert_eq!(
+        res.attributes[5],
+        Attribute::new("min_lockup_period_epochs_changed", "2")
+    );
+    assert_eq!(
+        res.attributes[6],
+        Attribute::new("max_lockup_period_epochs_changed", "364")
+    );
+    assert_eq!(
+        res.attributes[7],
+        Attribute::new("base_rate_changed", "0.0002")
+    );
+    assert_eq!(
+        res.attributes[8],
+        Attribute::new("linear_growth_changed", "0.0006")
+    );
+    assert_eq!(
+        res.attributes[9],
+        Attribute::new("exponential_growth_changed", "0.0000076")
+    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(

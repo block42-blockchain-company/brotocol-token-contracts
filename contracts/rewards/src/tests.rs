@@ -1,7 +1,7 @@
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-use cosmwasm_std::{from_binary, to_binary, CosmosMsg, SubMsg, Uint128, WasmMsg};
+use cosmwasm_std::{from_binary, to_binary, Attribute, CosmosMsg, SubMsg, Uint128, WasmMsg};
 use cw20::Cw20ExecuteMsg;
 
 use services::rewards::{
@@ -64,17 +64,31 @@ fn update_config() {
     let info = mock_info("addr0000", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
 
+    // error: Unauthorized
     match res {
         Err(ContractError::Unauthorized {}) => assert_eq!(true, true),
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    // proper execution
     let info = mock_info("gov", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
-    let config: ConfigResponse =
-        from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
     assert_eq!(
-        config,
+        res.attributes[1],
+        Attribute::new("owner_changed", "new_gov")
+    );
+    assert_eq!(
+        res.attributes[2],
+        Attribute::new("spend_limit_changed", "500000")
+    );
+
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap(),
+        )
+        .unwrap(),
         ConfigResponse {
             owner: "new_gov".to_string(),
             bro_token: "bro".to_string(),

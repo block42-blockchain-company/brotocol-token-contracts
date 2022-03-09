@@ -1,4 +1,4 @@
-use cosmwasm_std::{to_binary, Binary, CosmosMsg, DepsMut, Response, Uint128, WasmMsg};
+use cosmwasm_std::{to_binary, Attribute, Binary, CosmosMsg, DepsMut, Response, Uint128, WasmMsg};
 use cw20::Cw20ExecuteMsg;
 
 use crate::{
@@ -89,11 +89,14 @@ pub fn send(
 pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
+    let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
+
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+        attributes.push(Attribute::new("owner_changed", &owner));
     }
 
     store_config(deps.storage, &config)?;
 
-    Ok(Response::new().add_attributes(vec![("action", "update_config")]))
+    Ok(Response::new().add_attributes(attributes))
 }

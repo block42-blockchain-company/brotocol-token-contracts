@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    to_binary, Addr, CanonicalAddr, Coin, CosmosMsg, Decimal, DepsMut, Env, MessageInfo,
+    to_binary, Addr, Attribute, CanonicalAddr, Coin, CosmosMsg, Decimal, DepsMut, Env, MessageInfo,
     QuerierWrapper, Response, StdResult, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Expiration};
@@ -319,56 +319,97 @@ pub fn update_config(
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
+    let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
+
     if let Some(owner) = owner {
         config.owner = deps.api.addr_canonicalize(&owner)?;
+        attributes.push(Attribute::new("owner_changed", &owner));
     }
 
     if let Some(lp_token) = lp_token {
         config.lp_token = deps.api.addr_canonicalize(&lp_token)?;
+        attributes.push(Attribute::new("lp_token_changed", &lp_token));
     }
 
     if let Some(rewards_pool_contract) = rewards_pool_contract {
         config.rewards_pool_contract = deps.api.addr_canonicalize(&rewards_pool_contract)?;
+        attributes.push(Attribute::new(
+            "rewards_pool_contract_changed",
+            &rewards_pool_contract,
+        ));
     }
 
     if let Some(treasury_contract) = treasury_contract {
         config.treasury_contract = deps.api.addr_canonicalize(&treasury_contract)?;
+        attributes.push(Attribute::new(
+            "treasury_contract_changed",
+            &treasury_contract,
+        ));
     }
 
     if let Some(astroport_factory) = astroport_factory {
         config.astroport_factory = deps.api.addr_canonicalize(&astroport_factory)?;
+        attributes.push(Attribute::new(
+            "astroport_factory_changed",
+            &astroport_factory,
+        ));
     }
 
     if let Some(oracle_contract) = oracle_contract {
         config.oracle_contract = deps.api.addr_canonicalize(&oracle_contract)?;
+        attributes.push(Attribute::new("oracle_contract_changed", &oracle_contract));
     }
 
     if let Some(ust_bonding_reward_ratio) = ust_bonding_reward_ratio {
         config.ust_bonding_reward_ratio = ust_bonding_reward_ratio;
+        attributes.push(Attribute::new(
+            "ust_bonding_reward_ratio_changed",
+            &ust_bonding_reward_ratio.to_string(),
+        ));
     }
 
     if let Some(ust_bonding_discount) = ust_bonding_discount {
         config.ust_bonding_discount = ust_bonding_discount;
+        attributes.push(Attribute::new(
+            "ust_bonding_discount_changed",
+            &ust_bonding_discount.to_string(),
+        ));
     }
 
     if let Some(lp_bonding_discount) = lp_bonding_discount {
         config.lp_bonding_discount = lp_bonding_discount;
+        attributes.push(Attribute::new(
+            "lp_bonding_discount_changed",
+            &lp_bonding_discount.to_string(),
+        ));
     }
 
     if let Some(min_bro_payout) = min_bro_payout {
         config.min_bro_payout = min_bro_payout;
+        attributes.push(Attribute::new(
+            "min_bro_payout_changed",
+            &min_bro_payout.to_string(),
+        ));
     }
 
     if let Some(vesting_period_blocks) = vesting_period_blocks {
         config.vesting_period_blocks = vesting_period_blocks;
+        attributes.push(Attribute::new(
+            "vesting_period_blocks_changed",
+            &vesting_period_blocks.to_string(),
+        ));
     }
 
     if let Some(lp_bonding_enabled) = lp_bonding_enabled {
         config.lp_bonding_enabled = lp_bonding_enabled;
+        attributes.push(Attribute::new(
+            "lp_bonding_enabled_changed",
+            &lp_bonding_enabled.to_string(),
+        ));
     }
 
     store_config(deps.storage, &config)?;
-    Ok(Response::new().add_attributes(vec![("action", "update_config")]))
+    Ok(Response::new().add_attributes(attributes))
 }
 
 /// ## Description

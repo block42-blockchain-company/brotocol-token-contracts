@@ -1,7 +1,7 @@
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{from_binary, to_binary, CosmosMsg, SubMsg, Uint128, WasmMsg};
+use cosmwasm_std::{from_binary, to_binary, Attribute, CosmosMsg, SubMsg, Uint128, WasmMsg};
 
 use crate::mock_querier::{mock_dependencies, MOCK_EPOCH_MANAGER_ADDR, MOCK_REWARDS_POOL_ADDR};
 
@@ -267,7 +267,38 @@ fn update_config() {
 
     // proper execution
     let info = mock_info("owner", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(
+        res.attributes[1],
+        Attribute::new("owner_changed", "new_owner")
+    );
+    assert_eq!(res.attributes[2], Attribute::new("paused_changed", "true"));
+    assert_eq!(
+        res.attributes[3],
+        Attribute::new("epoch_manager_contract_changed", "new_epochmanager")
+    );
+    assert_eq!(
+        res.attributes[4],
+        Attribute::new("rewards_contract_changed", "new_rewards")
+    );
+    assert_eq!(
+        res.attributes[5],
+        Attribute::new("staking_contract_changed", "new_staking")
+    );
+    assert_eq!(
+        res.attributes[6],
+        Attribute::new("staking_distribution_amount_changed", "100")
+    );
+    assert_eq!(
+        res.attributes[7],
+        Attribute::new("bonding_contract_changed", "new_bonding")
+    );
+    assert_eq!(
+        res.attributes[8],
+        Attribute::new("bonding_distribution_amount_changed", "200")
+    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(

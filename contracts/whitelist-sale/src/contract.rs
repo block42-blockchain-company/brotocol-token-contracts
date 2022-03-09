@@ -30,7 +30,7 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 ///
 /// * **_env** is an object of type [`Env`].
 ///
-/// * **info** is an object of type [`MessageInfo`].
+/// * **_info** is an object of type [`MessageInfo`].
 ///
 /// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]

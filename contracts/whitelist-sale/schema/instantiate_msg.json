@@ -7,6 +7,7 @@
     "bro_amount_per_nft",
     "bro_amount_per_uusd",
     "bro_token",
+    "owner",
     "rewards_pool_contract",
     "ust_receiver"
   ],
@@ -29,6 +30,10 @@
     },
     "bro_token": {
       "description": "bro token address",
+      "type": "string"
+    },
+    "owner": {
+      "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     },
     "rewards_pool_contract": {

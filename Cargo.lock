@@ -96,6 +96,7 @@ dependencies = [
  "cw20-base",
  "schemars",
  "serde",
+ "services",
  "thiserror",
 ]
 

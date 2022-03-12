@@ -30,14 +30,14 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 ///
 /// * **_env** is an object of type [`Env`].
 ///
-/// * **info** is an object of type [`MessageInfo`].
+/// * **_info** is an object of type [`MessageInfo`].
 ///
 /// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
@@ -45,7 +45,7 @@ pub fn instantiate(
     store_config(
         deps.storage,
         &Config {
-            owner: deps.api.addr_canonicalize(&info.sender.to_string())?,
+            owner: deps.api.addr_canonicalize(&msg.owner)?,
             bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
             bro_amount_per_uusd: msg.bro_amount_per_uusd,
             bro_amount_per_nft: msg.bro_amount_per_nft,

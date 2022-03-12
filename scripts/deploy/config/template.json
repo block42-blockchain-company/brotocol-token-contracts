@@ -67,6 +67,7 @@
         "lp_bonding_enabled": false
     },
     "whitelist_sale": {
+        "owner": "",
         "bro_amount_per_uusd": "",
         "bro_amount_per_nft": "",
         "ust_receiver": ""

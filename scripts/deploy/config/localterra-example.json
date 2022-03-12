@@ -67,6 +67,7 @@
         "lp_bonding_enabled": true
     },
     "whitelist_sale": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
         "bro_amount_per_uusd": "10",
         "bro_amount_per_nft": "100",
         "ust_receiver": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"

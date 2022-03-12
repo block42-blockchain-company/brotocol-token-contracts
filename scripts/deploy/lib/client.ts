@@ -10,7 +10,7 @@ import path from 'path'
 import { sleep } from "./util.js";
 
 const ARTIFACTS_BASE_PATH = "../../artifacts";
-const TIMEOUT = 3000;
+const TIMEOUT = 5000;
 
 export class TerraClient {
     public wallet: Wallet;
@@ -45,7 +45,7 @@ export class TerraClient {
         });
 
         const txResponse = await this.terra.tx.broadcast(storeCodeTx);
-        sleep(TIMEOUT);
+        await sleep(TIMEOUT);
         
         this.throwOnError(txResponse);
 
@@ -74,7 +74,7 @@ export class TerraClient {
         });
 
         const txResponse = await this.terra.tx.broadcast(instantiateTx);
-        sleep(TIMEOUT);
+        await sleep(TIMEOUT);
 
         this.throwOnError(txResponse);
 
@@ -102,7 +102,7 @@ export class TerraClient {
         });
 
         const txResponse = await this.terra.tx.broadcast(execuiteTx);
-        sleep(TIMEOUT);
+        await sleep(TIMEOUT);
 
         this.throwOnError(txResponse);
         return txResponse;

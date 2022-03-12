@@ -18,6 +18,7 @@ fn proper_initialization() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
+        owner: "addr0000".to_string(),
         bro_token: "bro0000".to_string(),
         bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),
@@ -63,6 +64,7 @@ fn register_sale() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
+        owner: "owner".to_string(),
         bro_token: "bro0000".to_string(),
         bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),
@@ -271,6 +273,7 @@ fn purchase() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
+        owner: "owner".to_string(),
         bro_token: "bro0000".to_string(),
         bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100_000000u128),
@@ -477,6 +480,7 @@ fn withdraw_remaining_balance() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
+        owner: "owner".to_string(),
         bro_token: "bro0000".to_string(),
         bro_amount_per_uusd: Uint128::from(10u128),
         bro_amount_per_nft: Uint128::from(100u128),

@@ -100,7 +100,7 @@ pub fn is_ready_to_trigger(deps: Deps, env: Env) -> StdResult<bool> {
         staking_distribution_amount.checked_add(bonding_distribution_amount)?;
     if total_distribution_amount > rewards_pool_balance {
         return Ok(false);
-    } 
-    
+    }
+
     Ok(true)
 }

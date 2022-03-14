@@ -1,7 +1,7 @@
-use cosmwasm_std::{Deps, Env, StdResult};
+use cosmwasm_std::{Deps, Env, StdResult, Uint128};
 use services::{
     distributor::{ConfigResponse, LastDistributionResponse},
-    querier::query_epoch_info,
+    querier::{query_epoch_info, query_rewards_pool_balance},
 };
 
 use crate::state::{load_config, load_state};
@@ -80,8 +80,27 @@ pub fn is_ready_to_trigger(deps: Deps, env: Env) -> StdResult<bool> {
     let blocks_since_last_distribution = env.block.height - state.last_distribution_block;
     let passed_epochs = blocks_since_last_distribution / epoch_blocks;
     if passed_epochs == 0 {
-        Ok(false)
-    } else {
-        Ok(true)
+        return Ok(false);
     }
+
+    // only ready if enough funds are in the rewards pool
+    let staking_distribution_amount = config
+        .staking_distribution_amount
+        .checked_mul(Uint128::from(passed_epochs))?;
+    let bonding_distribution_amount = config
+        .bonding_distribution_amount
+        .checked_mul(Uint128::from(passed_epochs))?;
+
+    // check that rewards pool balance is greater than distribution amount
+    let rewards_pool_contract = deps.api.addr_humanize(&config.rewards_contract)?;
+    let rewards_pool_balance =
+        query_rewards_pool_balance(&deps.querier, rewards_pool_contract.clone())?.balance;
+
+    let total_distribution_amount =
+        staking_distribution_amount.checked_add(bonding_distribution_amount)?;
+    if total_distribution_amount > rewards_pool_balance {
+        return Ok(false);
+    } 
+    
+    Ok(true)
 }

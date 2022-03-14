@@ -16,6 +16,8 @@ use cw20_base::{
     ContractError,
 };
 
+use services::bbro_token::MigrateMsg;
+
 /// ## Description
 /// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
 /// Returns the default [`Response`] object if the operation was successful, otherwise returns
@@ -97,4 +99,17 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     cw20_query(deps, env, msg)
+}
+
+/// ## Description
+/// Used for migration of contract. Returns the default object of type [`Response`].
+/// ## Params
+/// * **_deps** is an object of type [`Deps`].
+///
+/// * **_env** is an object of type [`Env`].
+///
+/// * **_msg** is an object of type [`MigrateMsg`].
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    Ok(Response::default())
 }

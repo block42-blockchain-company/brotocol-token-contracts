@@ -1,5 +1,6 @@
 pub mod airdrop;
 pub mod bbro_minter;
+pub mod bbro_token;
 pub mod bonding;
 pub mod common;
 pub mod distributor;

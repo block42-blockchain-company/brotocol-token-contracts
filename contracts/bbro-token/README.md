@@ -107,7 +107,6 @@ If authorized, updates marketing metadata. Setting None/null for any of these wi
 
 Upload a new URL, SVG, or PNG for the token.
 
-
 ```json
 {
     "upload_logo": {
@@ -136,8 +135,6 @@ Returns the current balance of the given address, 0 if unset. Return type: Balan
 
 Returns metadata on the contract - name, decimals, supply, etc. Return type: TokenInfoResponse.
 
-
-
 ```json
 {
     "token_info": {}
@@ -149,7 +146,6 @@ Returns metadata on the contract - name, decimals, supply, etc. Return type: Tok
 Only with "mintable" extension. Returns who can mint and the hard cap on maximum tokens after minting. Return type: MinterResponse.
 
 
-
 ```json
 {
     "minter": {}
@@ -159,8 +155,6 @@ Only with "mintable" extension. Returns who can mint and the hard cap on maximum
 ### `allowance`
 
 Only with "allowance" extension. Returns how much spender can use from owner account, 0 if unset. Return type: AllowanceResponse.
-
-
 
 ```json
 {
@@ -174,8 +168,6 @@ Only with "allowance" extension. Returns how much spender can use from owner acc
 ### `all_allowances`
 
 Only with "enumerable" extension (and "allowances") Returns all allowances this owner has approved. Supports pagination. Return type: AllAllowancesResponse.
-
-
 
 ```json
 {
@@ -191,8 +183,6 @@ Only with "enumerable" extension (and "allowances") Returns all allowances this 
 
 Only with "enumerable" extension Returns all accounts that have balances. Supports pagination. Return type: AllAccountsResponse.
 
-
-
 ```json
 {
     "all_accounts": {
@@ -207,7 +197,6 @@ Only with "enumerable" extension Returns all accounts that have balances. Suppor
 Returns more metadata on the contract to display in the client:
 description, logo, project url, etc. Return type: MarketingInfoResponse
 
-
 ```json
 {
     "marketing_info": {}
@@ -216,8 +205,7 @@ description, logo, project url, etc. Return type: MarketingInfoResponse
 
 ### `download_logo`
 
-Only with "marketing" extension Downloads the mbeded logo data (if stored on chain). Errors if no logo data ftored for this contract. Return type: DownloadLogoResponse.
-
+Only with "marketing" extension Downloads the embeded logo data (if stored on chain). Errors if no logo data stored for this contract. Return type: DownloadLogoResponse.
 
 
 ```json

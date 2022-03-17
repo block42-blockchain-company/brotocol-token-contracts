@@ -94,7 +94,7 @@ pub fn is_ready_to_trigger(deps: Deps, env: Env) -> StdResult<bool> {
     // check that rewards pool balance is greater than distribution amount
     let rewards_pool_contract = deps.api.addr_humanize(&config.rewards_contract)?;
     let rewards_pool_balance =
-        query_rewards_pool_balance(&deps.querier, rewards_pool_contract.clone())?.balance;
+        query_rewards_pool_balance(&deps.querier, rewards_pool_contract)?.balance;
 
     let total_distribution_amount =
         staking_distribution_amount.checked_add(bonding_distribution_amount)?;

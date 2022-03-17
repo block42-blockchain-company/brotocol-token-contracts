@@ -46,7 +46,9 @@ Message params are optional.
 
 ```json
 {
-    "owner": "terra1..."
+    "update_config": {
+        "owner": "terra1..."
+    }
 }
 ```
 
@@ -56,12 +58,14 @@ Claims available amount for message sender at specified airdrop round.
 
 ```json
 {
-    "stage": 1,
-    "amount": "100",
-    "proof": [
-        "<keccak256_string>",
-        "<keccak256_string>"
-    ]
+    "claim": {
+        "stage": 1,
+        "amount": "100",
+        "proof": [
+            "<keccak256_string>",
+            "<keccak256_string>"
+        ]
+    }
 }
 ```
 

@@ -228,6 +228,18 @@ export class BbroMinter implements Contract {
         );
     }
 
+    public async proposeConfiguredOwner(): Promise<void> {
+        await this.client.executeContract(
+            this.address,
+            {
+                propose_new_owner: {
+                    new_owner: this.updateOwner,
+                    expires_in_blocks: 17600,
+                }
+            }
+        )
+    }
+
     public async addMinter(address: string): Promise<void> {
         await this.client.executeContract(
             this.address,
@@ -309,6 +321,18 @@ export class RewardsPool implements Contract {
             {
                 add_distributor: {
                     distributor: address,
+                }
+            }
+        )
+    }
+
+    public async proposeConfiguredOwner(): Promise<void> {
+        await this.client.executeContract(
+            this.address,
+            {
+                propose_new_owner: {
+                    new_owner: this.updateOwner,
+                    expires_in_blocks: 17600,
                 }
             }
         )

@@ -57,8 +57,8 @@ fn proper_initialization() {
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
         ust_bonding_reward_ratio: Decimal::from_str("1.1").unwrap(),
-        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+        ust_bonding_discount: Decimal::from_str("1.1").unwrap(),
+        lp_bonding_discount: Decimal::from_str("1.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
         vesting_period_blocks: 10,
         lp_bonding_enabled: true,
@@ -79,8 +79,26 @@ fn proper_initialization() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    // proper initialization
     msg.ust_bonding_reward_ratio = Decimal::from_str("0.6").unwrap();
+
+    let info = mock_info("addr0001", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::InvalidDiscount {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    msg.ust_bonding_discount = Decimal::from_str("0.1").unwrap();
+
+    let info = mock_info("addr0001", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::InvalidDiscount {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // proper initialization
+    msg.lp_bonding_discount = Decimal::from_str("0.05").unwrap();
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 

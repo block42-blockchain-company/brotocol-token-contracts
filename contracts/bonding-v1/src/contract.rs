@@ -48,10 +48,18 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    if msg.ust_bonding_reward_ratio > Decimal::from_str("1.0")?
-        || msg.ust_bonding_reward_ratio <= Decimal::zero()
-    {
+    let one = Decimal::from_str("1.0")?;
+
+    if msg.ust_bonding_reward_ratio > one || msg.ust_bonding_reward_ratio <= Decimal::zero() {
         return Err(ContractError::InvalidUstBondRatio {});
+    }
+
+    if msg.ust_bonding_discount > one || msg.ust_bonding_discount <= Decimal::zero() {
+        return Err(ContractError::InvalidDiscount {});
+    }
+
+    if msg.lp_bonding_discount > one || msg.lp_bonding_discount <= Decimal::zero() {
+        return Err(ContractError::InvalidDiscount {});
     }
 
     store_config(

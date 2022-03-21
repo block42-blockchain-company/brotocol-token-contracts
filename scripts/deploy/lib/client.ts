@@ -29,7 +29,7 @@ export class TerraClient {
             const localTerra = new LocalTerra();
             this.terra = localTerra;
             this.wallet = this.terra.wallet(new MnemonicKey({
-                mnemonic: "satisfy adjust timber high purchase tuition stool faith fine install that you unaware feed domain license impose boss human eager hat rent enjoy dawn",
+                mnemonic: "notice oak worry limit wrap speak medal online prefer cluster roof addict wrist behave treat actual wasp year salad speed social layer crew genius",
             }));
         }
     }

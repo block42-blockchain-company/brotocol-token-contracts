@@ -17,6 +17,7 @@ import {
     Vesting,
     WhitelistSale
 } from './lib/contracts.js';
+import { sleep } from './lib/util.js';
 
 async function main() {
     dotenv.config();
@@ -93,15 +94,19 @@ async function main() {
 
     console.log("whitelist distributor in rewards pool");
     await rewardsPoolContract.addDistributor(artifact.distributor_v1);
+    await sleep(5000);
 
-    console.log("propose ownership of rewards pool to configured owner");
+    console.log("propose ownership of rewards pool to configured owner\nclaim it from owner address");
     await rewardsPoolContract.proposeConfiguredOwner();
+    await sleep(5000);
 
     console.log("whitelist staking contract in bbro-minter");
     await bbroMinterContract.addMinter(artifact.staking_v1);
+    await sleep(5000);
 
-    console.log("propose ownership of bbro-minter to configured owner");
+    console.log("propose ownership of bbro-minter to configured owner\nclaim it from owner address");
     await bbroMinterContract.proposeConfiguredOwner();
+    await sleep(5000);
 
     console.log(`You can find deployed contract addresses in artifacts folder: artifacts/${chainID}.json`);
 }

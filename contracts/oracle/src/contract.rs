@@ -65,7 +65,7 @@ pub fn instantiate(
     store_config(
         deps.storage,
         &Config {
-            owner: deps.api.addr_canonicalize(&msg.owner.to_string())?,
+            owner: deps.api.addr_canonicalize(&msg.owner)?,
             factory: deps.api.addr_canonicalize(&msg.factory_contract)?,
             asset_infos: msg.asset_infos.clone(),
             pair: pair_info.clone(),

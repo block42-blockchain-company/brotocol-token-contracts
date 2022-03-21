@@ -361,6 +361,12 @@ pub fn update_config(
     }
 
     if let Some(ust_bonding_reward_ratio) = ust_bonding_reward_ratio {
+        if ust_bonding_reward_ratio > Decimal::from_str("1.0")?
+            || ust_bonding_reward_ratio <= Decimal::zero()
+        {
+            return Err(ContractError::InvalidUstBondRatio {});
+        }
+
         config.ust_bonding_reward_ratio = ust_bonding_reward_ratio;
         attributes.push(Attribute::new(
             "ust_bonding_reward_ratio_changed",

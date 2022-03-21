@@ -795,7 +795,7 @@ fn update_config() {
         treasury_contract: Some("new_treasury".to_string()),
         astroport_factory: Some("new_astro".to_string()),
         oracle_contract: Some("new_oracle".to_string()),
-        ust_bonding_reward_ratio: Some(Decimal::from_str("0.61").unwrap()),
+        ust_bonding_reward_ratio: Some(Decimal::from_str("1.01").unwrap()),
         ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
         lp_bonding_discount: Some(Decimal::from_str("0.06").unwrap()),
         min_bro_payout: Some(Uint128::from(2u128)),
@@ -810,7 +810,30 @@ fn update_config() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    // error: invalid ust_bonding_reward_ratio
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::InvalidUstBondRatio {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
     // proper execution
+    let msg = ExecuteMsg::UpdateConfig {
+        owner: Some("new_owner".to_string()),
+        lp_token: Some("new_lp".to_string()),
+        rewards_pool_contract: Some("new_rewards".to_string()),
+        treasury_contract: Some("new_treasury".to_string()),
+        astroport_factory: Some("new_astro".to_string()),
+        oracle_contract: Some("new_oracle".to_string()),
+        ust_bonding_reward_ratio: Some(Decimal::from_str("0.61").unwrap()),
+        ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
+        lp_bonding_discount: Some(Decimal::from_str("0.06").unwrap()),
+        min_bro_payout: Some(Uint128::from(2u128)),
+        vesting_period_blocks: Some(11),
+        lp_bonding_enabled: Some(false),
+    };
+
     let info = mock_info("owner", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 

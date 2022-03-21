@@ -25,7 +25,6 @@ Message params are optional.
 ```json
 {
     "update_config": {
-        "owner": "terra1...",
         "genesis_time": 1642852083
     }
 }
@@ -61,6 +60,40 @@ Claims available amount for `sender.address`.
 ```json
 {
     "claim": {}
+}
+```
+
+### `propose_new_owner`
+
+Creates an offer for a new owner. Only owner can execute this function.
+
+```json
+{
+    "propose_new_owner": {
+        "new_owner": "terra1...",
+        "expires_in_blocks": 100
+    }
+}
+```
+
+### `drop_ownership_proposal`
+
+Removes the existing offer for the new owner. Only owner can execute this function
+
+```json
+{
+    "drop_ownership_proposal": {}
+}
+```
+
+### `claim_ownership`
+
+Used to claim(approve) new owner proposal, thus changing contract's owner.
+Only address proposed as a new owner can execute this function.
+
+```json
+{
+    "claim_ownership": {}
 }
 ```
 
@@ -114,6 +147,16 @@ Returns available amount to claim for specified account.
     "claimable": {
         "address": "terra1..."
     }
+}
+```
+
+### `ownership_proposal`
+
+Returns information about created ownership proposal otherwise returns not-found error.
+
+```json
+{
+    "ownership_proposal": {}
 }
 ```
 

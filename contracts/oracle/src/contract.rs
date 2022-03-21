@@ -11,11 +11,17 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, store_price_cumulative_last, Config, PriceCumulativeLast},
+    state::{
+        load_config, store_config, store_price_cumulative_last, update_owner, Config,
+        PriceCumulativeLast,
+    },
 };
 
 use services::{
     oracle::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+    ownership_proposal::{
+        claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
+    },
     querier::query_cumulative_prices,
 };
 
@@ -35,14 +41,14 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 ///
 /// * **env** is an object of type [`Env`].
 ///
-/// * **info** is an object of type [`MessageInfo`].
+/// * **_info** is an object of type [`MessageInfo`].
 ///
 /// * **msg** is a message of type [`InstantiateMsg`] which contains the basic settings for creating a contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
     env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
@@ -59,7 +65,7 @@ pub fn instantiate(
     store_config(
         deps.storage,
         &Config {
-            owner: deps.api.addr_canonicalize(&info.sender.to_string())?,
+            owner: deps.api.addr_canonicalize(&msg.owner.to_string())?,
             factory: deps.api.addr_canonicalize(&msg.factory_contract)?,
             asset_infos: msg.asset_infos.clone(),
             pair: pair_info.clone(),
@@ -96,11 +102,19 @@ pub fn instantiate(
 /// ## Messages
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         owner,
 ///         price_update_interval,
 ///     }** Updates contract settings
 ///
 /// * **ExecuteMsg::UpdatePrice {}** Updates cumulative prices
+///
+/// * **ExecuteMsg::ProposeNewOwner {
+///         new_owner,
+///         expires_in_blocks,
+///     }** Creates an offer for a new owner
+///
+/// * **ExecuteMsg::DropOwnershipProposal {}** Removes the existing offer for the new owner
+///
+/// * **ExecuteMsg::ClaimOwnership {}** Used to claim(approve) new owner proposal, thus changing contract's owner
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -110,13 +124,29 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::UpdateConfig {
-            owner,
             price_update_interval,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, owner, price_update_interval)
+            commands::update_config(deps, price_update_interval)
         }
         ExecuteMsg::UpdatePrice {} => commands::update_price(deps, env),
+        ExecuteMsg::ProposeNewOwner {
+            new_owner,
+            expires_in_blocks,
+        } => {
+            let config = load_config(deps.storage)?;
+
+            propose_new_owner(deps, env, info, config.owner, new_owner, expires_in_blocks)
+                .map_err(|e| e.into())
+        }
+        ExecuteMsg::DropOwnershipProposal {} => {
+            let config = load_config(deps.storage)?;
+
+            drop_ownership_proposal(deps, info, config.owner).map_err(|e| e.into())
+        }
+        ExecuteMsg::ClaimOwnership {} => {
+            claim_ownership(deps, env, info, update_owner).map_err(|e| e.into())
+        }
     }
 }
 
@@ -153,6 +183,8 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 /// * **QueryMsg::ConsultPrice { asset, amount }** Returns calculated average amount with updated precision
 ///
 /// * **QueryMsg::IsReadyToTrigger {}** Returns a [`bool`] type whether prices are ready to be updated or not
+///
+/// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -161,6 +193,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
             to_binary(&queries::consult_price(deps, asset, amount)?)
         }
         QueryMsg::IsReadyToTrigger {} => to_binary(&queries::is_ready_to_trigger(deps, env)?),
+        QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
 

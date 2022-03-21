@@ -128,7 +128,6 @@ Message params are optional.
 
 ```json
 {
-    "owner": "terra1...",
     "paused": false,
     "unstake_period_blocks": 1,
     "min_staking_amount": "100",
@@ -137,6 +136,40 @@ Message params are optional.
     "base_rate": "0.1",
     "linear_growth": "0.2",
     "exponential_growth": "0.3"
+}
+```
+
+### `propose_new_owner`
+
+Creates an offer for a new owner. Only owner can execute this function.
+
+```json
+{
+    "propose_new_owner": {
+        "new_owner": "terra1...",
+        "expires_in_blocks": 100
+    }
+}
+```
+
+### `drop_ownership_proposal`
+
+Removes the existing offer for the new owner. Only owner can execute this function
+
+```json
+{
+    "drop_ownership_proposal": {}
+}
+```
+
+### `claim_ownership`
+
+Used to claim(approve) new owner proposal, thus changing contract's owner.
+Only address proposed as a new owner can execute this function.
+
+```json
+{
+    "claim_ownership": {}
 }
 ```
 
@@ -197,6 +230,15 @@ Returns available withdrawals for staker by specified address.
     }
 }
 ```
+
+### `ownership_proposal`
+
+Returns information about created ownership proposal otherwise returns not-found error.
+
+```json
+{
+    "ownership_proposal": {}
+}
 
 ## MigrateMsg
 

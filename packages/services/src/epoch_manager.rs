@@ -22,14 +22,6 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     /// ## Description
-    /// Updates contract settings
-    /// ## Executor
-    /// Only owner can execute this function
-    UpdateConfig {
-        /// new contract owner
-        owner: Option<String>,
-    },
-    /// ## Description
     /// Updates contract state
     /// ## Executor
     /// Only owner can execute this function
@@ -41,6 +33,27 @@ pub enum ExecuteMsg {
         /// bbro emission rate
         bbro_emission_rate: Option<Decimal>,
     },
+    /// ## Description
+    /// Creates an offer for a new owner.
+    /// The validity period of the offer is set in the `expires_in_blocks` variable
+    /// ## Executor
+    /// Only owner can execute this function
+    ProposeNewOwner {
+        /// new contract owner
+        new_owner: String,
+        /// expiration period in blocks
+        expires_in_blocks: u64,
+    },
+    /// ## Description
+    /// Removes the existing offer for the new owner
+    /// ## Executor
+    /// Only owner can execute this function
+    DropOwnershipProposal {},
+    /// ## Description
+    /// Used to claim(approve) new owner proposal, thus changing contract's owner
+    /// ## Executor
+    /// Only address proposed as a new owner can execute this function
+    ClaimOwnership {},
 }
 
 /// ## QueryMsg
@@ -54,6 +67,10 @@ pub enum QueryMsg {
     /// ## Description
     /// Returns epoch-manager contract state in the [`EpochInfoResponse`] object
     EpochInfo {},
+    /// ## Description
+    /// Returns information about created ownership proposal in the [`OwnershipProposalResponse`] object
+    /// otherwise returns not-found error
+    OwnershipProposal {},
 }
 
 /// ## MigrateMsg

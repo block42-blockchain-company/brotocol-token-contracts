@@ -6,6 +6,7 @@ pub mod common;
 pub mod distributor;
 pub mod epoch_manager;
 pub mod oracle;
+pub mod ownership_proposal;
 pub mod querier;
 pub mod rewards;
 pub mod staking;

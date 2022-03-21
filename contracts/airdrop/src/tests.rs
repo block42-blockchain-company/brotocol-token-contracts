@@ -1,12 +1,15 @@
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-use cosmwasm_std::{attr, from_binary, to_binary, Attribute, CosmosMsg, SubMsg, Uint128, WasmMsg};
-use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
+use cosmwasm_std::{attr, from_binary, to_binary, CosmosMsg, SubMsg, Uint128, WasmMsg};
+use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
 
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
-use services::airdrop::{
-    ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, IsClaimedResponse,
-    LatestStageResponse, MerkleRootResponse, QueryMsg,
+use services::{
+    airdrop::{
+        ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, IsClaimedResponse,
+        LatestStageResponse, MerkleRootResponse, QueryMsg,
+    },
+    ownership_proposal::OwnershipProposalResponse,
 };
 
 #[test]
@@ -32,49 +35,6 @@ fn proper_initialization() {
     let res = query(deps.as_ref(), mock_env(), QueryMsg::LatestStage {}).unwrap();
     let latest_stage: LatestStageResponse = from_binary(&res).unwrap();
     assert_eq!(0u8, latest_stage.latest_stage);
-}
-
-#[test]
-fn update_config() {
-    let mut deps = mock_dependencies(&[]);
-
-    let msg = InstantiateMsg {
-        owner: "owner0000".to_string(),
-        bro_token: "bro0000".to_string(),
-    };
-
-    let info = mock_info("addr0000", &[]);
-    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-    // update owner
-    let info = mock_info("owner0000", &[]);
-    let msg = ExecuteMsg::UpdateConfig {
-        owner: Some("owner0001".to_string()),
-    };
-
-    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
-    assert_eq!(0, res.messages.len());
-
-    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
-    assert_eq!(
-        res.attributes[1],
-        Attribute::new("owner_changed", "owner0001")
-    );
-
-    // it worked, let's query the state
-    let res = query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap();
-    let config: ConfigResponse = from_binary(&res).unwrap();
-    assert_eq!("owner0001", config.owner.as_str());
-
-    // Unauthorzied err
-    let info = mock_info("owner0000", &[]);
-    let msg = ExecuteMsg::UpdateConfig { owner: None };
-
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
-    match res {
-        Err(ContractError::Unauthorized {}) => {}
-        _ => panic!("Must return unauthorized error"),
-    }
 }
 
 #[test]
@@ -287,5 +247,56 @@ fn claim() {
             attr("address", "terra1nn8r2nq9p0ce32zp9mc3cmha04kztpxm89zkpy"),
             attr("amount", "4134134")
         ]
+    );
+}
+
+#[test]
+fn update_owner() {
+    let mut deps = mock_dependencies(&[]);
+
+    let msg = InstantiateMsg {
+        owner: "owner0000".to_string(),
+        bro_token: "bro0000".to_string(),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // propose ownership
+    let msg = ExecuteMsg::ProposeNewOwner {
+        new_owner: "owner0001".to_string(),
+        expires_in_blocks: 100,
+    };
+
+    let info = mock_info("owner0000", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    assert_eq!(
+        from_binary::<OwnershipProposalResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::OwnershipProposal {}).unwrap()
+        )
+        .unwrap(),
+        OwnershipProposalResponse {
+            proposed_owner: "owner0001".to_string(),
+            expires_at: Expiration::AtHeight(12_345 + 100),
+        },
+    );
+
+    // claim ownership
+    let msg = ExecuteMsg::ClaimOwnership {};
+
+    let info = mock_info("owner0001", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    // verify that owner was changed
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner0001".to_string(),
+            bro_token: "bro0000".to_string(),
+        },
     );
 }

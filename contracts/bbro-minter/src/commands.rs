@@ -16,22 +16,11 @@ use crate::{
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
-///
 /// * **bbro_token** is an [`Option`] field of type [`String`]. Sets new bbro token address
-pub fn update_config(
-    deps: DepsMut,
-    owner: Option<String>,
-    bbro_token: Option<String>,
-) -> Result<Response, ContractError> {
+pub fn update_config(deps: DepsMut, bbro_token: Option<String>) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
 
     if let Some(bbro_token) = bbro_token {
         config.bbro_token = Some(deps.api.addr_canonicalize(&bbro_token)?);

@@ -468,8 +468,6 @@ pub fn claim_bbro_rewards(
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **owner** is an [`Option`] of type [`String`]
-///
 /// * **paused** is an [`Option`] of type [`bool`]
 ///
 /// * **unstake_period_blocks** is an [`Option`] of type [`u64`]
@@ -488,7 +486,6 @@ pub fn claim_bbro_rewards(
 #[allow(clippy::too_many_arguments)]
 pub fn update_config(
     deps: DepsMut,
-    owner: Option<String>,
     paused: Option<bool>,
     unstake_period_blocks: Option<u64>,
     min_staking_amount: Option<Uint128>,
@@ -501,11 +498,6 @@ pub fn update_config(
     let mut config = load_config(deps.storage)?;
 
     let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
 
     if let Some(paused) = paused {
         config.paused = paused;

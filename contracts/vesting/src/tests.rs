@@ -3,7 +3,8 @@ use cosmwasm_std::{
     attr, from_binary, to_binary, Attribute, CosmosMsg, StdError, SubMsg, Timestamp, Uint128,
     WasmMsg,
 };
-use cw20::Cw20ExecuteMsg;
+use cw20::{Cw20ExecuteMsg, Expiration};
+use services::ownership_proposal::OwnershipProposalResponse;
 
 use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
@@ -52,33 +53,8 @@ fn update_config() {
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    let msg = ExecuteMsg::UpdateConfig {
-        owner: Some("owner2".to_string()),
-        genesis_time: None,
-    };
-    let info = mock_info("owner", &[]);
-    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
-    assert_eq!(res.attributes[1], Attribute::new("owner_changed", "owner2"));
-
-    assert_eq!(
-        from_binary::<ConfigResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
-        )
-        .unwrap(),
-        ConfigResponse {
-            owner: "owner2".to_string(),
-            bro_token: "bro_token".to_string(),
-            genesis_time: 12345u64,
-        }
-    );
-
-    let msg = ExecuteMsg::UpdateConfig {
-        owner: Some("owner".to_string()),
-        genesis_time: None,
-    };
-    let info = mock_info("owner", &[]);
+    let msg = ExecuteMsg::UpdateConfig { genesis_time: None };
+    let info = mock_info("owner2", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg);
     match res {
         Err(ContractError::Unauthorized {}) => assert_eq!(true, true),
@@ -86,10 +62,9 @@ fn update_config() {
     }
 
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         genesis_time: Some(1u64),
     };
-    let info = mock_info("owner2", &[]);
+    let info = mock_info("owner", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
@@ -104,7 +79,7 @@ fn update_config() {
         )
         .unwrap(),
         ConfigResponse {
-            owner: "owner2".to_string(),
+            owner: "owner".to_string(),
             bro_token: "bro_token".to_string(),
             genesis_time: 1u64,
         }
@@ -472,4 +447,57 @@ fn claim() {
         ]
     );
     assert_eq!(res.messages, vec![]);
+}
+
+#[test]
+fn update_owner() {
+    let mut deps = mock_dependencies(&[]);
+
+    let msg = InstantiateMsg {
+        owner: "owner0000".to_string(),
+        bro_token: "bro_token".to_string(),
+        genesis_time: 12345u64,
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // propose ownership
+    let msg = ExecuteMsg::ProposeNewOwner {
+        new_owner: "owner0001".to_string(),
+        expires_in_blocks: 100,
+    };
+
+    let info = mock_info("owner0000", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    assert_eq!(
+        from_binary::<OwnershipProposalResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::OwnershipProposal {}).unwrap()
+        )
+        .unwrap(),
+        OwnershipProposalResponse {
+            proposed_owner: "owner0001".to_string(),
+            expires_at: Expiration::AtHeight(12_345 + 100),
+        },
+    );
+
+    // claim ownership
+    let msg = ExecuteMsg::ClaimOwnership {};
+
+    let info = mock_info("owner0001", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    // verify that owner was changed
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner0001".to_string(),
+            bro_token: "bro_token".to_string(),
+            genesis_time: 12345u64,
+        },
+    );
 }

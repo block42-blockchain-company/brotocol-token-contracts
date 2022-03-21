@@ -26,7 +26,6 @@ Message params are optional.
 
 ```json
 {
-    "owner": "terra1...",
     "spend_limit": "1001"
 }
 ```
@@ -74,6 +73,40 @@ Can be executed only by whitelisted address.
 }
 ```
 
+### `propose_new_owner`
+
+Creates an offer for a new owner. Only owner can execute this function.
+
+```json
+{
+    "propose_new_owner": {
+        "new_owner": "terra1...",
+        "expires_in_blocks": 100
+    }
+}
+```
+
+### `drop_ownership_proposal`
+
+Removes the existing offer for the new owner. Only owner can execute this function
+
+```json
+{
+    "drop_ownership_proposal": {}
+}
+```
+
+### `claim_ownership`
+
+Used to claim(approve) new owner proposal, thus changing contract's owner.
+Only address proposed as a new owner can execute this function.
+
+```json
+{
+    "claim_ownership": {}
+}
+```
+
 ## QueryMsg
 
 ### `config`
@@ -93,6 +126,16 @@ Returns rewards pool BRO token balance.
 ```json
 {
     "balance": {}
+}
+```
+
+### `ownership_proposal`
+
+Returns information about created ownership proposal otherwise returns not-found error.
+
+```json
+{
+    "ownership_proposal": {}
 }
 ```
 

@@ -280,8 +280,6 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **owner** is an [`Option`] of type [`String`]
-///
 /// * **lp_token** is an [`Option`] of type [`String`]
 ///
 /// * **treasury_contract** is an [`Option`] of type [`String`]
@@ -304,7 +302,6 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 #[allow(clippy::too_many_arguments)]
 pub fn update_config(
     deps: DepsMut,
-    owner: Option<String>,
     lp_token: Option<String>,
     rewards_pool_contract: Option<String>,
     treasury_contract: Option<String>,
@@ -320,11 +317,6 @@ pub fn update_config(
     let mut config = load_config(deps.storage)?;
 
     let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
 
     if let Some(lp_token) = lp_token {
         config.lp_token = deps.api.addr_canonicalize(&lp_token)?;

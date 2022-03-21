@@ -3,9 +3,12 @@ use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
-use services::rewards::{
-    ConfigResponse, DistributeRewardMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg,
-    RewardsPoolBalanceResponse,
+use services::{
+    ownership_proposal::OwnershipProposalResponse,
+    rewards::{
+        ConfigResponse, DistributeRewardMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg,
+        RewardsPoolBalanceResponse,
+    },
 };
 
 fn main() {
@@ -21,4 +24,5 @@ fn main() {
     export_schema(&schema_for!(DistributeRewardMsg), &out_dir);
     export_schema(&schema_for!(ConfigResponse), &out_dir);
     export_schema(&schema_for!(RewardsPoolBalanceResponse), &out_dir);
+    export_schema(&schema_for!(OwnershipProposalResponse), &out_dir);
 }

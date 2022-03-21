@@ -2,6 +2,8 @@ use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{from_binary, to_binary, Attribute, CosmosMsg, SubMsg, Uint128, WasmMsg};
+use cw20::Expiration;
+use services::ownership_proposal::OwnershipProposalResponse;
 
 use crate::mock_querier::{mock_dependencies, MOCK_EPOCH_MANAGER_ADDR, MOCK_REWARDS_POOL_ADDR};
 
@@ -139,7 +141,6 @@ fn distribute() {
     //proper execution
     // update distribution amounts
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         paused: None,
         epoch_manager_contract: None,
         rewards_contract: None,
@@ -205,7 +206,6 @@ fn distribute() {
 
     // pause contract
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         paused: Some(true),
         epoch_manager_contract: None,
         rewards_contract: None,
@@ -248,7 +248,6 @@ fn update_config() {
 
     // unauthorized: only owner allowed to execute
     let msg = ExecuteMsg::UpdateConfig {
-        owner: Some("new_owner".to_string()),
         paused: Some(true),
         epoch_manager_contract: Some("new_epochmanager".to_string()),
         rewards_contract: Some("new_rewards".to_string()),
@@ -270,33 +269,29 @@ fn update_config() {
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 
     assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(res.attributes[1], Attribute::new("paused_changed", "true"));
     assert_eq!(
-        res.attributes[1],
-        Attribute::new("owner_changed", "new_owner")
-    );
-    assert_eq!(res.attributes[2], Attribute::new("paused_changed", "true"));
-    assert_eq!(
-        res.attributes[3],
+        res.attributes[2],
         Attribute::new("epoch_manager_contract_changed", "new_epochmanager")
     );
     assert_eq!(
-        res.attributes[4],
+        res.attributes[3],
         Attribute::new("rewards_contract_changed", "new_rewards")
     );
     assert_eq!(
-        res.attributes[5],
+        res.attributes[4],
         Attribute::new("staking_contract_changed", "new_staking")
     );
     assert_eq!(
-        res.attributes[6],
+        res.attributes[5],
         Attribute::new("staking_distribution_amount_changed", "100")
     );
     assert_eq!(
-        res.attributes[7],
+        res.attributes[6],
         Attribute::new("bonding_contract_changed", "new_bonding")
     );
     assert_eq!(
-        res.attributes[8],
+        res.attributes[7],
         Attribute::new("bonding_distribution_amount_changed", "200")
     );
 
@@ -306,7 +301,7 @@ fn update_config() {
         )
         .unwrap(),
         ConfigResponse {
-            owner: "new_owner".to_string(),
+            owner: "owner".to_string(),
             paused: true,
             distribution_genesis_block: 12500,
             epoch_manager_contract: "new_epochmanager".to_string(),
@@ -315,6 +310,70 @@ fn update_config() {
             staking_distribution_amount: Uint128::from(100u128),
             bonding_contract: "new_bonding".to_string(),
             bonding_distribution_amount: Uint128::from(200u128),
+        },
+    );
+}
+
+#[test]
+fn update_owner() {
+    let mut deps = mock_dependencies(&[]);
+
+    let msg = InstantiateMsg {
+        owner: "owner0000".to_string(),
+        distribution_genesis_block: 12500,
+        epoch_manager_contract: MOCK_EPOCH_MANAGER_ADDR.to_string(),
+        rewards_contract: MOCK_REWARDS_POOL_ADDR.to_string(),
+        staking_contract: "staking".to_string(),
+        staking_distribution_amount: Uint128::from(1u128),
+        bonding_contract: "bonding".to_string(),
+        bonding_distribution_amount: Uint128::from(2u128),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // propose ownership
+    let msg = ExecuteMsg::ProposeNewOwner {
+        new_owner: "owner0001".to_string(),
+        expires_in_blocks: 100,
+    };
+
+    let info = mock_info("owner0000", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    assert_eq!(
+        from_binary::<OwnershipProposalResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::OwnershipProposal {}).unwrap()
+        )
+        .unwrap(),
+        OwnershipProposalResponse {
+            proposed_owner: "owner0001".to_string(),
+            expires_at: Expiration::AtHeight(12_345 + 100),
+        },
+    );
+
+    // claim ownership
+    let msg = ExecuteMsg::ClaimOwnership {};
+
+    let info = mock_info("owner0001", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    // verify that owner was changed
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner0001".to_string(),
+            paused: false,
+            distribution_genesis_block: 12500,
+            epoch_manager_contract: MOCK_EPOCH_MANAGER_ADDR.to_string(),
+            rewards_contract: MOCK_REWARDS_POOL_ADDR.to_string(),
+            staking_contract: "staking".to_string(),
+            staking_distribution_amount: Uint128::from(1u128),
+            bonding_contract: "bonding".to_string(),
+            bonding_distribution_amount: Uint128::from(2u128),
         },
     );
 }

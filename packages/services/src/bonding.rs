@@ -55,8 +55,6 @@ pub enum ExecuteMsg {
     /// ## Executor
     /// Only owner can execute this function
     UpdateConfig {
-        /// new contract owner
-        owner: Option<String>,
         /// new bro/ust lp token address
         lp_token: Option<String>,
         /// rewards pool address
@@ -80,6 +78,27 @@ pub enum ExecuteMsg {
         /// sets lp bonding option either to enabled or disabled
         lp_bonding_enabled: Option<bool>,
     },
+    /// ## Description
+    /// Creates an offer for a new owner.
+    /// The validity period of the offer is set in the `expires_in_blocks` variable
+    /// ## Executor
+    /// Only owner can execute this function
+    ProposeNewOwner {
+        /// new contract owner
+        new_owner: String,
+        /// expiration period in blocks
+        expires_in_blocks: u64,
+    },
+    /// ## Description
+    /// Removes the existing offer for the new owner
+    /// ## Executor
+    /// Only owner can execute this function
+    DropOwnershipProposal {},
+    /// ## Description
+    /// Used to claim(approve) new owner proposal, thus changing contract's owner
+    /// ## Executor
+    /// Only address proposed as a new owner can execute this function
+    ClaimOwnership {},
 }
 
 /// ## Cw20HookMsg
@@ -113,6 +132,10 @@ pub enum QueryMsg {
         /// bonder address
         address: String,
     },
+    /// ## Description
+    /// Returns information about created ownership proposal in the [`OwnershipProposalResponse`] object
+    /// otherwise returns not-found error
+    OwnershipProposal {},
 }
 
 /// ## MigrateMsg

@@ -60,22 +60,11 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
-///
 /// * **genesis_time** is an [`Option`] field of type [`u64`]. Sets new genesis time frame
-pub fn update_config(
-    deps: DepsMut,
-    owner: Option<String>,
-    genesis_time: Option<u64>,
-) -> Result<Response, ContractError> {
+pub fn update_config(deps: DepsMut, genesis_time: Option<u64>) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
 
     if let Some(genesis_time) = genesis_time {
         config.genesis_time = genesis_time;

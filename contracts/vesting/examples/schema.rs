@@ -3,9 +3,13 @@ use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
-use services::vesting::{
-    ClaimableAmountResponse, ConfigResponse, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg,
-    VestingAccount, VestingAccountResponse, VestingAccountsResponse, VestingInfo, VestingSchedule,
+use services::{
+    ownership_proposal::OwnershipProposalResponse,
+    vesting::{
+        ClaimableAmountResponse, ConfigResponse, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg,
+        VestingAccount, VestingAccountResponse, VestingAccountsResponse, VestingInfo,
+        VestingSchedule,
+    },
 };
 
 fn main() {
@@ -25,4 +29,5 @@ fn main() {
     export_schema(&schema_for!(VestingAccountsResponse), &out_dir);
     export_schema(&schema_for!(VestingInfo), &out_dir);
     export_schema(&schema_for!(VestingSchedule), &out_dir);
+    export_schema(&schema_for!(OwnershipProposalResponse), &out_dir);
 }

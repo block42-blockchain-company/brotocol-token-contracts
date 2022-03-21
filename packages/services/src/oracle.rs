@@ -8,6 +8,8 @@ use astroport::asset::AssetInfo;
 /// This structure describes the basic settings for creating a contract.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
+    /// contract/multisig address that allowed to control settings
+    pub owner: String,
     /// factory contract address
     pub factory_contract: String,
     /// assets in the pool
@@ -26,14 +28,33 @@ pub enum ExecuteMsg {
     /// ## Executor
     /// Only owner can execute this function
     UpdateConfig {
-        /// contract/multisig address that allowed to control settings
-        owner: Option<String>,
         /// time interval for updating prices
         price_update_interval: Option<u64>,
     },
     /// ## Description
     /// Updates cumulative prices
     UpdatePrice {},
+    /// ## Description
+    /// Creates an offer for a new owner.
+    /// The validity period of the offer is set in the `expires_in_blocks` variable
+    /// ## Executor
+    /// Only owner can execute this function
+    ProposeNewOwner {
+        /// new contract owner
+        new_owner: String,
+        /// expiration period in blocks
+        expires_in_blocks: u64,
+    },
+    /// ## Description
+    /// Removes the existing offer for the new owner
+    /// ## Executor
+    /// Only owner can execute this function
+    DropOwnershipProposal {},
+    /// ## Description
+    /// Used to claim(approve) new owner proposal, thus changing contract's owner
+    /// ## Executor
+    /// Only address proposed as a new owner can execute this function
+    ClaimOwnership {},
 }
 
 /// ## QueryMsg
@@ -55,6 +76,10 @@ pub enum QueryMsg {
     /// ## Description
     /// Returns a [`bool`] type whether prices are ready to be updated or not
     IsReadyToTrigger {},
+    /// ## Description
+    /// Returns information about created ownership proposal in the [`OwnershipProposalResponse`] object
+    /// otherwise returns not-found error
+    OwnershipProposal {},
 }
 
 /// ## MigrateMsg

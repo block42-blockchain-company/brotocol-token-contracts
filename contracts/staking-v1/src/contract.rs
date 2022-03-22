@@ -192,17 +192,21 @@ pub fn execute(
         } => {
             let config = load_config(deps.storage)?;
 
-            propose_new_owner(deps, env, info, config.owner, new_owner, expires_in_blocks)
-                .map_err(|e| e.into())
+            Ok(propose_new_owner(
+                deps,
+                env,
+                info,
+                config.owner,
+                new_owner,
+                expires_in_blocks,
+            )?)
         }
         ExecuteMsg::DropOwnershipProposal {} => {
             let config = load_config(deps.storage)?;
 
-            drop_ownership_proposal(deps, info, config.owner).map_err(|e| e.into())
+            Ok(drop_ownership_proposal(deps, info, config.owner)?)
         }
-        ExecuteMsg::ClaimOwnership {} => {
-            claim_ownership(deps, env, info, update_owner).map_err(|e| e.into())
-        }
+        ExecuteMsg::ClaimOwnership {} => Ok(claim_ownership(deps, env, info, update_owner)?),
     }
 }
 

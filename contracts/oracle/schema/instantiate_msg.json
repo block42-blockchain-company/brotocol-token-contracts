@@ -6,6 +6,7 @@
   "required": [
     "asset_infos",
     "factory_contract",
+    "owner",
     "price_update_interval"
   ],
   "properties": {
@@ -20,6 +21,10 @@
     },
     "factory_contract": {
       "description": "factory contract address",
+      "type": "string"
+    },
+    "owner": {
+      "description": "contract/multisig address that allowed to control settings",
       "type": "string"
     },
     "price_update_interval": {

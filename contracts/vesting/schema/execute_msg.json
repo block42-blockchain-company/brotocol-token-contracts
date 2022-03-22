@@ -22,13 +22,6 @@
               ],
               "format": "uint64",
               "minimum": 0.0
-            },
-            "owner": {
-              "description": "new contract owner",
-              "type": [
-                "string",
-                "null"
-              ]
             }
           }
         }
@@ -70,6 +63,64 @@
       ],
       "properties": {
         "claim": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Creates an offer for a new owner. The validity period of the offer is set in the `expires_in_blocks` variable ## Executor Only owner can execute this function",
+      "type": "object",
+      "required": [
+        "propose_new_owner"
+      ],
+      "properties": {
+        "propose_new_owner": {
+          "type": "object",
+          "required": [
+            "expires_in_blocks",
+            "new_owner"
+          ],
+          "properties": {
+            "expires_in_blocks": {
+              "description": "expiration period in blocks",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "new_owner": {
+              "description": "new contract owner",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Removes the existing offer for the new owner ## Executor Only owner can execute this function",
+      "type": "object",
+      "required": [
+        "drop_ownership_proposal"
+      ],
+      "properties": {
+        "drop_ownership_proposal": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Used to claim(approve) new owner proposal, thus changing contract's owner ## Executor Only address proposed as a new owner can execute this function",
+      "type": "object",
+      "required": [
+        "claim_ownership"
+      ],
+      "properties": {
+        "claim_ownership": {
           "type": "object"
         }
       },

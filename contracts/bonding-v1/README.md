@@ -89,7 +89,6 @@ Message params are optional.
 ```json
 {
     "update_config": {
-        "owner": "terra1...",
         "lp_token": "terra1...",
         "rewards_pool_contract": "terra1...",
         "treasury_contract": "terra1...",
@@ -102,6 +101,40 @@ Message params are optional.
         "vesting_period_blocks": 50,
         "lp_bonding_enabled": true
     }
+}
+```
+
+### `propose_new_owner`
+
+Creates an offer for a new owner. Only owner can execute this function.
+
+```json
+{
+    "propose_new_owner": {
+        "new_owner": "terra1...",
+        "expires_in_blocks": 100
+    }
+}
+```
+
+### `drop_ownership_proposal`
+
+Removes the existing offer for the new owner. Only owner can execute this function
+
+```json
+{
+    "drop_ownership_proposal": {}
+}
+```
+
+### `claim_ownership`
+
+Used to claim(approve) new owner proposal, thus changing contract's owner.
+Only address proposed as a new owner can execute this function.
+
+```json
+{
+    "claim_ownership": {}
 }
 ```
 
@@ -136,6 +169,16 @@ Returns available claims for bonder by specified address.
     "claims": {
         "address": "terra1..."
     }
+}
+```
+
+### `ownership_proposal`
+
+Returns information about created ownership proposal otherwise returns not-found error.
+
+```json
+{
+    "ownership_proposal": {}
 }
 ```
 

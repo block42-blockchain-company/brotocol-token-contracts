@@ -2,31 +2,8 @@ use cosmwasm_std::{Attribute, Decimal, DepsMut, Response};
 
 use crate::{
     error::ContractError,
-    state::{load_config, load_state, store_config, store_state},
+    state::{load_state, store_state},
 };
-
-/// ## Description
-/// Updates contract settings.
-/// Returns [`Response`] with specified attributes and messages if operation was successful,
-/// otherwise returns [`ContractError`]
-/// ## Params
-/// * **deps** is an object of type [`DepsMut`]
-///
-/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
-pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, ContractError> {
-    let mut config = load_config(deps.storage)?;
-
-    let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
-
-    store_config(deps.storage, &config)?;
-
-    Ok(Response::new().add_attributes(attributes))
-}
 
 /// ## Description
 /// Updates contract state.

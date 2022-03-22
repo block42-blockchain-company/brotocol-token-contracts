@@ -8,6 +8,7 @@ use cosmwasm_std::{
     from_binary, to_binary, Attribute, BankMsg, Coin, CosmosMsg, Decimal, SubMsg, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
+use services::ownership_proposal::OwnershipProposalResponse;
 
 use crate::mock_querier::{
     mock_dependencies, MOCK_ASTRO_FACTORY_ADDR, MOCK_BRO_TOKEN_ADDR, MOCK_BRO_UST_PAIR_ADDR,
@@ -56,8 +57,8 @@ fn proper_initialization() {
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
         ust_bonding_reward_ratio: Decimal::from_str("1.1").unwrap(),
-        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+        ust_bonding_discount: Decimal::from_str("1.1").unwrap(),
+        lp_bonding_discount: Decimal::from_str("1.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
         vesting_period_blocks: 10,
         lp_bonding_enabled: true,
@@ -78,8 +79,26 @@ fn proper_initialization() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    // proper initialization
     msg.ust_bonding_reward_ratio = Decimal::from_str("0.6").unwrap();
+
+    let info = mock_info("addr0001", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::InvalidDiscount {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    msg.ust_bonding_discount = Decimal::from_str("0.1").unwrap();
+
+    let info = mock_info("addr0001", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::InvalidDiscount {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // proper initialization
+    msg.lp_bonding_discount = Decimal::from_str("0.05").unwrap();
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
@@ -184,7 +203,6 @@ fn distribute_reward() {
 
     // disable lp bonding option
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         lp_token: None,
         rewards_pool_contract: None,
         treasury_contract: None,
@@ -312,7 +330,6 @@ fn lp_bond() {
     // proper execution
     // update min_bro_payout
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         lp_token: None,
         rewards_pool_contract: None,
         treasury_contract: None,
@@ -396,7 +413,6 @@ fn lp_bond() {
 
     // disable lp bonding option
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         lp_token: None,
         rewards_pool_contract: None,
         treasury_contract: None,
@@ -553,7 +569,6 @@ fn ust_bond() {
     // proper execution
     // update min_bro_payout
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         lp_token: None,
         rewards_pool_contract: None,
         treasury_contract: None,
@@ -789,13 +804,12 @@ fn update_config() {
 
     // unauthorized: only owner allowed to execute
     let msg = ExecuteMsg::UpdateConfig {
-        owner: Some("new_owner".to_string()),
         lp_token: Some("new_lp".to_string()),
         rewards_pool_contract: Some("new_rewards".to_string()),
         treasury_contract: Some("new_treasury".to_string()),
         astroport_factory: Some("new_astro".to_string()),
         oracle_contract: Some("new_oracle".to_string()),
-        ust_bonding_reward_ratio: Some(Decimal::from_str("0.61").unwrap()),
+        ust_bonding_reward_ratio: Some(Decimal::from_str("1.01").unwrap()),
         ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
         lp_bonding_discount: Some(Decimal::from_str("0.06").unwrap()),
         min_bro_payout: Some(Uint128::from(2u128)),
@@ -810,57 +824,75 @@ fn update_config() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    // error: invalid ust_bonding_reward_ratio
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::InvalidUstBondRatio {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
     // proper execution
+    let msg = ExecuteMsg::UpdateConfig {
+        lp_token: Some("new_lp".to_string()),
+        rewards_pool_contract: Some("new_rewards".to_string()),
+        treasury_contract: Some("new_treasury".to_string()),
+        astroport_factory: Some("new_astro".to_string()),
+        oracle_contract: Some("new_oracle".to_string()),
+        ust_bonding_reward_ratio: Some(Decimal::from_str("0.61").unwrap()),
+        ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
+        lp_bonding_discount: Some(Decimal::from_str("0.06").unwrap()),
+        min_bro_payout: Some(Uint128::from(2u128)),
+        vesting_period_blocks: Some(11),
+        lp_bonding_enabled: Some(false),
+    };
+
     let info = mock_info("owner", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 
     assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
     assert_eq!(
         res.attributes[1],
-        Attribute::new("owner_changed", "new_owner")
-    );
-    assert_eq!(
-        res.attributes[2],
         Attribute::new("lp_token_changed", "new_lp")
     );
     assert_eq!(
-        res.attributes[3],
+        res.attributes[2],
         Attribute::new("rewards_pool_contract_changed", "new_rewards")
     );
     assert_eq!(
-        res.attributes[4],
+        res.attributes[3],
         Attribute::new("treasury_contract_changed", "new_treasury")
     );
     assert_eq!(
-        res.attributes[5],
+        res.attributes[4],
         Attribute::new("astroport_factory_changed", "new_astro")
     );
     assert_eq!(
-        res.attributes[6],
+        res.attributes[5],
         Attribute::new("oracle_contract_changed", "new_oracle")
     );
     assert_eq!(
-        res.attributes[7],
+        res.attributes[6],
         Attribute::new("ust_bonding_reward_ratio_changed", "0.61")
     );
     assert_eq!(
-        res.attributes[8],
+        res.attributes[7],
         Attribute::new("ust_bonding_discount_changed", "0.11")
     );
     assert_eq!(
-        res.attributes[9],
+        res.attributes[8],
         Attribute::new("lp_bonding_discount_changed", "0.06")
     );
     assert_eq!(
-        res.attributes[10],
+        res.attributes[9],
         Attribute::new("min_bro_payout_changed", "2")
     );
     assert_eq!(
-        res.attributes[11],
+        res.attributes[10],
         Attribute::new("vesting_period_blocks_changed", "11")
     );
     assert_eq!(
-        res.attributes[12],
+        res.attributes[11],
         Attribute::new("lp_bonding_enabled_changed", "false")
     );
 
@@ -870,7 +902,7 @@ fn update_config() {
         )
         .unwrap(),
         ConfigResponse {
-            owner: "new_owner".to_string(),
+            owner: "owner".to_string(),
             bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
             lp_token: "new_lp".to_string(),
             rewards_pool_contract: "new_rewards".to_string(),
@@ -883,6 +915,79 @@ fn update_config() {
             min_bro_payout: Uint128::from(2u128),
             vesting_period_blocks: 11,
             lp_bonding_enabled: false,
+        },
+    );
+}
+
+#[test]
+fn update_owner() {
+    let mut deps = mock_dependencies(&[]);
+
+    let msg = InstantiateMsg {
+        owner: "owner0000".to_string(),
+        bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
+        treasury_contract: "treasury".to_string(),
+        astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+        min_bro_payout: Uint128::from(1u128),
+        vesting_period_blocks: 10,
+        lp_bonding_enabled: true,
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // propose ownership
+    let msg = ExecuteMsg::ProposeNewOwner {
+        new_owner: "owner0001".to_string(),
+        expires_in_blocks: 100,
+    };
+
+    let info = mock_info("owner0000", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    assert_eq!(
+        from_binary::<OwnershipProposalResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::OwnershipProposal {}).unwrap()
+        )
+        .unwrap(),
+        OwnershipProposalResponse {
+            proposed_owner: "owner0001".to_string(),
+            expires_at: Expiration::AtHeight(12_345 + 100),
+        },
+    );
+
+    // claim ownership
+    let msg = ExecuteMsg::ClaimOwnership {};
+
+    let info = mock_info("owner0001", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    // verify that owner was changed
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner0001".to_string(),
+            bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            rewards_pool_contract: "rewards".to_string(),
+            treasury_contract: "treasury".to_string(),
+            astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+            oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+            ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+            min_bro_payout: Uint128::from(1u128),
+            vesting_period_blocks: 10,
+            lp_bonding_enabled: true,
         },
     );
 }

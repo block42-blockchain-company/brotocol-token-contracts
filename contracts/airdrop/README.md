@@ -39,19 +39,6 @@ Registers merkle root hash. Can be executed only by owner.
 }
 ```
 
-### `update_config`
-
-Updates airdrop contract config. Can be executed only by owner.
-Message params are optional.
-
-```json
-{
-    "update_config": {
-        "owner": "terra1..."
-    }
-}
-```
-
 ### `claim`
 
 Claims available amount for message sender at specified airdrop round.
@@ -66,6 +53,40 @@ Claims available amount for message sender at specified airdrop round.
             "<keccak256_string>"
         ]
     }
+}
+```
+
+### `propose_new_owner`
+
+Creates an offer for a new owner. Only owner can execute this function.
+
+```json
+{
+    "propose_new_owner": {
+        "new_owner": "terra1...",
+        "expires_in_blocks": 100
+    }
+}
+```
+
+### `drop_ownership_proposal`
+
+Removes the existing offer for the new owner. Only owner can execute this function
+
+```json
+{
+    "drop_ownership_proposal": {}
+}
+```
+
+### `claim_ownership`
+
+Used to claim(approve) new owner proposal, thus changing contract's owner.
+Only address proposed as a new owner can execute this function.
+
+```json
+{
+    "claim_ownership": {}
 }
 ```
 
@@ -113,6 +134,16 @@ Returns claim information by specified stage and address.
         "stage": 1,
         "address": "terra1..."
     }
+}
+```
+
+### `ownership_proposal`
+
+Returns information about created ownership proposal otherwise returns not-found error.
+
+```json
+{
+    "ownership_proposal": {}
 }
 ```
 

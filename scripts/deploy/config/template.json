@@ -11,6 +11,7 @@
         "factory_address": ""
     },
     "oracle": {
+        "owner": "",
         "price_update_interval": 0
     },
     "airdrop": {

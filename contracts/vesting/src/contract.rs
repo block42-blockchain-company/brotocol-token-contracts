@@ -9,10 +9,15 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, Config},
+    state::{load_config, store_config, update_owner, Config},
 };
 
-use services::vesting::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::{
+    ownership_proposal::{
+        claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
+    },
+    vesting::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-vesting";
@@ -66,7 +71,6 @@ pub fn instantiate(
 /// ## Messages
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         owner,
 ///         genesis_time,
 ///     }** Updates contract settings
 ///
@@ -74,6 +78,15 @@ pub fn instantiate(
 /// for future distribution
 ///
 /// * **ExecuteMsg::Claim {}** Claims available amount for message sender
+///
+/// * **ExecuteMsg::ProposeNewOwner {
+///         new_owner,
+///         expires_in_blocks,
+///     }** Creates an offer for a new owner
+///
+/// * **ExecuteMsg::DropOwnershipProposal {}** Removes the existing offer for the new owner
+///
+/// * **ExecuteMsg::ClaimOwnership {}** Used to claim(approve) new owner proposal, thus changing contract's owner
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -82,18 +95,36 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig {
-            owner,
-            genesis_time,
-        } => {
+        ExecuteMsg::UpdateConfig { genesis_time } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, owner, genesis_time)
+            commands::update_config(deps, genesis_time)
         }
         ExecuteMsg::RegisterVestingAccounts { vesting_accounts } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::register_vesting_accounts(deps, vesting_accounts)
         }
         ExecuteMsg::Claim {} => commands::claim(deps, env, info),
+        ExecuteMsg::ProposeNewOwner {
+            new_owner,
+            expires_in_blocks,
+        } => {
+            let config = load_config(deps.storage)?;
+
+            Ok(propose_new_owner(
+                deps,
+                env,
+                info,
+                config.owner,
+                new_owner,
+                expires_in_blocks,
+            )?)
+        }
+        ExecuteMsg::DropOwnershipProposal {} => {
+            let config = load_config(deps.storage)?;
+
+            Ok(drop_ownership_proposal(deps, info, config.owner)?)
+        }
+        ExecuteMsg::ClaimOwnership {} => Ok(claim_ownership(deps, env, info, update_owner)?),
     }
 }
 
@@ -136,6 +167,8 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 ///     }** Returns a list of accounts for given input params
 ///
 /// * **QueryMsg::Claimable { address }** Returns available amount to claim for specified account
+///
+/// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -156,6 +189,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Claimable { address } => {
             to_binary(&queries::query_claimable_amount(deps, env, address)?)
         }
+        QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
 

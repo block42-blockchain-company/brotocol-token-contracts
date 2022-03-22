@@ -17,22 +17,14 @@ use crate::{
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
-///
 /// * **spend_limit** is an [`Option`] field of type [`Uint128`]. Sets new spend limit
 pub fn update_config(
     deps: DepsMut,
-    owner: Option<String>,
     spend_limit: Option<Uint128>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
 
     if let Some(spend_limit) = spend_limit {
         config.spend_limit = spend_limit;

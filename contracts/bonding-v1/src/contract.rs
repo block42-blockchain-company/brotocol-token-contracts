@@ -12,10 +12,15 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, store_state, Config, State},
+    state::{load_config, store_config, store_state, update_owner, Config, State},
 };
 
-use services::bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::{
+    bonding::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+    ownership_proposal::{
+        claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
+    },
+};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-bonding-v1";
@@ -43,10 +48,18 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    if msg.ust_bonding_reward_ratio > Decimal::from_str("1.0")?
-        || msg.ust_bonding_reward_ratio <= Decimal::zero()
-    {
+    let one = Decimal::from_str("1.0")?;
+
+    if msg.ust_bonding_reward_ratio > one || msg.ust_bonding_reward_ratio <= Decimal::zero() {
         return Err(ContractError::InvalidUstBondRatio {});
+    }
+
+    if msg.ust_bonding_discount > one || msg.ust_bonding_discount <= Decimal::zero() {
+        return Err(ContractError::InvalidDiscount {});
+    }
+
+    if msg.lp_bonding_discount > one || msg.lp_bonding_discount <= Decimal::zero() {
+        return Err(ContractError::InvalidDiscount {});
     }
 
     store_config(
@@ -100,7 +113,6 @@ pub fn instantiate(
 /// * **ExecuteMsg::Claim {}** Claim available reward amount
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         owner,
 ///         lp_token,
 ///         rewards_pool_contract,
 ///         treasury_contract,
@@ -113,6 +125,15 @@ pub fn instantiate(
 ///         vesting_period_blocks,
 ///         lp_bonding_enabled,
 ///     }** Updates contract settings
+///
+/// * **ExecuteMsg::ProposeNewOwner {
+///         new_owner,
+///         expires_in_blocks,
+///     }** Creates an offer for a new owner
+///
+/// * **ExecuteMsg::DropOwnershipProposal {}** Removes the existing offer for the new owner
+///
+/// * **ExecuteMsg::ClaimOwnership {}** Used to claim(approve) new owner proposal, thus changing contract's owner
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -125,7 +146,6 @@ pub fn execute(
         ExecuteMsg::UstBond {} => commands::ust_bond(deps, env, info),
         ExecuteMsg::Claim {} => commands::claim(deps, env, info),
         ExecuteMsg::UpdateConfig {
-            owner,
             lp_token,
             rewards_pool_contract,
             treasury_contract,
@@ -141,7 +161,6 @@ pub fn execute(
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(
                 deps,
-                owner,
                 lp_token,
                 rewards_pool_contract,
                 treasury_contract,
@@ -155,6 +174,27 @@ pub fn execute(
                 lp_bonding_enabled,
             )
         }
+        ExecuteMsg::ProposeNewOwner {
+            new_owner,
+            expires_in_blocks,
+        } => {
+            let config = load_config(deps.storage)?;
+
+            Ok(propose_new_owner(
+                deps,
+                env,
+                info,
+                config.owner,
+                new_owner,
+                expires_in_blocks,
+            )?)
+        }
+        ExecuteMsg::DropOwnershipProposal {} => {
+            let config = load_config(deps.storage)?;
+
+            Ok(drop_ownership_proposal(deps, info, config.owner)?)
+        }
+        ExecuteMsg::ClaimOwnership {} => Ok(claim_ownership(deps, env, info, update_owner)?),
     }
 }
 
@@ -236,12 +276,15 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 /// * **QueryMsg::State {}** Returns bonding contract state
 ///
 /// * **QueryMsg::Claims { address }** Returns available claims for bonder by specified address
+///
+/// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
         QueryMsg::Claims { address } => to_binary(&queries::query_claims(deps, address)?),
+        QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
 

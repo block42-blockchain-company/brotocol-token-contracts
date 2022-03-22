@@ -1,6 +1,4 @@
-use cosmwasm_std::{
-    to_binary, Attribute, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg,
-};
+use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, MessageInfo, Response, Uint128, WasmMsg};
 use cw20::Cw20ExecuteMsg;
 use sha3::Digest;
 use std::convert::TryInto;
@@ -8,32 +6,10 @@ use std::convert::TryInto;
 use crate::{
     error::ContractError,
     state::{
-        load_config, load_merkle_root, load_stage, read_claimed, store_claimed, store_config,
-        store_latest_stage, store_merkle_root,
+        load_config, load_merkle_root, load_stage, read_claimed, store_claimed, store_latest_stage,
+        store_merkle_root,
     },
 };
-
-/// ## Description
-/// Updates contract settings.
-/// Returns [`Response`] with specified attributes and messages if operation was successful,
-/// otherwise returns [`ContractError`]
-/// ## Params
-/// * **deps** is an object of type [`DepsMut`]
-///
-/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
-pub fn update_config(deps: DepsMut, owner: Option<String>) -> Result<Response, ContractError> {
-    let mut config = load_config(deps.storage)?;
-
-    let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
-
-    store_config(deps.storage, &config)?;
-    Ok(Response::new().add_attributes(attributes))
-}
 
 /// ## Description
 /// Registers merkle root hash.

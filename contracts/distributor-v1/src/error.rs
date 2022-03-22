@@ -1,6 +1,8 @@
 use cosmwasm_std::{OverflowError, StdError};
 use thiserror::Error;
 
+use services::ownership_proposal::OwnershipProposalError;
+
 /// ## Description
 /// This enum describes distributor contract errors
 #[derive(Error, Debug)]
@@ -10,6 +12,9 @@ pub enum ContractError {
 
     #[error("{0}")]
     OverflowError(#[from] OverflowError),
+
+    #[error("{0}")]
+    OwnershipProposal(#[from] OwnershipProposalError),
 
     #[error("Unauthorized")]
     Unauthorized {},

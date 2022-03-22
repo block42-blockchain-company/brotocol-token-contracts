@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, CanonicalAddr, StdResult, Storage};
+use cosmwasm_std::{Addr, CanonicalAddr, StdError, StdResult, Storage};
 use cw_storage_plus::{Item, Map, U8Key};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -45,6 +45,21 @@ pub fn store_config(storage: &mut dyn Storage, config: &Config) -> StdResult<()>
 /// * **storage** is an object of type [`Storage`]
 pub fn load_config(storage: &dyn Storage) -> StdResult<Config> {
     CONFIG.load(storage)
+}
+
+/// ## Description
+/// Updates owner field in [`Config`] object
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+///
+/// * **new_owner** is an object of type [`CanonicalAddr`]
+pub fn update_owner(storage: &mut dyn Storage, new_owner: CanonicalAddr) -> StdResult<()> {
+    CONFIG.update::<_, StdError>(storage, |mut c| {
+        c.owner = new_owner;
+        Ok(c)
+    })?;
+
+    Ok(())
 }
 
 /// ## Description

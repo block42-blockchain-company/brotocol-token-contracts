@@ -22,8 +22,6 @@ pub enum ExecuteMsg {
     /// ## Executor
     /// Only owner can execute this function
     UpdateConfig {
-        /// new contract owner
-        owner: Option<String>,
         /// new bbro token address
         bbro_token: Option<String>,
     },
@@ -63,6 +61,27 @@ pub enum ExecuteMsg {
         /// amount of tokens to burn
         amount: Uint128,
     },
+    /// ## Description
+    /// Creates an offer for a new owner.
+    /// The validity period of the offer is set in the `expires_in_blocks` variable
+    /// ## Executor
+    /// Only owner can execute this function
+    ProposeNewOwner {
+        /// new contract owner
+        new_owner: String,
+        /// expiration period in blocks
+        expires_in_blocks: u64,
+    },
+    /// ## Description
+    /// Removes the existing offer for the new owner
+    /// ## Executor
+    /// Only owner can execute this function
+    DropOwnershipProposal {},
+    /// ## Description
+    /// Used to claim(approve) new owner proposal, thus changing contract's owner
+    /// ## Executor
+    /// Only address proposed as a new owner can execute this function
+    ClaimOwnership {},
 }
 
 /// ## QueryMsg
@@ -73,6 +92,10 @@ pub enum QueryMsg {
     /// ## Description
     /// Returns bbro-minter contract config in the [`ConfigResponse`] object
     Config {},
+    /// ## Description
+    /// Returns information about created ownership proposal in the [`OwnershipProposalResponse`] object
+    /// otherwise returns not-found error
+    OwnershipProposal {},
 }
 
 /// ## MigrateMsg

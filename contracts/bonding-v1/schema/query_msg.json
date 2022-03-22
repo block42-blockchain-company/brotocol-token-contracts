@@ -53,6 +53,20 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Returns information about created ownership proposal in the [`OwnershipProposalResponse`] object otherwise returns not-found error",
+      "type": "object",
+      "required": [
+        "ownership_proposal"
+      ],
+      "properties": {
+        "ownership_proposal": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

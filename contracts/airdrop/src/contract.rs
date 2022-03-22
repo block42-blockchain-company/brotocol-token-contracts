@@ -1,8 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Storage,
+    from_binary, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
@@ -11,10 +10,15 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, store_latest_stage, Config},
+    state::{load_config, store_config, store_latest_stage, update_owner, Config},
 };
 
-use services::airdrop::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::{
+    airdrop::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+    ownership_proposal::{
+        claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
+    },
+};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-airdrop";
@@ -69,8 +73,6 @@ pub fn instantiate(
 ///
 /// ## Messages
 ///
-/// * **ExecuteMsg::UpdateConfig { owner }** Updates contract settings
-///
 /// * **ExecuteMsg::RegisterMerkleRoot { merkle_root }** Registers merkle root hash
 ///
 /// * **ExecuteMsg::Claim {
@@ -78,24 +80,50 @@ pub fn instantiate(
 ///         amount,
 ///         proof,
 ///     }** Claims available amount for message sender at specified airdrop round
+///
+/// * **ExecuteMsg::ProposeNewOwner {
+///         new_owner,
+///         expires_in_blocks,
+///     }** Creates an offer for a new owner
+///
+/// * **ExecuteMsg::DropOwnershipProposal {}** Removes the existing offer for the new owner
+///
+/// * **ExecuteMsg::ClaimOwnership {}** Used to claim(approve) new owner proposal, thus changing contract's owner
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, info, msg),
-        ExecuteMsg::UpdateConfig { owner } => {
-            assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, owner)
-        }
         ExecuteMsg::Claim {
             stage,
             amount,
             proof,
         } => commands::claim(deps, info, stage, amount, proof),
+        ExecuteMsg::ProposeNewOwner {
+            new_owner,
+            expires_in_blocks,
+        } => {
+            let config = load_config(deps.storage)?;
+
+            Ok(propose_new_owner(
+                deps,
+                env,
+                info,
+                config.owner,
+                new_owner,
+                expires_in_blocks,
+            )?)
+        }
+        ExecuteMsg::DropOwnershipProposal {} => {
+            let config = load_config(deps.storage)?;
+
+            Ok(drop_ownership_proposal(deps, info, config.owner)?)
+        }
+        ExecuteMsg::ClaimOwnership {} => Ok(claim_ownership(deps, env, info, update_owner)?),
     }
 }
 
@@ -136,28 +164,11 @@ pub fn receive_cw20(
 }
 
 /// ## Description
-/// Verifies that message sender is a contract owner.
-/// Returns [`Ok`] if address is valid, otherwise returns [`ContractError`]
-/// ## Params
-/// * **storage** is an object of type [`Storage`]
-///
-/// * **api** is an object of type [`Api`]
-///
-/// * **sender** is an object of type [`Addr`]
-fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<(), ContractError> {
-    if load_config(storage)?.owner != api.addr_canonicalize(sender.as_str())? {
-        return Err(ContractError::Unauthorized {});
-    }
-
-    Ok(())
-}
-
-/// ## Description
 /// Available query messages of the contract
 /// ## Params
 /// * **deps** is an object of type [`Deps`].
 ///
-/// * **env** is an object of type [`Env`].
+/// * **_env** is an object of type [`Env`].
 ///
 /// * **msg** is an object of type [`ExecuteMsg`].
 ///
@@ -170,6 +181,8 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 /// * **QueryMsg::MerkleRoot { stage }** Returns merkle root information by specified stage
 ///
 /// * **QueryMsg::IsClaimed { stage, address }** Returns claim information by specified stage and address
+///
+/// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -179,6 +192,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::IsClaimed { stage, address } => {
             to_binary(&queries::query_claimed(deps, stage, address)?)
         }
+        QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
 

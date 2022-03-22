@@ -3,10 +3,13 @@ use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
-use services::staking::{
-    ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, LockupConfigResponse,
-    LockupInfoResponse, MigrateMsg, QueryMsg, StakerAccruedRewardsResponse, StakerInfoResponse,
-    StateResponse, WithdrawalInfoResponse, WithdrawalsResponse,
+use services::{
+    ownership_proposal::OwnershipProposalResponse,
+    staking::{
+        ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, LockupConfigResponse,
+        LockupInfoResponse, MigrateMsg, QueryMsg, StakerAccruedRewardsResponse, StakerInfoResponse,
+        StateResponse, WithdrawalInfoResponse, WithdrawalsResponse,
+    },
 };
 
 fn main() {
@@ -28,4 +31,5 @@ fn main() {
     export_schema(&schema_for!(StakerAccruedRewardsResponse), &out_dir);
     export_schema(&schema_for!(WithdrawalsResponse), &out_dir);
     export_schema(&schema_for!(WithdrawalInfoResponse), &out_dir);
+    export_schema(&schema_for!(OwnershipProposalResponse), &out_dir);
 }

@@ -11,6 +11,7 @@
         "factory_address": "terra1ys7qglzew8ns39nl0wxalypc4nhwdqudd9rg2c"
     },
     "oracle": {
+        "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
         "price_update_interval": 123
     },
     "airdrop": {

@@ -15,22 +15,14 @@ use services::querier::query_cumulative_prices;
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **owner** is an [`Option`] field of type [`String`]. Sets new contract owner address
-///
 /// * **price_update_interval** is an [`Option`] field of type [`u64`]. Sets new price update interval
 pub fn update_config(
     deps: DepsMut,
-    owner: Option<String>,
     price_update_interval: Option<u64>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
 
     if let Some(price_update_interval) = price_update_interval {
         config.price_update_interval = price_update_interval;

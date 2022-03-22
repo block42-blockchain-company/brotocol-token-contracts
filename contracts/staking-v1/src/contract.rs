@@ -11,10 +11,15 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, store_state, Config, LockupConfig, State},
+    state::{load_config, store_config, store_state, update_owner, Config, LockupConfig, State},
 };
 
-use services::staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::{
+    ownership_proposal::{
+        claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
+    },
+    staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-staking-v1";
@@ -105,7 +110,6 @@ pub fn instantiate(
 /// * **ExecuteMsg::ClaimBbroRewards {}** Claim available bbro reward amount
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         owner,
 ///         paused,
 ///         unstake_period_blocks,
 ///         min_staking_amount,
@@ -115,6 +119,15 @@ pub fn instantiate(
 ///         linear_growth,
 ///         exponential_growth,
 ///     }** Updates contract settings
+///
+/// * **ExecuteMsg::ProposeNewOwner {
+///         new_owner,
+///         expires_in_blocks,
+///     }** Creates an offer for a new owner
+///
+/// * **ExecuteMsg::DropOwnershipProposal {}** Removes the existing offer for the new owner
+///
+/// * **ExecuteMsg::ClaimOwnership {}** Used to claim(approve) new owner proposal, thus changing contract's owner
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -151,7 +164,6 @@ pub fn execute(
             commands::claim_bbro_rewards(deps, env, info)
         }
         ExecuteMsg::UpdateConfig {
-            owner,
             paused,
             unstake_period_blocks,
             min_staking_amount,
@@ -164,7 +176,6 @@ pub fn execute(
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(
                 deps,
-                owner,
                 paused,
                 unstake_period_blocks,
                 min_staking_amount,
@@ -175,6 +186,27 @@ pub fn execute(
                 exponential_growth,
             )
         }
+        ExecuteMsg::ProposeNewOwner {
+            new_owner,
+            expires_in_blocks,
+        } => {
+            let config = load_config(deps.storage)?;
+
+            Ok(propose_new_owner(
+                deps,
+                env,
+                info,
+                config.owner,
+                new_owner,
+                expires_in_blocks,
+            )?)
+        }
+        ExecuteMsg::DropOwnershipProposal {} => {
+            let config = load_config(deps.storage)?;
+
+            Ok(drop_ownership_proposal(deps, info, config.owner)?)
+        }
+        ExecuteMsg::ClaimOwnership {} => Ok(claim_ownership(deps, env, info, update_owner)?),
     }
 }
 
@@ -270,6 +302,8 @@ fn assert_not_paused(storage: &dyn Storage) -> Result<(), ContractError> {
 /// * **QueryMsg::StakerAccruedRewards { staker }** Returns available amount for staker to claim by specified address
 ///
 /// * **QueryMsg::Withdrawals { staker }** Returns available withdrawals for staker by specified address
+///
+/// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -282,6 +316,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
             to_binary(&queries::query_staker_accrued_rewards(deps, env, staker)?)
         }
         QueryMsg::Withdrawals { staker } => to_binary(&queries::query_withdrawals(deps, staker)?),
+        QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
 

@@ -3,6 +3,7 @@ use crate::error::ContractError;
 use crate::math::{decimal_mul_in_256, decimal_sub_in_256, decimal_sum_in_256};
 use crate::mock_querier::mock_dependencies;
 use services::bbro_minter::ExecuteMsg as BbroMintMsg;
+use services::ownership_proposal::OwnershipProposalResponse;
 use services::staking::{
     ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, LockupConfigResponse,
     LockupInfoResponse, QueryMsg, StakeType, StakerAccruedRewardsResponse, StakerInfoResponse,
@@ -1585,7 +1586,6 @@ fn update_config() {
 
     // unauthorized: only owner allowed to execute
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         paused: None,
         unstake_period_blocks: None,
         min_staking_amount: None,
@@ -1605,7 +1605,6 @@ fn update_config() {
 
     // proper execution
     let msg = ExecuteMsg::UpdateConfig {
-        owner: Some("new_owner".to_string()),
         paused: Some(true),
         unstake_period_blocks: Some(11),
         min_staking_amount: Some(Uint128::from(1u128)),
@@ -1620,37 +1619,33 @@ fn update_config() {
     let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(res.attributes[1], Attribute::new("paused_changed", "true"));
     assert_eq!(
-        res.attributes[1],
-        Attribute::new("owner_changed", "new_owner")
-    );
-    assert_eq!(res.attributes[2], Attribute::new("paused_changed", "true"));
-    assert_eq!(
-        res.attributes[3],
+        res.attributes[2],
         Attribute::new("unstake_period_blocks_changed", "11")
     );
     assert_eq!(
-        res.attributes[4],
+        res.attributes[3],
         Attribute::new("min_staking_amount_changed", "1")
     );
     assert_eq!(
-        res.attributes[5],
+        res.attributes[4],
         Attribute::new("min_lockup_period_epochs_changed", "2")
     );
     assert_eq!(
-        res.attributes[6],
+        res.attributes[5],
         Attribute::new("max_lockup_period_epochs_changed", "364")
     );
     assert_eq!(
-        res.attributes[7],
+        res.attributes[6],
         Attribute::new("base_rate_changed", "0.0002")
     );
     assert_eq!(
-        res.attributes[8],
+        res.attributes[7],
         Attribute::new("linear_growth_changed", "0.0006")
     );
     assert_eq!(
-        res.attributes[9],
+        res.attributes[8],
         Attribute::new("exponential_growth_changed", "0.0000076")
     );
 
@@ -1660,7 +1655,7 @@ fn update_config() {
         )
         .unwrap(),
         ConfigResponse {
-            owner: "new_owner".to_string(),
+            owner: "owner".to_string(),
             paused: true,
             bro_token: "bro0000".to_string(),
             rewards_pool_contract: "reward0000".to_string(),
@@ -1704,7 +1699,6 @@ fn pause_contract() {
 
     // pause contract
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         paused: Some(true),
         unstake_period_blocks: None,
         min_staking_amount: None,
@@ -1751,7 +1745,6 @@ fn pause_contract() {
 
     // unpause contract
     let msg = ExecuteMsg::UpdateConfig {
-        owner: None,
         paused: Some(false),
         unstake_period_blocks: None,
         min_staking_amount: None,
@@ -1787,5 +1780,79 @@ fn pause_contract() {
                 exponential_growth: Decimal::from_str("0.0000075").unwrap(),
             }
         }
+    );
+}
+
+#[test]
+fn update_owner() {
+    let mut deps = mock_dependencies(&[]);
+
+    let msg = InstantiateMsg {
+        owner: "owner0000".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // propose ownership
+    let msg = ExecuteMsg::ProposeNewOwner {
+        new_owner: "owner0001".to_string(),
+        expires_in_blocks: 100,
+    };
+
+    let info = mock_info("owner0000", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    assert_eq!(
+        from_binary::<OwnershipProposalResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::OwnershipProposal {}).unwrap()
+        )
+        .unwrap(),
+        OwnershipProposalResponse {
+            proposed_owner: "owner0001".to_string(),
+            expires_at: Expiration::AtHeight(12_345 + 100),
+        },
+    );
+
+    // claim ownership
+    let msg = ExecuteMsg::ClaimOwnership {};
+
+    let info = mock_info("owner0001", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg.clone()).unwrap();
+
+    // verify that owner was changed
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner0001".to_string(),
+            paused: false,
+            bro_token: "bro0000".to_string(),
+            rewards_pool_contract: "reward0000".to_string(),
+            bbro_minter_contract: "bbrominter0000".to_string(),
+            epoch_manager_contract: "epoch0000".to_string(),
+            unstake_period_blocks: 10,
+            min_staking_amount: Uint128::zero(),
+            lockup_config: LockupConfigResponse {
+                min_lockup_period_epochs: 1,
+                max_lockup_period_epochs: 365,
+                base_rate: Decimal::from_str("0.0001").unwrap(),
+                linear_growth: Decimal::from_str("0.0005").unwrap(),
+                exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+            }
+        },
     );
 }

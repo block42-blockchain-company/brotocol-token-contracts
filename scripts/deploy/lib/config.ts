@@ -46,6 +46,7 @@ export interface BroUstPairConfig {
 }
 
 export interface OracleConfig {
+    owner: string,
     factory_contract: string,
     asset_infos: ({
         token: {

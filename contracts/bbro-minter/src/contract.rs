@@ -10,10 +10,15 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, Config},
+    state::{load_config, store_config, update_owner, Config},
 };
 
-use services::bbro_minter::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::{
+    bbro_minter::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+    ownership_proposal::{
+        claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
+    },
+};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-bbro-minter";
@@ -64,7 +69,7 @@ pub fn instantiate(
 /// ## Params
 /// * **deps** is an object of type [`Deps`].
 ///
-/// * **_env** is an object of type [`Env`].
+/// * **env** is an object of type [`Env`].
 ///
 /// * **info** is an object of type [`MessageInfo`].
 ///
@@ -73,7 +78,6 @@ pub fn instantiate(
 /// ## Messages
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         owner,
 ///         bbro_token,
 ///     }** Updates contract settings
 ///
@@ -84,17 +88,26 @@ pub fn instantiate(
 /// * **ExecuteMsg::Mint { recipient, amount }** Mints specified amount for specified address
 ///
 /// * **ExecuteMsg::Burn { owner, amount }** Burns specified amount from specified address balance
+///
+/// * **ExecuteMsg::ProposeNewOwner {
+///         new_owner,
+///         expires_in_blocks,
+///     }** Creates an offer for a new owner
+///
+/// * **ExecuteMsg::DropOwnershipProposal {}** Removes the existing offer for the new owner
+///
+/// * **ExecuteMsg::ClaimOwnership {}** Used to claim(approve) new owner proposal, thus changing contract's owner
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { owner, bbro_token } => {
+        ExecuteMsg::UpdateConfig { bbro_token } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, owner, bbro_token)
+            commands::update_config(deps, bbro_token)
         }
         ExecuteMsg::AddMinter { minter } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
@@ -106,6 +119,27 @@ pub fn execute(
         }
         ExecuteMsg::Mint { recipient, amount } => commands::mint(deps, info, recipient, amount),
         ExecuteMsg::Burn { owner, amount } => commands::burn(deps, info, owner, amount),
+        ExecuteMsg::ProposeNewOwner {
+            new_owner,
+            expires_in_blocks,
+        } => {
+            let config = load_config(deps.storage)?;
+
+            Ok(propose_new_owner(
+                deps,
+                env,
+                info,
+                config.owner,
+                new_owner,
+                expires_in_blocks,
+            )?)
+        }
+        ExecuteMsg::DropOwnershipProposal {} => {
+            let config = load_config(deps.storage)?;
+
+            Ok(drop_ownership_proposal(deps, info, config.owner)?)
+        }
+        ExecuteMsg::ClaimOwnership {} => Ok(claim_ownership(deps, env, info, update_owner)?),
     }
 }
 
@@ -131,17 +165,20 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 /// ## Params
 /// * **deps** is an object of type [`Deps`].
 ///
-/// * **env** is an object of type [`Env`].
+/// * **_env** is an object of type [`Env`].
 ///
 /// * **msg** is an object of type [`ExecuteMsg`].
 ///
 /// ## Queries
 ///
 /// * **QueryMsg::Config {}** Returns bbro-minter contract config
+///
+/// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
+        QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
 

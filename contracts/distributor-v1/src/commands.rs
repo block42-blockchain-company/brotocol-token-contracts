@@ -115,8 +115,6 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **owner** is an [`Option`] of type [`String`]. Sets new contract owner address
-///
 /// * **paused** is an [`Option`] of type [`bool`]. Sets either contract paused or not
 ///
 /// * **epoch_manager_contract** is an [`Option`] of type [`String`]. Sets new epoch manager contract address
@@ -133,7 +131,6 @@ pub fn distribute(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
 #[allow(clippy::too_many_arguments)]
 pub fn update_config(
     deps: DepsMut,
-    owner: Option<String>,
     paused: Option<bool>,
     epoch_manager_contract: Option<String>,
     rewards_contract: Option<String>,
@@ -145,11 +142,6 @@ pub fn update_config(
     let mut config = load_config(deps.storage)?;
 
     let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(owner) = owner {
-        config.owner = deps.api.addr_canonicalize(&owner)?;
-        attributes.push(Attribute::new("owner_changed", &owner));
-    }
 
     if let Some(paused) = paused {
         config.paused = paused;

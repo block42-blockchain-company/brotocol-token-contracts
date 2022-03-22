@@ -39,7 +39,6 @@ Message params are optional.
 
 ```json
 {
-    "owner": "terra1...",
     "paused": false,
     "distribution_genesis_block": 12500,
     "epoch_manager_contract": "terra1...",
@@ -48,6 +47,40 @@ Message params are optional.
     "staking_distribution_amount": "100",
     "bonding_contract": "terra1...",
     "bonding_distribution_amount": "100"
+}
+```
+
+### `propose_new_owner`
+
+Creates an offer for a new owner. Only owner can execute this function.
+
+```json
+{
+    "propose_new_owner": {
+        "new_owner": "terra1...",
+        "expires_in_blocks": 100
+    }
+}
+```
+
+### `drop_ownership_proposal`
+
+Removes the existing offer for the new owner. Only owner can execute this function
+
+```json
+{
+    "drop_ownership_proposal": {}
+}
+```
+
+### `claim_ownership`
+
+Used to claim(approve) new owner proposal, thus changing contract's owner.
+Only address proposed as a new owner can execute this function.
+
+```json
+{
+    "claim_ownership": {}
 }
 ```
 
@@ -80,6 +113,16 @@ Returns whether funds can be distributed or not
 ```json
 {
     "is_ready_to_trigger": {}
+}
+```
+
+### `ownership_proposal`
+
+Returns information about created ownership proposal otherwise returns not-found error.
+
+```json
+{
+    "ownership_proposal": {}
 }
 ```
 

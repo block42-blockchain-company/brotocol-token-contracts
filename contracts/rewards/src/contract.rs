@@ -10,10 +10,15 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, Config},
+    state::{load_config, store_config, update_owner, Config},
 };
 
-use services::rewards::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::{
+    ownership_proposal::{
+        claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
+    },
+    rewards::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-rewards-pool";
@@ -74,7 +79,6 @@ pub fn instantiate(
 /// ## Messages
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         owner,
 ///         spend_limit,
 ///     }** Updates contract settings
 ///
@@ -83,17 +87,26 @@ pub fn instantiate(
 /// * **ExecuteMsg::RemoveDistributor { distributor }** Removes distributor from whitelist
 ///
 /// * **ExecuteMsg::DistributeRewards { distributions }** Distributes rewards to specified contracts
+///
+/// * **ExecuteMsg::ProposeNewOwner {
+///         new_owner,
+///         expires_in_blocks,
+///     }** Creates an offer for a new owner
+///
+/// * **ExecuteMsg::DropOwnershipProposal {}** Removes the existing offer for the new owner
+///
+/// * **ExecuteMsg::ClaimOwnership {}** Used to claim(approve) new owner proposal, thus changing contract's owner
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { owner, spend_limit } => {
+        ExecuteMsg::UpdateConfig { spend_limit } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, owner, spend_limit)
+            commands::update_config(deps, spend_limit)
         }
         ExecuteMsg::AddDistributor { distributor } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
@@ -106,6 +119,27 @@ pub fn execute(
         ExecuteMsg::DistributeRewards { distributions } => {
             commands::distribute_reward(deps, info, distributions)
         }
+        ExecuteMsg::ProposeNewOwner {
+            new_owner,
+            expires_in_blocks,
+        } => {
+            let config = load_config(deps.storage)?;
+
+            Ok(propose_new_owner(
+                deps,
+                env,
+                info,
+                config.owner,
+                new_owner,
+                expires_in_blocks,
+            )?)
+        }
+        ExecuteMsg::DropOwnershipProposal {} => {
+            let config = load_config(deps.storage)?;
+
+            Ok(drop_ownership_proposal(deps, info, config.owner)?)
+        }
+        ExecuteMsg::ClaimOwnership {} => Ok(claim_ownership(deps, env, info, update_owner)?),
     }
 }
 
@@ -140,11 +174,14 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 /// * **QueryMsg::Config {}** Returns rewards pool contract config
 ///
 /// * **QueryMsg::Balance {}** Returns rewards pool token balance
+///
+/// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::Balance {} => to_binary(&queries::query_balance(deps, env)?),
+        QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
 

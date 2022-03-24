@@ -37,7 +37,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
 /// * **deps** is an object of type [`Deps`]
 ///
 /// * **env** is an object of type [`Env`].
-/// 
+///
 /// * **asset** is an object of type [`AssetInfo`]
 ///
 /// * **amount** is an object of type [`Uint128`]
@@ -55,7 +55,9 @@ pub fn consult_price(
 
     // return Error if last price update happened too long ago
     if time_elapsed > config.price_validity_period {
-        return Err(StdError::generic_err("Last price update is too old. Invoke the UpdatePrice function!"));
+        return Err(StdError::generic_err(
+            "Last price update is too old. Invoke the UpdatePrice function!",
+        ));
     }
 
     let price_average = if config.asset_infos[0].equal(&asset) {

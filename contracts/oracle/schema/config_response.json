@@ -7,7 +7,8 @@
     "asset_infos",
     "factory",
     "owner",
-    "price_update_interval"
+    "price_update_interval",
+    "price_validity_period"
   ],
   "properties": {
     "asset_infos": {
@@ -29,6 +30,12 @@
     },
     "price_update_interval": {
       "description": "time interval for updating prices",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "price_validity_period": {
+      "description": "time frame for how long a price is valid after update",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0

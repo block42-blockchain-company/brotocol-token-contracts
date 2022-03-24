@@ -70,6 +70,7 @@ pub fn instantiate(
             asset_infos: msg.asset_infos.clone(),
             pair: pair_info.clone(),
             price_update_interval: msg.price_update_interval,
+            price_validity_period: msg.price_validity_period,
         },
     )?;
 
@@ -103,6 +104,7 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::UpdateConfig {
 ///         price_update_interval,
+///         price_validity_period,
 ///     }** Updates contract settings
 ///
 /// * **ExecuteMsg::UpdatePrice {}** Updates cumulative prices
@@ -125,9 +127,10 @@ pub fn execute(
     match msg {
         ExecuteMsg::UpdateConfig {
             price_update_interval,
+            price_validity_period,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::update_config(deps, price_update_interval)
+            commands::update_config(deps, price_update_interval, price_validity_period)
         }
         ExecuteMsg::UpdatePrice {} => commands::update_price(deps, env),
         ExecuteMsg::ProposeNewOwner {
@@ -194,7 +197,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::ConsultPrice { asset, amount } => {
-            to_binary(&queries::consult_price(deps, asset, amount)?)
+            to_binary(&queries::consult_price(deps, env, asset, amount)?)
         }
         QueryMsg::IsReadyToTrigger {} => to_binary(&queries::is_ready_to_trigger(deps, env)?),
         QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),

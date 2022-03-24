@@ -58,6 +58,7 @@ export interface OracleConfig {
         };
     })[],
     price_update_interval: number,
+    price_validity_period: number,
 }
 
 export interface AirdropConfig {

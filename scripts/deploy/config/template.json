@@ -12,7 +12,8 @@
     },
     "oracle": {
         "owner": "",
-        "price_update_interval": 0
+        "price_update_interval": 0,
+        "price_validity_period": 0
     },
     "airdrop": {
         "owner": ""

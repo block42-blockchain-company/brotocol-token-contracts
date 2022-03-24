@@ -16,9 +16,12 @@ use services::querier::query_cumulative_prices;
 /// * **deps** is an object of type [`DepsMut`]
 ///
 /// * **price_update_interval** is an [`Option`] field of type [`u64`]. Sets new price update interval
+///
+/// * **price_validity_period** is an [`Option`] field of type [`u64`]. Sets new price validity time frame
 pub fn update_config(
     deps: DepsMut,
     price_update_interval: Option<u64>,
+    price_validity_period: Option<u64>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
@@ -29,6 +32,14 @@ pub fn update_config(
         attributes.push(Attribute::new(
             "price_update_interval_changed",
             &price_update_interval.to_string(),
+        ));
+    }
+
+    if let Some(price_validity_period) = price_validity_period {
+        config.price_validity_period = price_validity_period;
+        attributes.push(Attribute::new(
+            "price_validity_period_changed",
+            &price_validity_period.to_string(),
         ));
     }
 

@@ -25,6 +25,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         factory: deps.api.addr_humanize(&config.factory)?.to_string(),
         asset_infos: config.asset_infos,
         price_update_interval: config.price_update_interval,
+        price_validity_period: config.price_validity_period,
     };
 
     Ok(resp)
@@ -35,16 +36,27 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
 /// ## Params
 /// * **deps** is an object of type [`Deps`]
 ///
+/// * **env** is an object of type [`Env`].
+/// 
 /// * **asset** is an object of type [`AssetInfo`]
 ///
 /// * **amount** is an object of type [`Uint128`]
 pub fn consult_price(
     deps: Deps,
+    env: Env,
     asset: AssetInfo,
     amount: Uint128,
 ) -> StdResult<ConsultPriceResponse> {
     let config = load_config(deps.storage)?;
     let price_last = load_price_cumulative_last(deps.storage)?;
+
+    let current_time = env.block.time.seconds();
+    let time_elapsed = current_time - price_last.last_price_update_timestamp;
+
+    // return Error if last price update happened too long ago
+    if time_elapsed > config.price_validity_period {
+        return Err(StdError::generic_err("Last price update is too old. Invoke the UpdatePrice function!"));
+    }
 
     let price_average = if config.asset_infos[0].equal(&asset) {
         price_last.price_0_average

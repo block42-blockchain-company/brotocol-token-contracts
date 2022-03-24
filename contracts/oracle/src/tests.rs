@@ -2,7 +2,7 @@ use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use astroport::asset::{Asset, AssetInfo};
 use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{from_binary, Addr, Attribute, Uint128};
+use cosmwasm_std::{from_binary, Addr, Attribute, Uint128, StdError};
 use cw20::Expiration;
 use services::ownership_proposal::OwnershipProposalResponse;
 
@@ -46,6 +46,7 @@ fn proper_initialization() {
         factory_contract: MOCK_FACTORY_ADDR.to_string(),
         asset_infos: [bro_asset_info.clone(), ust_asset_info.clone()],
         price_update_interval: 120,
+        price_validity_period: 500,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -61,6 +62,7 @@ fn proper_initialization() {
             factory: MOCK_FACTORY_ADDR.to_string(),
             asset_infos: [bro_asset_info.clone(), ust_asset_info.clone()],
             price_update_interval: 120,
+            price_validity_period: 500,
         },
     );
 }
@@ -99,6 +101,7 @@ fn update_config() {
         factory_contract: MOCK_FACTORY_ADDR.to_string(),
         asset_infos: [bro_asset_info.clone(), ust_asset_info.clone()],
         price_update_interval: 120,
+        price_validity_period: 500,
     };
 
     let info = mock_info("owner", &[]);
@@ -107,6 +110,7 @@ fn update_config() {
     // unauthorized: only owner allowed to execute
     let msg = ExecuteMsg::UpdateConfig {
         price_update_interval: Some(130),
+        price_validity_period: Some(700)
     };
 
     let info = mock_info("addr0000", &[]);
@@ -123,7 +127,11 @@ fn update_config() {
     assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
     assert_eq!(
         res.attributes[1],
-        Attribute::new("price_update_interval_changed", "130")
+        Attribute::new("price_update_interval_changed", "130"),
+    );
+    assert_eq!(
+        res.attributes[2],
+        Attribute::new("price_validity_period_changed", "700"),
     );
 
     assert_eq!(
@@ -136,6 +144,7 @@ fn update_config() {
             factory: MOCK_FACTORY_ADDR.to_string(),
             asset_infos: [bro_asset_info.clone(), ust_asset_info.clone()],
             price_update_interval: 130,
+            price_validity_period: 700,
         },
     );
 }
@@ -176,6 +185,7 @@ fn update_price() {
         factory_contract: MOCK_FACTORY_ADDR.to_string(),
         asset_infos: [bro_asset_info.clone(), ust_asset_info.clone()],
         price_update_interval: 120,
+        price_validity_period: 500,
     };
 
     let info = mock_info("owner", &[]);
@@ -217,7 +227,7 @@ fn update_price() {
         from_binary::<ConsultPriceResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::ConsultPrice {
                     asset: ust_asset_info.clone(),
                     amount: Uint128::from(10_000000u128),
@@ -230,6 +240,26 @@ fn update_price() {
             amount: Uint128::from(8264u128),
         }
     );
+    
+    // consult prices after validity period is over
+
+    env.block.time = env.block.time.plus_seconds(10000);
+
+    let res = query(
+        deps.as_ref(),
+        env.clone(),
+        QueryMsg::ConsultPrice {
+            asset: ust_asset_info.clone(),
+            amount: Uint128::from(10_000000u128),
+        }
+    );
+
+    match res {
+        Err(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(msg, "Last price update is too old. Invoke the UpdatePrice function!".to_string())
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
 }
 
 #[test]
@@ -266,6 +296,7 @@ fn update_owner() {
         factory_contract: MOCK_FACTORY_ADDR.to_string(),
         asset_infos: [bro_asset_info.clone(), ust_asset_info.clone()],
         price_update_interval: 120,
+        price_validity_period: 500,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -308,6 +339,7 @@ fn update_owner() {
             factory: MOCK_FACTORY_ADDR.to_string(),
             asset_infos: [bro_asset_info.clone(), ust_asset_info.clone()],
             price_update_interval: 120,
+            price_validity_period: 500,
         },
     );
 }

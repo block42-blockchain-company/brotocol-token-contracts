@@ -28,6 +28,8 @@ pub struct Config {
     pub pair: PairInfo,
     /// time interval for updating prices
     pub price_update_interval: u64,
+    /// time frame for how long a price is valid after update
+    pub price_validity_period: u64,
 }
 
 /// ## Description

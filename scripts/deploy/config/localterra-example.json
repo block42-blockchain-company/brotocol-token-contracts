@@ -12,7 +12,8 @@
     },
     "oracle": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
-        "price_update_interval": 123
+        "price_update_interval": 123,
+        "price_validity_period": 800
     },
     "airdrop": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8"

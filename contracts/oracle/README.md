@@ -21,7 +21,8 @@ The oracle contract performs calculation x*y=k pair assets average prices based 
       }
     }
   ],
-  "price_update_interval": 86400
+  "price_update_interval": 600,
+  "price_validity_period": 1200
 }
 ```
 
@@ -34,7 +35,8 @@ Message params are optional.
 
 ```json
 {
-    "price_update_interval": 86400
+    "price_update_interval": 600,
+    "price_validity_period": 1200
 }
 ```
 

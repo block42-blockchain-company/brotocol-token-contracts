@@ -16,6 +16,8 @@ pub struct InstantiateMsg {
     pub asset_infos: [AssetInfo; 2],
     /// time interval for updating prices
     pub price_update_interval: u64,
+    /// time frame for how long a price is valid after update
+    pub price_validity_period: u64,
 }
 
 /// ## ExecuteMsg
@@ -30,6 +32,7 @@ pub enum ExecuteMsg {
     UpdateConfig {
         /// time interval for updating prices
         price_update_interval: Option<u64>,
+        price_validity_period: Option<u64>,
     },
     /// ## Description
     /// Updates cumulative prices
@@ -100,6 +103,8 @@ pub struct ConfigResponse {
     pub asset_infos: [AssetInfo; 2],
     /// time interval for updating prices
     pub price_update_interval: u64,
+    /// time frame for how long a price is valid after update
+    pub price_validity_period: u64,
 }
 
 /// ## ConsultPriceResponse

@@ -4,7 +4,15 @@
     "bro_token": {
         "name": "Bro",
         "symbol": "BRO",
-        "decimals": 6
+        "decimals": 6,
+        "marketing": {
+            "project": "brokkr brotocol",
+            "description": "Brokkr creates an investment infrastructure of Portfolios that automates the use of DeFi protocols. BRO is the protocol's primary token.",
+            "marketing": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+            "logo": {
+                "embedded":{"png":"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAUpSURBVHgBrVe9bxxFFP/N7Nft+Xw+O5DEVhLONIEAwoloqEJqioQKCYQiBBUNpogEFU4HSmP+AZQIRIdIAxUSoNAhJUYoEkQKPhQT48Qfd76v3dndGd7M+vO8d94kftLe7s3Ozu83v/fmzRuGvDY/XYHjXICFs5BsCgxVaq1svK1DoQbO5pDIXxBF1zE5W88zLNu3x+J0FYkzTYNf3AGYY2R2FQgvY3y2NrBb3zd6xp77KT1N44mMzSL0L2Nypp6fgJ61cn+ipyoOxmpg4lyWGnxP14VLUwcMDjOWHlOP3WO7FcgxcxZJWPdDQNJzogCPQw7bSCo2ctgeJbYJpD6/1Q/cWgzg327BayTgngNlM0iLeHCGxFKIi0RkzIU47sGrS4SjnObCs0mExdObMbFNOw24KvpYMl5At0wAHSIQSLirMRwi4whFg1iwAoXofhesIeD5BfAVgc5Jn5jvCbMqvK7G+mhbgVT6eTyG+fcF/HkBHilImo5QRMz3jEJtP0F0spT9IROT2hWpRtKdwWNad8JF40wRYswCj0lI5pg7ixXcpgRvxtkf6tyieWz4fg0HYJWbbTjr0sxekfQRkwjKDOJUpgp1ioVJjgKl1xxmL4Xw7rbh/hv2nVXzeZ8ysl4pyihgSQa+FprnLL5w2hdsyuuvDUrI3q8P4d9YIWltsBEX7VdGIMtDehXuscTnCI7a8O8JGpJTaJIScQIEdJUylqnFz9KoeLkv+LW7GL7dhlfykDzl4OHb40jKDgaZeNqBXws2/jGjBm8mSLIIKDWlg7CaNZD97TzKv9XhW7aRcPmtiX3BtUVly6wInaT0d0kYaSCjSoZVNYG9O9xSB8PXF1CwKNNECTovDSOu7A9uJuUwA6xnjljC5y4qfwq4D6Os7tn50/rqL5QKBQJPPS2OeMhrTj02wDqsiAoKtgtJhKJCdqBpAjol7lJh5GYDcP3tBqmQ19xFkRJXKQHzOblDHClmda9rF9R6W0uRZTYdCGlcULyVL01YtDxLf7S25Nd3JRKEPEF8KNOFlAkVfu9tlbTDKREbcEYkvNsNFO40B4KzUOLQ98uw1sQu8G6rC/HcUJ+P2BwHVz/3tovjRQOuL2XuEmNfzsNezoxkeP90cOTaAskfmL5aPUkTaDWaCE8UED3bhwDVj5upWG9EW3Ew8vXfKH9DTa5FaZWDuRQqDnnLsRC+MAJxoghZopxPO6F/pwW7JU30K3rPqH9AG1JLBJATPqI3J6E8nk0gLI6mUbJwaZaKzg8323krxsQ7N4ysrTBEaWzYgDO6lCGSkkkveiZQDa7rg/VuB504AHumDPneSQK30Ef+qxj//N2UmmXN7nwnKWs1zx9HeMxHuyixvtwwMaE23GKiXN9F+qz0RQlnqXYPrZVVyHOUMT841R88ZXDZ/G7971FBmze3ivCwB+v9H+GsRaTECPxyMVXC3VDB3lZCq7P+6ijWXz+KgSbVFzh2xWzH286John0LMlwagyYGELyw3kEn5zBKu/iwb0lrC6torPWhmgGiDoB4m6IsB2gW6DIp7Rr1aNB8DVEQzNbOux6tfgxVUZycEV8Zw3svw7Ygy5VI+SCCdrrh12oF0ehivsWplSUcipKP6tlE9CmS2fOvsPBluUpuK3ewOErczsb+xxMcijxqOA9M9+07AWqO4bitAmWJzU9hi7DM8C15TickhpSzlDPi8hvdQK+ZpZ3H+D8BDZtfqaCQvvCRgmnq6gqdh7PjcyKjueg4/nQ9X6H0V77H6gVSMnZzE3iAAAAAElFTkSuQmCC"}
+            }
+        }
     },
     "bro_ust_pair": {
         "createPair": true,
@@ -29,7 +37,15 @@
     "bbro_token": {
         "name": "bBro",
         "symbol": "bBRO",
-        "decimals": 6
+        "decimals": 6,
+        "marketing": {
+            "project": "brokkr brotocol",
+            "description": "Brokkr creates an investment infrastructure of Portfolios that automates the use of DeFi protocols. bBRO is the protocol's secondary token.",
+            "marketing": "terra1l05d3ql49rfl6re3vjw4ak7lrprtldlcywsz4l",
+            "logo": {
+                "embedded":{"png":"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAUpSURBVHgBrVe9bxxFFP/N7Nft+Xw+O5DEVhLONIEAwoloqEJqioQKCYQiBBUNpogEFU4HSmP+AZQIRIdIAxUSoNAhJUYoEkQKPhQT48Qfd76v3dndGd7M+vO8d94kftLe7s3Ozu83v/fmzRuGvDY/XYHjXICFs5BsCgxVaq1svK1DoQbO5pDIXxBF1zE5W88zLNu3x+J0FYkzTYNf3AGYY2R2FQgvY3y2NrBb3zd6xp77KT1N44mMzSL0L2Nypp6fgJ61cn+ipyoOxmpg4lyWGnxP14VLUwcMDjOWHlOP3WO7FcgxcxZJWPdDQNJzogCPQw7bSCo2ctgeJbYJpD6/1Q/cWgzg327BayTgngNlM0iLeHCGxFKIi0RkzIU47sGrS4SjnObCs0mExdObMbFNOw24KvpYMl5At0wAHSIQSLirMRwi4whFg1iwAoXofhesIeD5BfAVgc5Jn5jvCbMqvK7G+mhbgVT6eTyG+fcF/HkBHilImo5QRMz3jEJtP0F0spT9IROT2hWpRtKdwWNad8JF40wRYswCj0lI5pg7ixXcpgRvxtkf6tyieWz4fg0HYJWbbTjr0sxekfQRkwjKDOJUpgp1ioVJjgKl1xxmL4Xw7rbh/hv2nVXzeZ8ysl4pyihgSQa+FprnLL5w2hdsyuuvDUrI3q8P4d9YIWltsBEX7VdGIMtDehXuscTnCI7a8O8JGpJTaJIScQIEdJUylqnFz9KoeLkv+LW7GL7dhlfykDzl4OHb40jKDgaZeNqBXws2/jGjBm8mSLIIKDWlg7CaNZD97TzKv9XhW7aRcPmtiX3BtUVly6wInaT0d0kYaSCjSoZVNYG9O9xSB8PXF1CwKNNECTovDSOu7A9uJuUwA6xnjljC5y4qfwq4D6Os7tn50/rqL5QKBQJPPS2OeMhrTj02wDqsiAoKtgtJhKJCdqBpAjol7lJh5GYDcP3tBqmQ19xFkRJXKQHzOblDHClmda9rF9R6W0uRZTYdCGlcULyVL01YtDxLf7S25Nd3JRKEPEF8KNOFlAkVfu9tlbTDKREbcEYkvNsNFO40B4KzUOLQ98uw1sQu8G6rC/HcUJ+P2BwHVz/3tovjRQOuL2XuEmNfzsNezoxkeP90cOTaAskfmL5aPUkTaDWaCE8UED3bhwDVj5upWG9EW3Ew8vXfKH9DTa5FaZWDuRQqDnnLsRC+MAJxoghZopxPO6F/pwW7JU30K3rPqH9AG1JLBJATPqI3J6E8nk0gLI6mUbJwaZaKzg8323krxsQ7N4ysrTBEaWzYgDO6lCGSkkkveiZQDa7rg/VuB504AHumDPneSQK30Ef+qxj//N2UmmXN7nwnKWs1zx9HeMxHuyixvtwwMaE23GKiXN9F+qz0RQlnqXYPrZVVyHOUMT841R88ZXDZ/G7971FBmze3ivCwB+v9H+GsRaTECPxyMVXC3VDB3lZCq7P+6ijWXz+KgSbVFzh2xWzH286John0LMlwagyYGELyw3kEn5zBKu/iwb0lrC6torPWhmgGiDoB4m6IsB2gW6DIp7Rr1aNB8DVEQzNbOux6tfgxVUZycEV8Zw3svw7Ygy5VI+SCCdrrh12oF0ehivsWplSUcipKP6tlE9CmS2fOvsPBluUpuK3ewOErczsb+xxMcijxqOA9M9+07AWqO4bitAmWJzU9hi7DM8C15TickhpSzlDPi8hvdQK+ZpZ3H+D8BDZtfqaCQvvCRgmnq6gqdh7PjcyKjueg4/nQ9X6H0V77H6gVSMnZzE3iAAAAAElFTkSuQmCC"}
+            }
+        }
     },
     "rewards": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",

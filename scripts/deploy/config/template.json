@@ -4,7 +4,11 @@
     "bro_token": {
         "name": "Bro",
         "symbol": "BRO",
-        "decimals": 6
+        "decimals": 6,
+        "marketing": "",
+        "logo": {
+            "url":""
+        }
     },
     "bro_ust_pair": {
         "createPair": true,
@@ -29,7 +33,11 @@
     "bbro_token": {
         "name": "bBro",
         "symbol": "bBRO",
-        "decimals": 6
+        "decimals": 6,
+        "marketing": "",
+        "logo": {
+            "url":""
+        }
     },
     "rewards": {
         "owner": "",

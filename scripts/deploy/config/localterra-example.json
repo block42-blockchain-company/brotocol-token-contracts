@@ -4,7 +4,15 @@
     "bro_token": {
         "name": "Bro",
         "symbol": "BRO",
-        "decimals": 6
+        "decimals": 6,
+        "marketing": {
+            "project": "brokkr brotocol",
+            "description": "Brokkr creates an investment infrastructure of Portfolios that automates the use of DeFi protocols. BRO is the protocol's primary token.",
+            "marketing": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
+            "logo": {
+                "url":"https://brokkr.finance/img/brokkr_full_logo.b2827905.svg"
+            }
+        }
     },
     "bro_ust_pair": {
         "createPair": true,
@@ -29,7 +37,15 @@
     "bbro_token": {
         "name": "bBro",
         "symbol": "bBRO",
-        "decimals": 6
+        "decimals": 6,
+        "marketing": {
+            "project": "brokkr brotocol",
+            "description": "Brokkr creates an investment infrastructure of Portfolios that automates the use of DeFi protocols. bBRO is the protocol's secondary token.",
+            "marketing": "terra1l05d3ql49rfl6re3vjw4ak7lrprtldlcywsz4l",
+            "logo": {
+                "url":"https://brokkr.finance/img/brokkr_full_logo.b2827905.svg"
+            }
+        }
     },
     "rewards": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",

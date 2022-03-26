@@ -258,6 +258,14 @@ impl StakerInfo {
 
         Ok(())
     }
+
+    /// ## Description
+    /// Checks if staker info can be deleted or not
+    pub fn can_be_removed(&self) -> StdResult<bool> {
+        Ok(self.total_staked()?.is_zero()
+            && self.pending_bro_reward.is_zero()
+            && self.pending_bbro_reward.is_zero())
+    }
 }
 
 /// ## Description

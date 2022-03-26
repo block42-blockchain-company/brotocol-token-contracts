@@ -1167,7 +1167,7 @@ fn test_unlocked_stake_tokens() {
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::zero(),
-            last_balance_update: 12363,
+            last_balance_update: 12362,
             lockups: vec![],
         }
     );

@@ -179,6 +179,33 @@ fn proper_initialization() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 5,
+        max_lockup_period_epochs: 4,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+    let info = mock_info("addr0000", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "min_lockup_period_epochs must be less then or equal to max_lockup_period_epochs"
+                    .to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
     // proper initialization
     let msg = InstantiateMsg {
         owner: "owner".to_string(),

@@ -96,6 +96,13 @@ impl Config {
             ));
         }
 
+        if self.lockup_config.min_lockup_period_epochs > self.lockup_config.max_lockup_period_epochs
+        {
+            return Err(StdError::generic_err(
+                "min_lockup_period_epochs must be less then or equal to max_lockup_period_epochs",
+            ));
+        }
+
         Ok(())
     }
 }

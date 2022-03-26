@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{
     Addr, BlockInfo, CanonicalAddr, Decimal, QuerierWrapper, StdError, StdResult, Storage, Uint128,
 };
@@ -48,6 +50,61 @@ pub struct Config {
     pub min_staking_amount: Uint128,
     /// lockup config
     pub lockup_config: LockupConfig,
+}
+
+impl Config {
+    pub fn validate(&self) -> StdResult<()> {
+        let min_base_rate = Decimal::from_str("0.0001")?;
+        if self.lockup_config.base_rate < min_base_rate {
+            return Err(StdError::generic_err(
+                "base_rate must be higher than min_base_rate",
+            ));
+        }
+
+        let max_base_rate = Decimal::from_str("0.0005")?;
+        if self.lockup_config.base_rate > max_base_rate {
+            return Err(StdError::generic_err(
+                "base_rate must be smaller than max_base_rate",
+            ));
+        }
+
+        let min_linear_growth = Decimal::from_str("0.0004")?;
+        if self.lockup_config.linear_growth < min_linear_growth {
+            return Err(StdError::generic_err(
+                "linear_growth must be higher than min_linear_growth",
+            ));
+        }
+
+        let max_linear_growth = Decimal::from_str("0.0015")?;
+        if self.lockup_config.linear_growth > max_linear_growth {
+            return Err(StdError::generic_err(
+                "linear_growth must be smaller than max_linear_growth",
+            ));
+        }
+
+        let min_exponential_growth = Decimal::from_str("0.000001")?;
+        if self.lockup_config.exponential_growth < min_exponential_growth {
+            return Err(StdError::generic_err(
+                "exponential_growth must be higher than min_exponential_growth",
+            ));
+        }
+
+        let max_exponential_growth = Decimal::from_str("0.000015")?;
+        if self.lockup_config.exponential_growth > max_exponential_growth {
+            return Err(StdError::generic_err(
+                "exponential_growth must be higher than max_exponential_growth",
+            ));
+        }
+
+        if self.lockup_config.min_lockup_period_epochs > self.lockup_config.max_lockup_period_epochs
+        {
+            return Err(StdError::generic_err(
+                "min_lockup_period_epochs must be less then or equal to max_lockup_period_epochs",
+            ));
+        }
+
+        Ok(())
+    }
 }
 
 /// ## Description
@@ -257,6 +314,14 @@ impl StakerInfo {
         self.lockups = lockups;
 
         Ok(())
+    }
+
+    /// ## Description
+    /// Checks if staker info can be deleted or not
+    pub fn can_be_removed(&self) -> StdResult<bool> {
+        Ok(self.total_staked()?.is_zero()
+            && self.pending_bro_reward.is_zero()
+            && self.pending_bbro_reward.is_zero())
     }
 }
 

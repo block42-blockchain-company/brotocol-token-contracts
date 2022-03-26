@@ -277,7 +277,7 @@ pub fn unstake(
     state.total_stake_amount = state.total_stake_amount.checked_sub(amount)?;
     staker_info.unlocked_stake_amount = staker_info.unlocked_stake_amount.checked_sub(amount)?;
 
-    if staker_info.pending_bro_reward.is_zero() && staker_info.total_staked()?.is_zero() {
+    if staker_info.can_be_removed()? {
         remove_staker_info(deps.storage, &sender_addr_raw);
     } else {
         store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
@@ -383,7 +383,7 @@ pub fn claim_bro_rewards(
     staker_info.pending_bro_reward = Uint128::zero();
     staker_info.unlock_expired_lockups(&env.block)?;
 
-    if staker_info.total_staked()?.is_zero() {
+    if staker_info.can_be_removed()? {
         remove_staker_info(deps.storage, &sender_addr_raw);
     } else {
         store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
@@ -557,6 +557,7 @@ pub fn update_config(
         ));
     }
 
+    config.validate()?;
     store_config(deps.storage, &config)?;
 
     Ok(Response::new().add_attributes(attributes))

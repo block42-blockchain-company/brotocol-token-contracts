@@ -1,12 +1,11 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Api, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response,
+    from_binary, to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response,
     StdResult, Storage, Uint128,
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
-use std::str::FromStr;
 
 use crate::{
     commands,
@@ -48,38 +47,24 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let one = Decimal::from_str("1.0")?;
+    let config = Config {
+        owner: deps.api.addr_canonicalize(&msg.owner)?,
+        bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
+        lp_token: deps.api.addr_canonicalize(&msg.lp_token)?,
+        rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
+        treasury_contract: deps.api.addr_canonicalize(&msg.treasury_contract)?,
+        astroport_factory: deps.api.addr_canonicalize(&msg.astroport_factory)?,
+        oracle_contract: deps.api.addr_canonicalize(&msg.oracle_contract)?,
+        ust_bonding_reward_ratio: msg.ust_bonding_reward_ratio,
+        ust_bonding_discount: msg.ust_bonding_discount,
+        lp_bonding_discount: msg.lp_bonding_discount,
+        min_bro_payout: msg.min_bro_payout,
+        vesting_period_blocks: msg.vesting_period_blocks,
+        lp_bonding_enabled: msg.lp_bonding_enabled,
+    };
 
-    if msg.ust_bonding_reward_ratio > one || msg.ust_bonding_reward_ratio <= Decimal::zero() {
-        return Err(ContractError::InvalidUstBondRatio {});
-    }
-
-    if msg.ust_bonding_discount > one || msg.ust_bonding_discount <= Decimal::zero() {
-        return Err(ContractError::InvalidDiscount {});
-    }
-
-    if msg.lp_bonding_discount > one || msg.lp_bonding_discount <= Decimal::zero() {
-        return Err(ContractError::InvalidDiscount {});
-    }
-
-    store_config(
-        deps.storage,
-        &Config {
-            owner: deps.api.addr_canonicalize(&msg.owner)?,
-            bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
-            lp_token: deps.api.addr_canonicalize(&msg.lp_token)?,
-            rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
-            treasury_contract: deps.api.addr_canonicalize(&msg.treasury_contract)?,
-            astroport_factory: deps.api.addr_canonicalize(&msg.astroport_factory)?,
-            oracle_contract: deps.api.addr_canonicalize(&msg.oracle_contract)?,
-            ust_bonding_reward_ratio: msg.ust_bonding_reward_ratio,
-            ust_bonding_discount: msg.ust_bonding_discount,
-            lp_bonding_discount: msg.lp_bonding_discount,
-            min_bro_payout: msg.min_bro_payout,
-            vesting_period_blocks: msg.vesting_period_blocks,
-            lp_bonding_enabled: msg.lp_bonding_enabled,
-        },
-    )?;
+    config.validate()?;
+    store_config(deps.storage, &config)?;
 
     store_state(
         deps.storage,

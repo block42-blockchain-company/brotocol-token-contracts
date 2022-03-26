@@ -47,26 +47,26 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    store_config(
-        deps.storage,
-        &Config {
-            owner: deps.api.addr_canonicalize(&msg.owner)?,
-            paused: false,
-            bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
-            rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
-            bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
-            epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
-            unstake_period_blocks: msg.unstake_period_blocks,
-            min_staking_amount: msg.min_staking_amount,
-            lockup_config: LockupConfig {
-                min_lockup_period_epochs: msg.min_lockup_period_epochs,
-                max_lockup_period_epochs: msg.max_lockup_period_epochs,
-                base_rate: msg.base_rate,
-                linear_growth: msg.linear_growth,
-                exponential_growth: msg.exponential_growth,
-            },
+    let config = Config {
+        owner: deps.api.addr_canonicalize(&msg.owner)?,
+        paused: false,
+        bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
+        rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
+        bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
+        epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
+        unstake_period_blocks: msg.unstake_period_blocks,
+        min_staking_amount: msg.min_staking_amount,
+        lockup_config: LockupConfig {
+            min_lockup_period_epochs: msg.min_lockup_period_epochs,
+            max_lockup_period_epochs: msg.max_lockup_period_epochs,
+            base_rate: msg.base_rate,
+            linear_growth: msg.linear_growth,
+            exponential_growth: msg.exponential_growth,
         },
-    )?;
+    };
+
+    config.validate()?;
+    store_config(deps.storage, &config)?;
 
     store_state(
         deps.storage,

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{CanonicalAddr, Decimal, StdError, StdResult, Storage, Uint128};
 use cw20::Expiration;
 use cw_storage_plus::{Item, Map};
@@ -46,6 +48,32 @@ pub struct Config {
     pub vesting_period_blocks: u64,
     /// sets lp bonding option either to enabled or disabled
     pub lp_bonding_enabled: bool,
+}
+
+impl Config {
+    pub fn validate(&self) -> StdResult<()> {
+        let one = Decimal::from_str("1.0")?;
+
+        if self.ust_bonding_reward_ratio > one || self.ust_bonding_reward_ratio <= Decimal::zero() {
+            return Err(StdError::generic_err(
+                "ust_bonding_reward_ratio must be less than 1.0 and non-negative",
+            ));
+        }
+
+        if self.ust_bonding_discount > one || self.ust_bonding_discount <= Decimal::zero() {
+            return Err(StdError::generic_err(
+                "ust_bonding_discount must be less than 1.0 and non-negative",
+            ));
+        }
+
+        if self.lp_bonding_discount > one || self.lp_bonding_discount <= Decimal::zero() {
+            return Err(StdError::generic_err(
+                "lp_bonding_discount must be less than 1.0 and non-negative",
+            ));
+        }
+
+        Ok(())
+    }
 }
 
 /// ## Description

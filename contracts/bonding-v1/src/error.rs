@@ -22,12 +22,6 @@ pub enum ContractError {
     #[error("Invalid receive hook msg")]
     InvalidHookData {},
 
-    #[error("ust_bonding_reward_ratio must be less than 1.0 and non-negative")]
-    InvalidUstBondRatio {},
-
-    #[error("discount must be less than 1.0 and non-negative")]
-    InvalidDiscount {},
-
     #[error("Invalid funds input")]
     InvalidFundsInput {},
 

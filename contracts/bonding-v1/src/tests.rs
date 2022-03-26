@@ -5,7 +5,8 @@ use crate::error::ContractError;
 use crate::state::{load_claims, store_claims, BondType, ClaimInfo};
 use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{
-    from_binary, to_binary, Attribute, BankMsg, Coin, CosmosMsg, Decimal, SubMsg, Uint128, WasmMsg,
+    from_binary, to_binary, Attribute, BankMsg, Coin, CosmosMsg, Decimal, StdError, SubMsg,
+    Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
 use services::ownership_proposal::OwnershipProposalResponse;
@@ -65,35 +66,55 @@ fn proper_initialization() {
     };
 
     let info = mock_info("addr0001", &[]);
-    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
     match res {
-        Err(ContractError::InvalidUstBondRatio {}) => assert_eq!(true, true),
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
+            )
+        }
         _ => panic!("DO NOT ENTER HERE"),
     }
 
     msg.ust_bonding_reward_ratio = Decimal::zero();
     let info = mock_info("addr0001", &[]);
-    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
     match res {
-        Err(ContractError::InvalidUstBondRatio {}) => assert_eq!(true, true),
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
+            )
+        }
         _ => panic!("DO NOT ENTER HERE"),
     }
 
     msg.ust_bonding_reward_ratio = Decimal::from_str("0.6").unwrap();
 
     let info = mock_info("addr0001", &[]);
-    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
     match res {
-        Err(ContractError::InvalidDiscount {}) => assert_eq!(true, true),
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "ust_bonding_discount must be less than 1.0 and non-negative".to_string()
+            )
+        }
         _ => panic!("DO NOT ENTER HERE"),
     }
 
     msg.ust_bonding_discount = Decimal::from_str("0.1").unwrap();
 
     let info = mock_info("addr0001", &[]);
-    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
     match res {
-        Err(ContractError::InvalidDiscount {}) => assert_eq!(true, true),
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "lp_bonding_discount must be less than 1.0 and non-negative".to_string()
+            )
+        }
         _ => panic!("DO NOT ENTER HERE"),
     }
 
@@ -826,9 +847,14 @@ fn update_config() {
 
     // error: invalid ust_bonding_reward_ratio
     let info = mock_info("owner", &[]);
-    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
     match res {
-        Err(ContractError::InvalidUstBondRatio {}) => assert_eq!(true, true),
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
+            )
+        }
         _ => panic!("DO NOT ENTER HERE"),
     }
 

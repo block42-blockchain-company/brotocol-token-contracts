@@ -557,6 +557,7 @@ pub fn update_config(
         ));
     }
 
+    config.validate()?;
     store_config(deps.storage, &config)?;
 
     Ok(Response::new().add_attributes(attributes))

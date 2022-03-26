@@ -12,7 +12,7 @@ use services::staking::{
 
 use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{
-    from_binary, to_binary, Attribute, CosmosMsg, Decimal, SubMsg, Uint128, WasmMsg,
+    from_binary, to_binary, Attribute, CosmosMsg, Decimal, StdError, SubMsg, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
 
@@ -22,6 +22,164 @@ use std::str::FromStr;
 fn proper_initialization() {
     let mut deps = mock_dependencies(&[]);
 
+    // validation errors
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.00001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+    let info = mock_info("addr0000", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "base_rate must be higher than min_base_rate".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0006").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+    let info = mock_info("addr0000", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "base_rate must be smaller than max_base_rate".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0003").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+    let info = mock_info("addr0000", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "linear_growth must be higher than min_linear_growth".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0016").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+    let info = mock_info("addr0000", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "linear_growth must be smaller than max_linear_growth".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000009").unwrap(),
+    };
+    let info = mock_info("addr0000", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "exponential_growth must be higher than min_exponential_growth".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.000016").unwrap(),
+    };
+    let info = mock_info("addr0000", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "exponential_growth must be higher than max_exponential_growth".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // proper initialization
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         bro_token: "bro0000".to_string(),

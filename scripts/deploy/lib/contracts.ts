@@ -357,7 +357,7 @@ export class RewardsPool implements Contract {
 }
 
 // mvp treasury
-export class Treasury implements Contract {
+export class MvpTreasury implements Contract {
     public client: TerraClient;
     public artifact: string;
     public instantiateMsg: TreasuryConfig;
@@ -372,6 +372,44 @@ export class Treasury implements Contract {
 
     public setArtifactData(artifact: Artifact): void {
         artifact.mvp_treasury = this.address;
+    }
+}
+
+// ido treasury
+export class IdoTreasury implements Contract {
+    public client: TerraClient;
+    public artifact: string;
+    public instantiateMsg: TreasuryConfig;
+    public address: string;
+
+    constructor(client: TerraClient, config: TreasuryConfig, artifact: Artifact) {
+        this.client = client;
+        this.artifact = "brotocol_mvp_treasury.wasm";
+        this.instantiateMsg = config;
+        this.address = artifact.ido_treasury;
+    }
+
+    public setArtifactData(artifact: Artifact): void {
+        artifact.ido_treasury = this.address;
+    }
+}
+
+// op reserve treasury
+export class OpReserveTreasury implements Contract {
+    public client: TerraClient;
+    public artifact: string;
+    public instantiateMsg: TreasuryConfig;
+    public address: string;
+
+    constructor(client: TerraClient, config: TreasuryConfig, artifact: Artifact) {
+        this.client = client;
+        this.artifact = "brotocol_mvp_treasury.wasm";
+        this.instantiateMsg = config;
+        this.address = artifact.operational_reserve;
+    }
+
+    public setArtifactData(artifact: Artifact): void {
+        artifact.operational_reserve = this.address;
     }
 }
 
@@ -494,6 +532,7 @@ export class WhitelistSale implements Contract {
     private setInstantiateMsg(config: WhitelistSaleConfig, artifact: Artifact): WhitelistSaleConfig {
         config.bro_token = artifact.bro_token;
         config.rewards_pool_contract = artifact.rewards_pool;
+        config.ust_receiver = artifact.ido_treasury;
         return config;
     }
 }

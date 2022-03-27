@@ -24,6 +24,8 @@ pub enum ExecuteMsg {
     Spend {
         /// asset info to send
         asset_info: AssetInfo,
+        /// transfer amount
+        amount: Uint128,
         /// recipient address
         recipient: String,
     },

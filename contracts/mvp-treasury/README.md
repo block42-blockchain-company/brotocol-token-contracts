@@ -27,6 +27,7 @@ Can be executed only by owner.
             "denom": "uusd"
         }
     },
+    "amount": "100",
     "recipient": "terra1..."
 }
 ```

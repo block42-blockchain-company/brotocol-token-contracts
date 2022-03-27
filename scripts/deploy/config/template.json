@@ -47,6 +47,12 @@
     "treasury": {
         "owner": ""
     },
+    "ido_treasury": {
+        "owner": ""
+    },
+    "op_reserve_treasury": {
+        "owner": ""
+    },
     "token_pool": {
         "owner": ""
     },
@@ -79,8 +85,7 @@
     "whitelist_sale": {
         "owner": "",
         "bro_amount_per_uusd": "",
-        "bro_amount_per_nft": "",
-        "ust_receiver": ""
+        "bro_amount_per_nft": ""
     },
     "distributorv1": {
         "owner": "",

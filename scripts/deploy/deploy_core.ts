@@ -15,7 +15,7 @@ import {
     RewardsPool,
     StakingV1,
     TokenPool,
-    Treasury,
+    MvpTreasury,
     Vesting,
     WhitelistSale
 } from './lib/contracts.js';
@@ -67,7 +67,7 @@ async function main() {
     await deployContract(chainID, artifact, rewardsPoolContract, admin);
 
     // Deploy mvp treasury
-    const treasuryContract = new Treasury(terraClient, config.treasury, artifact);
+    const treasuryContract = new MvpTreasury(terraClient, config.treasury, artifact);
     await deployContract(chainID, artifact, treasuryContract, admin);
 
     // Deploy ido treasury

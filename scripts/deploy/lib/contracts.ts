@@ -357,7 +357,7 @@ export class RewardsPool implements Contract {
 }
 
 // mvp treasury
-export class Treasury implements Contract {
+export class MvpTreasury implements Contract {
     public client: TerraClient;
     public artifact: string;
     public instantiateMsg: TreasuryConfig;

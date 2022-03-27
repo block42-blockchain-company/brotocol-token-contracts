@@ -531,7 +531,7 @@ export class WhitelistSale implements Contract {
 
     private setInstantiateMsg(config: WhitelistSaleConfig, artifact: Artifact): WhitelistSaleConfig {
         config.bro_token = artifact.bro_token;
-        config.rewards_pool_contract = artifact.rewards_pool;
+        config.rewards_pool_contract = artifact.ido_treasury;
         config.ust_receiver = artifact.ido_treasury;
         return config;
     }

@@ -65,6 +65,7 @@ pub fn instantiate(
 ///
 /// * **ExecuteMsg::Spend {
 ///         asset_info,
+///         amount,
 ///         recipient,
 ///     }** Sends whole treasury balance of specified asset to recipient
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -77,10 +78,11 @@ pub fn execute(
     match msg {
         ExecuteMsg::Spend {
             asset_info,
+            amount,
             recipient,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
-            commands::spend(deps, env, asset_info, recipient)
+            commands::spend(deps, env, asset_info, amount, recipient)
         }
     }
 }

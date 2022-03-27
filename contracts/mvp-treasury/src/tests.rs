@@ -50,6 +50,7 @@ fn spend() {
         asset_info: AssetInfo::NativeToken {
             denom: "uusd".to_string(),
         },
+        amount: Uint128::from(100u128),
         recipient: "addr0004".to_string(),
     };
 
@@ -65,6 +66,7 @@ fn spend() {
         asset_info: AssetInfo::NativeToken {
             denom: "uusd".to_string(),
         },
+        amount: Uint128::from(100u128),
         recipient: "addr0004".to_string(),
     };
 
@@ -98,6 +100,7 @@ fn spend() {
         asset_info: AssetInfo::NativeToken {
             denom: "uusd".to_string(),
         },
+        amount: Uint128::from(999u128),
         recipient: "addr0004".to_string(),
     };
 
@@ -111,7 +114,7 @@ fn spend() {
             to_address: "addr0004".to_string(),
             amount: vec![Coin {
                 denom: "uusd".to_string(),
-                amount: Uint128::from(1000u128),
+                amount: Uint128::from(999u128),
             }]
         })),
     );
@@ -121,6 +124,7 @@ fn spend() {
         asset_info: AssetInfo::Token {
             contract_addr: "bro_token".to_string(),
         },
+        amount: Uint128::from(12299u128),
         recipient: "addr0004".to_string(),
     };
 
@@ -135,7 +139,7 @@ fn spend() {
             funds: vec![],
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: "addr0004".to_string(),
-                amount: Uint128::from(12300u128),
+                amount: Uint128::from(12299u128),
             })
             .unwrap(),
         })),

@@ -22,6 +22,8 @@ export interface Config {
     bbro_token: BbroTokenConfig,
     rewards: RewardsPoolConfig,
     treasury: TreasuryConfig,
+    ido_treasury: TreasuryConfig,
+    op_reserve_treasury: TreasuryConfig,
     token_pool: TokenPoolConfig,
     epoch_manager: EpochManagerConfig,
     stakingv1: StakingV1Config,

@@ -10,6 +10,8 @@ import {
     deployContract,
     DistributorV1,
     EpochManager,
+    IdoTreasury,
+    OpReserveTreasury,
     RewardsPool,
     StakingV1,
     TokenPool,
@@ -67,6 +69,14 @@ async function main() {
     // Deploy mvp treasury
     const treasuryContract = new Treasury(terraClient, config.treasury, artifact);
     await deployContract(chainID, artifact, treasuryContract, admin);
+
+    // Deploy ido treasury
+    const idoTreasuryContract = new IdoTreasury(terraClient, config.ido_treasury, artifact);
+    await deployContract(chainID, artifact, idoTreasuryContract, admin);
+
+    // Deploy op reserve treasury
+    const opReserveTreasury = new OpReserveTreasury(terraClient, config.op_reserve_treasury, artifact);
+    await deployContract(chainID, artifact, opReserveTreasury, admin);
 
     // Deploy token pool
     const tokenPoolContract = new TokenPool(terraClient, config.token_pool, artifact);

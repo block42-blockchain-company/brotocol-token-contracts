@@ -5,9 +5,13 @@
         "name": "Bro",
         "symbol": "BRO",
         "decimals": 6,
-        "marketing": "",
-        "logo": {
-            "url":""
+        "marketing": {
+            "project": "brokkr brotocol",
+            "description": "Brokkr creates an investment infrastructure of Portfolios that automates the use of DeFi protocols. BRO is the protocol's primary token.",
+            "marketing": "<DAO multisig>",
+            "logo": {
+                "url":""
+            }
         }
     },
     "bro_ust_pair": {
@@ -34,9 +38,13 @@
         "name": "bBro",
         "symbol": "bBRO",
         "decimals": 6,
-        "marketing": "",
-        "logo": {
-            "url":""
+        "marketing": {
+            "project": "brokkr brotocol",
+            "description": "Brokkr creates an investment infrastructure of Portfolios that automates the use of DeFi protocols. bBRO is the protocol's secondary token.",
+            "marketing": "<DAO multisig>",
+            "logo": {
+                "url":""
+            }
         }
     },
     "rewards": {

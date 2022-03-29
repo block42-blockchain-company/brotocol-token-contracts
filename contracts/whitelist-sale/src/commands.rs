@@ -1,6 +1,5 @@
 use cosmwasm_std::{
-    from_binary, to_binary, Binary, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, Uint128,
-    WasmMsg,
+    to_binary, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, Uint128, WasmMsg,
 };
 use cw20::Cw20ExecuteMsg;
 
@@ -17,40 +16,23 @@ use crate::{
 use services::whitelist_sale::WhitelistedAccountInfo;
 
 /// ## Description
-/// Registers sale and whitelists addresses.
+/// Registers a list of accounts for sale.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **env** is an object of type [`Env`]
-///
-/// * **sale_start_time** is a field of type [`u64`]
-///
-/// * **sale_end_time** is a field of type [`u64`]
-///
-/// * **accounts** is an object of type [`Binary`]
-///
-/// * **transfer_amount** is an object of type [`Uint128`]
-pub fn register_sale(
+/// * **accounts** is an object of type [`Vec<WhitelistedAccountInfo>`]
+pub fn register_accounts(
     deps: DepsMut,
-    env: Env,
-    sale_start_time: u64,
-    sale_end_time: u64,
-    accounts: Binary,
-    transfer_amount: Uint128,
+    accounts: Vec<WhitelistedAccountInfo>,
 ) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
+    let mut state = load_state(deps.storage)?;
 
-    if load_state(deps.storage)?.sale_registered {
+    if state.sale_registered {
         return Err(ContractError::SaleWasAlreadyRegistered {});
     }
-
-    if sale_end_time <= sale_start_time || env.block.time.seconds() >= sale_start_time {
-        return Err(ContractError::InvalidSalePeriod {});
-    }
-
-    let accounts = from_binary::<Vec<WhitelistedAccountInfo>>(&accounts)?;
 
     let mut required_transfer_amount = Uint128::zero();
     for account in accounts.iter() {
@@ -67,7 +49,50 @@ pub fn register_sale(
         required_transfer_amount += available_purchase_amount;
     }
 
-    if required_transfer_amount > transfer_amount {
+    state.required_transfer_amount = state
+        .required_transfer_amount
+        .checked_add(required_transfer_amount)?;
+
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new().add_attributes(vec![("action", "register_accounts")]))
+}
+
+/// ## Description
+/// Registers sale.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **sale_start_time** is a field of type [`u64`]
+///
+/// * **sale_end_time** is a field of type [`u64`]
+///
+/// * **transfer_amount** is an object of type [`Uint128`]
+pub fn register_sale(
+    deps: DepsMut,
+    env: Env,
+    sale_start_time: u64,
+    sale_end_time: u64,
+    transfer_amount: Uint128,
+) -> Result<Response, ContractError> {
+    let state = load_state(deps.storage)?;
+    if state.sale_registered {
+        return Err(ContractError::SaleWasAlreadyRegistered {});
+    }
+
+    if state.required_transfer_amount.is_zero() {
+        return Err(ContractError::AccountsIsNotRegistered {});
+    }
+
+    if sale_end_time <= sale_start_time || env.block.time.seconds() >= sale_start_time {
+        return Err(ContractError::InvalidSalePeriod {});
+    }
+
+    if state.required_transfer_amount > transfer_amount {
         return Err(ContractError::ReceivedAmountMustBeHigherThenRequiredAmountForSale {});
     }
 
@@ -78,6 +103,7 @@ pub fn register_sale(
             sale_start_time,
             sale_end_time,
             balance: transfer_amount,
+            required_transfer_amount: Uint128::zero(),
         },
     )?;
 

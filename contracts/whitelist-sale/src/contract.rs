@@ -11,10 +11,15 @@ use crate::{
     commands,
     error::ContractError,
     queries,
-    state::{load_config, store_config, store_state, Config, State},
+    state::{load_config, store_config, store_state, update_owner, Config, State},
 };
 
-use services::whitelist_sale::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use services::{
+    ownership_proposal::{
+        claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
+    },
+    whitelist_sale::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+};
 
 /// Contract name that is used for migration.
 const CONTRACT_NAME: &str = "brotocol-whitelist-sale";
@@ -75,9 +80,20 @@ pub fn instantiate(
 /// * **ExecuteMsg::Receive(msg)** Receives a message of type [`Cw20ReceiveMsg`]
 /// and processes it depending on the received template
 ///
+/// * **ExecuteMsg::RegisterAccounts { accounts }** Registers a list of accounts for sale
+///
 /// * **ExecuteMsg::Purchase {}** Purchase bro by fixed price by providing ust amount
 ///
 /// * **ExecuteMsg::WithdrawRemainingBalance {}** Withdraw remaining bro balance after sale is over
+///
+/// * **ExecuteMsg::ProposeNewOwner {
+///         new_owner,
+///         expires_in_blocks,
+///     }** Creates an offer for a new owner
+///
+/// * **ExecuteMsg::DropOwnershipProposal {}** Removes the existing offer for the new owner
+///
+/// * **ExecuteMsg::ClaimOwnership {}** Used to claim(approve) new owner proposal, thus changing contract's owner
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -87,11 +103,36 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
+        ExecuteMsg::RegisterAccounts { accounts } => {
+            assert_owner(deps.storage, deps.api, info.sender)?;
+            commands::register_accounts(deps, accounts)
+        }
         ExecuteMsg::Purchase {} => commands::purchase(deps, env, info),
         ExecuteMsg::WithdrawRemainingBalance {} => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::withdraw_remaining_balance(deps, env)
         }
+        ExecuteMsg::ProposeNewOwner {
+            new_owner,
+            expires_in_blocks,
+        } => {
+            let config = load_config(deps.storage)?;
+
+            Ok(propose_new_owner(
+                deps,
+                env,
+                info,
+                config.owner,
+                new_owner,
+                expires_in_blocks,
+            )?)
+        }
+        ExecuteMsg::DropOwnershipProposal {} => {
+            let config = load_config(deps.storage)?;
+
+            Ok(drop_ownership_proposal(deps, info, config.owner)?)
+        }
+        ExecuteMsg::ClaimOwnership {} => Ok(claim_ownership(deps, env, info, update_owner)?),
     }
 }
 
@@ -123,20 +164,12 @@ pub fn receive_cw20(
         Ok(Cw20HookMsg::RegisterSale {
             sale_start_time,
             sale_end_time,
-            accounts,
         }) => {
             if config.owner != deps.api.addr_canonicalize(&cw20_msg.sender)? {
                 return Err(ContractError::Unauthorized {});
             }
 
-            commands::register_sale(
-                deps,
-                env,
-                sale_start_time,
-                sale_end_time,
-                accounts,
-                cw20_msg.amount,
-            )
+            commands::register_sale(deps, env, sale_start_time, sale_end_time, cw20_msg.amount)
         }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }
@@ -176,6 +209,8 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 ///
 /// * **QueryMsg::WhitelistedAccount { address }** Returns whitelisted account info
 /// by specified address
+///
+/// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -184,6 +219,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::WhitelistedAccount { address } => {
             to_binary(&queries::query_whitelisted_account(deps, address)?)
         }
+        QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
 

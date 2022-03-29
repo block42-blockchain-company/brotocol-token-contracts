@@ -1,4 +1,4 @@
-use cosmwasm_std::{Binary, Uint128};
+use cosmwasm_std::Uint128;
 use cw20::Cw20ReceiveMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -31,11 +31,37 @@ pub enum ExecuteMsg {
     /// template.
     Receive(Cw20ReceiveMsg),
     /// ## Description
+    /// Registers a list of accounts for sale.
+    RegisterAccounts {
+        accounts: Vec<WhitelistedAccountInfo>,
+    },
+    /// ## Description
     /// Purchase bro by fixed price by providing ust amount.
     Purchase {},
     /// ## Description
     /// Withdraw remaining bro balance after sale is over.
     WithdrawRemainingBalance {},
+    /// ## Description
+    /// Creates an offer for a new owner.
+    /// The validity period of the offer is set in the `expires_in_blocks` variable
+    /// ## Executor
+    /// Only owner can execute this function
+    ProposeNewOwner {
+        /// new contract owner
+        new_owner: String,
+        /// expiration period in blocks
+        expires_in_blocks: u64,
+    },
+    /// ## Description
+    /// Removes the existing offer for the new owner
+    /// ## Executor
+    /// Only owner can execute this function
+    DropOwnershipProposal {},
+    /// ## Description
+    /// Used to claim(approve) new owner proposal, thus changing contract's owner
+    /// ## Executor
+    /// Only address proposed as a new owner can execute this function
+    ClaimOwnership {},
 }
 
 /// ## Cw20HookMsg
@@ -44,14 +70,12 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub enum Cw20HookMsg {
     /// ## Description
-    /// Registers sale and whitelists addresses
+    /// Registers sale
     RegisterSale {
         /// sale start time
         sale_start_time: u64,
         /// sale end time
         sale_end_time: u64,
-        /// whitelisted accounts
-        accounts: Binary,
     },
 }
 
@@ -82,6 +106,10 @@ pub enum QueryMsg {
         /// account address
         address: String,
     },
+    /// ## Description
+    /// Returns information about created ownership proposal in the [`OwnershipProposalResponse`] object
+    /// otherwise returns not-found error
+    OwnershipProposal {},
 }
 
 /// ## MigrateMsg
@@ -120,6 +148,8 @@ pub struct StateResponse {
     pub sale_end_time: u64,
     /// current time
     pub current_time: u64,
+    /// required transfer amount to register sale
+    pub required_transfer_amount: Uint128,
     /// remaining contract balance
     pub balance: Uint128,
 }

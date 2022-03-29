@@ -5,7 +5,7 @@
   "oneOf": [
     {
       "title": "Description",
-      "description": "Registers sale and whitelists addresses",
+      "description": "Registers sale",
       "type": "object",
       "required": [
         "register_sale"
@@ -14,19 +14,10 @@
         "register_sale": {
           "type": "object",
           "required": [
-            "accounts",
             "sale_end_time",
             "sale_start_time"
           ],
           "properties": {
-            "accounts": {
-              "description": "whitelisted accounts",
-              "allOf": [
-                {
-                  "$ref": "#/definitions/Binary"
-                }
-              ]
-            },
             "sale_end_time": {
               "description": "sale end time",
               "type": "integer",
@@ -44,11 +35,5 @@
       },
       "additionalProperties": false
     }
-  ],
-  "definitions": {
-    "Binary": {
-      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
-      "type": "string"
-    }
-  }
+  ]
 }

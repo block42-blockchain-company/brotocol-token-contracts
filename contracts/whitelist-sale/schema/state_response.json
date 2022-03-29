@@ -6,6 +6,7 @@
   "required": [
     "balance",
     "current_time",
+    "required_transfer_amount",
     "sale_end_time",
     "sale_registered",
     "sale_start_time"
@@ -24,6 +25,14 @@
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
+    },
+    "required_transfer_amount": {
+      "description": "required transfer amount to register sale",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "sale_end_time": {
       "description": "sale end time",

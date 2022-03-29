@@ -1,6 +1,8 @@
 use cosmwasm_std::{OverflowError, StdError};
 use thiserror::Error;
 
+use services::ownership_proposal::OwnershipProposalError;
+
 /// ## Description
 /// This enum describes whitelist sale contract errors
 #[derive(Error, Debug)]
@@ -11,11 +13,17 @@ pub enum ContractError {
     #[error("{0}")]
     OverflowError(#[from] OverflowError),
 
+    #[error("{0}")]
+    OwnershipProposal(#[from] OwnershipProposalError),
+
     #[error("Unauthorized")]
     Unauthorized {},
 
     #[error("Invalid receive hook msg")]
     InvalidHookData {},
+
+    #[error("Accounts for sale is not registered")]
+    AccountsIsNotRegistered {},
 
     #[error("Sale was already registered")]
     SaleWasAlreadyRegistered {},

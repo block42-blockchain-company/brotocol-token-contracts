@@ -35,13 +35,29 @@ Receives a hook message and processes it depending on the received template.
 
 ### `receive:register_sale`
 
-Registers sale and whitelists addresses. Can be executed only by owner.
+Registers sale. Can be executed only by owner.
 
 ```json
 {
     "sale_start_time": 100,
-    "sale_end_time": 200,
-    "accounts": "<base64_encoded_json_string>"
+    "sale_end_time": 200
+}
+```
+
+### `register_accounts`
+
+Registers a list of accounts for sale. Can be executed only by owner.
+
+```json
+{
+    "register_accounts": {
+        "accounts": [
+            {
+                "address": "terra1...",
+                "owned_nfts_count": 1
+            }
+        ]
+    }
 }
 ```
 

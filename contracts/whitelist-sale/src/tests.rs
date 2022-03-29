@@ -54,6 +54,7 @@ fn proper_initialization() {
             sale_start_time: 0,
             sale_end_time: 0,
             current_time: mock_env().block.time.seconds(),
+            required_transfer_amount: Uint128::zero(),
             balance: Uint128::zero(),
         },
     );
@@ -75,6 +76,45 @@ fn register_sale() {
     let info = mock_info("owner", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
+    // error: unauthorized
+    let msg = ExecuteMsg::RegisterAccounts {
+        accounts: vec![WhitelistedAccountInfo {
+            address: "addr0001".to_string(),
+            owned_nfts_count: 2,
+        }],
+    };
+    let info = mock_info("addr0004", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::Unauthorized {}) => assert!(true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // proper account register
+    let msg = ExecuteMsg::RegisterAccounts {
+        accounts: vec![WhitelistedAccountInfo {
+            address: "addr0001".to_string(),
+            owned_nfts_count: 2,
+        }],
+    };
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(
+        from_binary::<StateResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+        )
+        .unwrap(),
+        StateResponse {
+            sale_registered: false,
+            sale_start_time: 0,
+            sale_end_time: 0,
+            current_time: 1571797419,
+            required_transfer_amount: Uint128::from(200u128),
+            balance: Uint128::zero(),
+        },
+    );
+
     // error: unauthorized (info.sender must be bro token addr)
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
@@ -82,11 +122,6 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 0,
             sale_end_time: 0,
-            accounts: to_binary(&vec![WhitelistedAccountInfo {
-                address: "addr0001".to_string(),
-                owned_nfts_count: 1,
-            }])
-            .unwrap(),
         })
         .unwrap(),
     });
@@ -105,11 +140,6 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 0,
             sale_end_time: 0,
-            accounts: to_binary(&vec![WhitelistedAccountInfo {
-                address: "addr0001".to_string(),
-                owned_nfts_count: 1,
-            }])
-            .unwrap(),
         })
         .unwrap(),
     });
@@ -128,11 +158,6 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 0,
             sale_end_time: 0,
-            accounts: to_binary(&vec![WhitelistedAccountInfo {
-                address: "addr0001".to_string(),
-                owned_nfts_count: 1,
-            }])
-            .unwrap(),
         })
         .unwrap(),
     });
@@ -154,11 +179,6 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 10,
             sale_end_time: 20,
-            accounts: to_binary(&vec![WhitelistedAccountInfo {
-                address: "addr0001".to_string(),
-                owned_nfts_count: 1,
-            }])
-            .unwrap(),
         })
         .unwrap(),
     });
@@ -177,11 +197,6 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: to_binary(&vec![WhitelistedAccountInfo {
-                address: "addr0001".to_string(),
-                owned_nfts_count: 2,
-            }])
-            .unwrap(),
         })
         .unwrap(),
     });
@@ -200,11 +215,6 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: to_binary(&vec![WhitelistedAccountInfo {
-                address: "addr0001".to_string(),
-                owned_nfts_count: 2,
-            }])
-            .unwrap(),
         })
         .unwrap(),
     });
@@ -222,6 +232,7 @@ fn register_sale() {
             sale_start_time: 50,
             sale_end_time: 100,
             current_time: 11,
+            required_transfer_amount: Uint128::zero(),
             balance: Uint128::from(201u128),
         },
     );
@@ -251,17 +262,26 @@ fn register_sale() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: to_binary(&vec![WhitelistedAccountInfo {
-                address: "addr0001".to_string(),
-                owned_nfts_count: 2,
-            }])
-            .unwrap(),
         })
         .unwrap(),
     });
 
     let info = mock_info("bro0000", &[]);
     let res = execute(deps.as_mut(), env.clone(), info, msg.clone());
+    match res {
+        Err(ContractError::SaleWasAlreadyRegistered {}) => assert!(true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // error: sale already registered
+    let msg = ExecuteMsg::RegisterAccounts {
+        accounts: vec![WhitelistedAccountInfo {
+            address: "addr0001".to_string(),
+            owned_nfts_count: 2,
+        }],
+    };
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
     match res {
         Err(ContractError::SaleWasAlreadyRegistered {}) => assert!(true),
         _ => panic!("DO NOT ENTER HERE"),
@@ -295,6 +315,26 @@ fn purchase() {
 
     // whitelist accounts
     let mut env = mock_env();
+
+    let msg = ExecuteMsg::RegisterAccounts {
+        accounts: vec![
+            WhitelistedAccountInfo {
+                address: "addr0001".to_string(),
+                owned_nfts_count: 1,
+            },
+            WhitelistedAccountInfo {
+                address: "addr0002".to_string(),
+                owned_nfts_count: 2,
+            },
+            WhitelistedAccountInfo {
+                address: "addr0003".to_string(),
+                owned_nfts_count: 3,
+            },
+        ],
+    };
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), env.clone(), info, msg.clone()).unwrap();
+
     env.block.time = Timestamp::from_seconds(11);
 
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
@@ -303,21 +343,6 @@ fn purchase() {
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: to_binary(&vec![
-                WhitelistedAccountInfo {
-                    address: "addr0001".to_string(),
-                    owned_nfts_count: 1,
-                },
-                WhitelistedAccountInfo {
-                    address: "addr0002".to_string(),
-                    owned_nfts_count: 2,
-                },
-                WhitelistedAccountInfo {
-                    address: "addr0003".to_string(),
-                    owned_nfts_count: 3,
-                },
-            ])
-            .unwrap(),
         })
         .unwrap(),
     });
@@ -434,6 +459,7 @@ fn purchase() {
             sale_start_time: 50,
             sale_end_time: 100,
             current_time: 60,
+            required_transfer_amount: Uint128::zero(),
             balance: Uint128::from(500_000000u128),
         },
     );
@@ -513,17 +539,21 @@ fn withdraw_remaining_balance() {
     let mut env = mock_env();
     env.block.time = Timestamp::from_seconds(11);
 
+    let msg = ExecuteMsg::RegisterAccounts {
+        accounts: vec![WhitelistedAccountInfo {
+            address: "addr0001".to_string(),
+            owned_nfts_count: 1,
+        }],
+    };
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), env.clone(), info, msg.clone()).unwrap();
+
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "owner".to_string(),
         amount: Uint128::from(200_000000u128),
         msg: to_binary(&Cw20HookMsg::RegisterSale {
             sale_start_time: 50,
             sale_end_time: 100,
-            accounts: to_binary(&vec![WhitelistedAccountInfo {
-                address: "addr0001".to_string(),
-                owned_nfts_count: 1,
-            }])
-            .unwrap(),
         })
         .unwrap(),
     });
@@ -571,6 +601,7 @@ fn withdraw_remaining_balance() {
             sale_start_time: 50,
             sale_end_time: 100,
             current_time: 101,
+            required_transfer_amount: Uint128::zero(),
             balance: Uint128::zero(),
         },
     );

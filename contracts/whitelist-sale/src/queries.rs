@@ -38,6 +38,7 @@ pub fn query_state(deps: Deps, env: Env) -> StdResult<StateResponse> {
         sale_start_time: state.sale_start_time,
         sale_end_time: state.sale_end_time,
         current_time: env.block.time.seconds(),
+        required_transfer_amount: state.required_transfer_amount,
         balance: state.balance,
     };
 

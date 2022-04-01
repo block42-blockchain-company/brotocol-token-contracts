@@ -56,29 +56,6 @@
     },
     {
       "title": "Description",
-      "description": "Returns available amount for staker to claim by specified address in the [`StakerAccruedRewardsResponse`] object",
-      "type": "object",
-      "required": [
-        "staker_accrued_rewards"
-      ],
-      "properties": {
-        "staker_accrued_rewards": {
-          "type": "object",
-          "required": [
-            "staker"
-          ],
-          "properties": {
-            "staker": {
-              "description": "staker address",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "title": "Description",
       "description": "Returns available withdrawals for staker by specified address in the [`WithdrawalsResponse`] object",
       "type": "object",
       "required": [

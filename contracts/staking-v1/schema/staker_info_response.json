@@ -7,6 +7,7 @@
     "last_balance_update",
     "locked_stake_amount",
     "lockups",
+    "pending_bbro_reward",
     "pending_bro_reward",
     "reward_index",
     "staker",
@@ -33,6 +34,14 @@
       "items": {
         "$ref": "#/definitions/LockupInfoResponse"
       }
+    },
+    "pending_bbro_reward": {
+      "description": "amount of pending bbro rewards of staker",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
     },
     "pending_bro_reward": {
       "description": "amount of pending bro rewards of staker",

@@ -299,8 +299,6 @@ fn assert_not_paused(storage: &dyn Storage) -> Result<(), ContractError> {
 ///
 /// * **QueryMsg::StakerInfo { staker }** Returns staker info by specified address
 ///
-/// * **QueryMsg::StakerAccruedRewards { staker }** Returns available amount for staker to claim by specified address
-///
 /// * **QueryMsg::Withdrawals { staker }** Returns available withdrawals for staker by specified address
 ///
 /// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
@@ -311,9 +309,6 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
         QueryMsg::StakerInfo { staker } => {
             to_binary(&queries::query_staker_info(deps, env, staker)?)
-        }
-        QueryMsg::StakerAccruedRewards { staker } => {
-            to_binary(&queries::query_staker_accrued_rewards(deps, env, staker)?)
         }
         QueryMsg::Withdrawals { staker } => to_binary(&queries::query_withdrawals(deps, staker)?),
         QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),

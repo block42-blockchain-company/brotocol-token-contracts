@@ -207,18 +207,6 @@ Returns staker info by specified address.
 }
 ```
 
-### `staker_accrued_rewards`
-
-Returns available amount for staker to claim by specified address.
-
-```json
-{
-    "staker_accrued_rewards": {
-        "staker": "terra1..."
-    }
-}
-```
-
 ### `withdrawals`
 
 Returns available withdrawals for staker by specified address.

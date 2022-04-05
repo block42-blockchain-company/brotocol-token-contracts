@@ -1,8 +1,8 @@
 use cosmwasm_std::{Deps, Env, StdResult};
 
 use services::staking::{
-    ConfigResponse, LockupConfigResponse, LockupInfoResponse, StakerAccruedRewardsResponse,
-    StakerInfoResponse, StateResponse, WithdrawalInfoResponse, WithdrawalsResponse,
+    ConfigResponse, LockupConfigResponse, LockupInfoResponse, StakerInfoResponse, StateResponse,
+    WithdrawalInfoResponse, WithdrawalsResponse,
 };
 
 use crate::state::{load_config, load_state, load_withdrawals, read_staker_info};
@@ -68,9 +68,19 @@ pub fn query_state(deps: Deps) -> StdResult<StateResponse> {
 /// * **staker** is a field of type [`String`]
 pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<StakerInfoResponse> {
     let staker_raw = deps.api.addr_canonicalize(&staker)?;
+
+    let config = load_config(deps.storage)?;
     let state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &staker_raw, env.block.height)?;
 
+    let last_balance_update = staker_info.last_balance_update;
+
+    staker_info.compute_normal_bbro_reward(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+        &state,
+        env.block.height,
+    )?;
     staker_info.compute_bro_reward(&state)?;
     staker_info.unlock_expired_lockups(&env.block)?;
     let resp = StakerInfoResponse {
@@ -79,7 +89,8 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
         unlocked_stake_amount: staker_info.unlocked_stake_amount,
         locked_stake_amount: staker_info.locked_stake_amount,
         pending_bro_reward: staker_info.pending_bro_reward,
-        last_balance_update: staker_info.last_balance_update,
+        pending_bbro_reward: staker_info.pending_bbro_reward,
+        last_balance_update,
         lockups: staker_info
             .lockups
             .into_iter()
@@ -88,41 +99,6 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
                 unlocked_at: l.unlocked_at,
             })
             .collect(),
-    };
-
-    Ok(resp)
-}
-
-/// ## Description
-/// Returns available amount for staker to claim by specified address in the [`StakerAccruedRewardsResponse`] object
-/// ## Params
-/// * **deps** is an object of type [`Deps`]
-///
-/// * **env** is an object of type [`Env`]
-///
-/// * **staker** is a field of type [`String`]
-pub fn query_staker_accrued_rewards(
-    deps: Deps,
-    env: Env,
-    staker: String,
-) -> StdResult<StakerAccruedRewardsResponse> {
-    let staker_addr_raw = deps.api.addr_canonicalize(&staker)?;
-
-    let config = load_config(deps.storage)?;
-    let state = load_state(deps.storage)?;
-    let mut staker_info = read_staker_info(deps.storage, &staker_addr_raw, env.block.height)?;
-
-    staker_info.compute_normal_bbro_reward(
-        &deps.querier,
-        deps.api.addr_humanize(&config.epoch_manager_contract)?,
-        &state,
-        env.block.height,
-    )?;
-
-    staker_info.compute_bro_reward(&state)?;
-    let resp = StakerAccruedRewardsResponse {
-        pending_bro_reward: staker_info.pending_bro_reward,
-        pending_bbro_reward: staker_info.pending_bbro_reward,
     };
 
     Ok(resp)

@@ -34,7 +34,7 @@ pub struct State {
 impl State {
     pub fn validate(&self) -> StdResult<()> {
         if self.epoch == 0 {
-            return Err(StdError::generic_err("epoch must be higher then zero"));
+            return Err(StdError::generic_err("epoch must be higher than zero"));
         }
 
         Ok(())

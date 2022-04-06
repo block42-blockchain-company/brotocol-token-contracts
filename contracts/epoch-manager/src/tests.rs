@@ -87,7 +87,7 @@ fn update_state() {
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
     match res {
         ContractError::Std(StdError::GenericErr { msg, .. }) => {
-            assert_eq!(msg, "epoch must be higher then zero".to_string())
+            assert_eq!(msg, "epoch must be higher than zero".to_string())
         }
         _ => panic!("DO NOT ENTER HERE"),
     }

@@ -161,6 +161,93 @@ pub fn stake(
 }
 
 /// ## Description
+/// Locks bonded amount of tokens via community bonding contract
+/// to get reward shares.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **sender** is a field of type [`String`]
+///
+/// * **amount** is an object of type [`Uint128`]
+///
+/// * **epochs_locked** is a field of type [`u64`]
+pub fn community_bond_stake(
+    deps: DepsMut,
+    env: Env,
+    sender: String,
+    amount: Uint128,
+    epochs_locked: u64,
+) -> Result<Response, ContractError> {
+    let sender_raw = deps.api.addr_canonicalize(&sender)?;
+
+    let config = load_config(deps.storage)?;
+    let mut state = load_state(deps.storage)?;
+    let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
+
+    if amount < config.min_staking_amount {
+        return Err(ContractError::StakingAmountMustBeHigherThanMinAmount {});
+    }
+
+    let epoch_manager_contract = deps.api.addr_humanize(&config.epoch_manager_contract)?;
+    staker_info.compute_normal_bbro_reward(
+        &deps.querier,
+        epoch_manager_contract.clone(),
+        &state,
+        env.block.height,
+    )?;
+
+    staker_info.compute_bro_reward(&state)?;
+
+    if !config.lockup_config.valid_lockup_period(epochs_locked) {
+        return Err(ContractError::InvalidLockupPeriod {});
+    }
+
+    let bbro_premium_lockup_reward =
+        staker_info.compute_premium_bbro_reward(&config.lockup_config, epochs_locked, amount);
+
+    staker_info.add_lockup(
+        &deps.querier,
+        epoch_manager_contract,
+        env.block.height,
+        amount,
+        epochs_locked,
+    )?;
+
+    staker_info.unlock_expired_lockups(&env.block)?;
+    store_staker_info(deps.storage, &sender_raw, &staker_info)?;
+
+    // increase total stake amount
+    state.total_stake_amount = state.total_stake_amount.checked_add(amount)?;
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new()
+        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: deps
+                .api
+                .addr_humanize(&config.bbro_minter_contract)?
+                .to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: sender.clone(),
+                amount: bbro_premium_lockup_reward,
+            })?,
+        })])
+        .add_attributes(vec![
+            ("action", "community_bond_stake"),
+            ("staker", &sender),
+            ("amount", &amount.to_string()),
+            (
+                "bbro_premium_lockup_reward",
+                &bbro_premium_lockup_reward.to_string(),
+            ),
+        ]))
+}
+
+/// ## Description
 /// Locks a staked amount that is unlocked.
 /// Returns [`Response`] with specified attributes and messages if operation was successful,
 /// otherwise returns [`ContractError`]

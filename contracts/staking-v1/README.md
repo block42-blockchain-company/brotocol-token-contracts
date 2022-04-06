@@ -66,6 +66,20 @@ Deposits specified amount of tokens to get reward shares.
 }
 ```
 
+### `receive:community_bond_stake`
+
+Locks bonded amount of tokens via community bonding contract to get reward shares.
+Only community bonding contract can execute this function.
+
+```json
+{
+    "community_bond_stake": {
+        "sender": "terra1...",
+        "epochs_locked": 10
+    }
+}
+```
+
 ### `lockup_staked`
 
 Lockup unlocked staked amount.

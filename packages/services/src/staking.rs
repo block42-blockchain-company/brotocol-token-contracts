@@ -1,4 +1,4 @@
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{Binary, Decimal, Uint128};
 use cw20::{Cw20ReceiveMsg, Expiration};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -17,6 +17,8 @@ pub struct InstantiateMsg {
     pub bbro_minter_contract: String,
     /// epoch manager contract address
     pub epoch_manager_contract: String,
+    /// community bonding address
+    pub community_bonding_contract: String,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
     /// minimum staking amount
@@ -128,6 +130,17 @@ pub enum Cw20HookMsg {
         /// staking type
         stake_type: StakeType,
     },
+    /// ## Description
+    /// Locks bonded amount of tokens via community bonding contract
+    /// to get reward shares
+    /// ## Executor
+    /// Only community bonding contract can execute this function
+    CommunityBondStake {
+        /// address which performed bond via community bonding contract
+        sender: String,
+        /// how many epochs specified amount will be locked
+        epochs_locked: u64,
+    },
 }
 
 /// ## StakeType
@@ -181,7 +194,10 @@ pub enum QueryMsg {
 /// This structure describes a migration message.
 /// We currently take no arguments for migrations.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct MigrateMsg {}
+pub struct MigrateMsg {
+    /// params for performing migration
+    pub params: Binary,
+}
 
 /// ## ConfigResponse
 /// This structure describes the fields for config response message.

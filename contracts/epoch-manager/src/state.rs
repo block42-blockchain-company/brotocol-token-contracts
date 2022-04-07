@@ -31,6 +31,16 @@ pub struct State {
     pub bbro_emission_rate: Decimal,
 }
 
+impl State {
+    pub fn validate(&self) -> StdResult<()> {
+        if self.epoch == 0 {
+            return Err(StdError::generic_err("epoch must be higher than zero"));
+        }
+
+        Ok(())
+    }
+}
+
 /// ## Description
 /// Saves changes of [`Config`] struct in [`CONFIG`] storage
 /// ## Params

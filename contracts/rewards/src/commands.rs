@@ -124,12 +124,13 @@ pub fn distribute_reward(
         return Err(ContractError::Unauthorized {});
     }
 
+    let total_distribution_amount: Uint128 = distributions.iter().map(|d| d.amount).sum();
+    if config.spend_limit < total_distribution_amount {
+        return Err(ContractError::SpendLimitReached {});
+    }
+
     let mut msgs: Vec<CosmosMsg> = vec![];
     for distribution in distributions {
-        if config.spend_limit < distribution.amount {
-            return Err(ContractError::SpendLimitReached {});
-        }
-
         msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: bro_token.clone(),
             funds: vec![],

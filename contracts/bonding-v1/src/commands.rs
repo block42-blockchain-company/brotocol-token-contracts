@@ -14,13 +14,14 @@ use crate::{
     error::ContractError,
     state::{
         load_claims, load_config, load_state, store_claims, store_config, store_state, BondType,
-        ClaimInfo,
+        BondingMode, ClaimInfo,
     },
 };
 
 use services::{
     oracle::ExecuteMsg as OracleExecuteMsg,
-    querier::{query_oracle_price, query_pools},
+    querier::{query_oracle_price, query_pools, query_staking_config},
+    staking::Cw20HookMsg as StakingHookMsg,
 };
 
 /// ## Description
@@ -35,13 +36,16 @@ pub fn distribute_reward(deps: DepsMut, amount: Uint128) -> Result<Response, Con
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
 
-    let (ust_bond_amount, lp_bond_amount) = if config.lp_bonding_enabled {
-        let ust_bond_amount = amount * config.ust_bonding_reward_ratio;
-        let lp_bond_amount = amount.checked_sub(ust_bond_amount)?;
-
-        (ust_bond_amount, lp_bond_amount)
-    } else {
-        (amount, Uint128::zero())
+    let (ust_bond_amount, lp_bond_amount) = match config.bonding_mode {
+        BondingMode::Normal {
+            ust_bonding_reward_ratio,
+            ..
+        } => {
+            let ust_bond_amount = amount * ust_bonding_reward_ratio;
+            let lp_bond_amount = amount.checked_sub(ust_bond_amount)?;
+            (ust_bond_amount, lp_bond_amount)
+        }
+        BondingMode::Community { .. } => (amount, Uint128::zero()),
     };
 
     state.ust_bonding_balance = state.ust_bonding_balance.checked_add(ust_bond_amount)?;
@@ -68,18 +72,23 @@ pub fn distribute_reward(deps: DepsMut, amount: Uint128) -> Result<Response, Con
 /// * **sender_raw** is an object of type [`CanonicalAddr`]
 ///
 /// * **lp_amount** is an object of type [`Uint128`]
+///
+/// * **lp_token** is an object of type [`CanonicalAddr`]
+///
+/// * **lp_bonding_discount** is an object of type [`Decimal`]
+///
+/// * **vesting_period_blocks** is a field of type [`u64`]
 pub fn lp_bond(
     deps: DepsMut,
     env: Env,
     sender_raw: CanonicalAddr,
     lp_amount: Uint128,
+    lp_token: CanonicalAddr,
+    lp_bonding_discount: Decimal,
+    vesting_period_blocks: u64,
 ) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
     let mut state = load_state(deps.storage)?;
-
-    if !config.lp_bonding_enabled {
-        return Err(ContractError::LpBondingDisabled {});
-    }
 
     let (bro_pool, ust_pool) = query_bro_ust_pair(
         &deps.querier,
@@ -92,7 +101,7 @@ pub fn lp_bond(
         &bro_pool,
         &ust_pool,
         lp_amount,
-        deps.api.addr_humanize(&config.lp_token)?,
+        deps.api.addr_humanize(&lp_token)?,
     )?;
 
     let oracle_contract = deps.api.addr_humanize(&config.oracle_contract)?;
@@ -108,7 +117,7 @@ pub fn lp_bond(
         .amount,
     )?;
 
-    let bro_payout = apply_discount(config.lp_bonding_discount, bro_amount)?;
+    let bro_payout = apply_discount(lp_bonding_discount, bro_amount)?;
     if bro_payout < config.min_bro_payout {
         return Err(ContractError::BondPayoutIsTooLow {});
     }
@@ -124,7 +133,7 @@ pub fn lp_bond(
     claims.push(ClaimInfo {
         bond_type: BondType::LpBond,
         amount: bro_payout,
-        claimable_at: Expiration::AtHeight(env.block.height + config.vesting_period_blocks),
+        claimable_at: Expiration::AtHeight(env.block.height + vesting_period_blocks),
     });
 
     store_claims(deps.storage, &sender_raw, &claims)?;
@@ -132,7 +141,7 @@ pub fn lp_bond(
     Ok(Response::new()
         .add_messages(vec![
             CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: deps.api.addr_humanize(&config.lp_token)?.to_string(),
+                contract_addr: deps.api.addr_humanize(&lp_token)?.to_string(),
                 funds: vec![],
                 msg: to_binary(&Cw20ExecuteMsg::Transfer {
                     recipient: deps
@@ -193,33 +202,55 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     state.ust_bonding_balance = state.ust_bonding_balance.checked_sub(bro_payout)?;
     store_state(deps.storage, &state)?;
 
-    let sender_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
-    let mut claims = load_claims(deps.storage, &sender_raw)?;
-    claims.push(ClaimInfo {
-        bond_type: BondType::UstBond,
-        amount: bro_payout,
-        claimable_at: Expiration::AtHeight(env.block.height + config.vesting_period_blocks),
-    });
+    let mut msgs: Vec<CosmosMsg> = vec![
+        bond_asset.into_msg(
+            &deps.querier,
+            deps.api.addr_humanize(&config.treasury_contract)?,
+        )?,
+        CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: oracle_contract.to_string(),
+            funds: vec![],
+            msg: to_binary(&OracleExecuteMsg::UpdatePrice {})?,
+        }),
+    ];
 
-    store_claims(deps.storage, &sender_raw, &claims)?;
+    match config.bonding_mode {
+        BondingMode::Normal {
+            vesting_period_blocks,
+            ..
+        } => {
+            let sender_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
+            let mut claims = load_claims(deps.storage, &sender_raw)?;
+            claims.push(ClaimInfo {
+                bond_type: BondType::UstBond,
+                amount: bro_payout,
+                claimable_at: Expiration::AtHeight(env.block.height + vesting_period_blocks),
+            });
 
-    Ok(Response::new()
-        .add_messages(vec![
-            bond_asset.into_msg(
-                &deps.querier,
-                deps.api.addr_humanize(&config.treasury_contract)?,
-            )?,
-            CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: oracle_contract.to_string(),
-                funds: vec![],
-                msg: to_binary(&OracleExecuteMsg::UpdatePrice {})?,
-            }),
-        ])
-        .add_attributes(vec![
-            ("action", "ust_bond"),
-            ("sender", &info.sender.to_string()),
-            ("bro_payout", &bro_payout.to_string()),
-        ]))
+            store_claims(deps.storage, &sender_raw, &claims)?;
+        }
+        BondingMode::Community {
+            staking_contract,
+            epochs_locked,
+        } => msgs.push(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: deps.api.addr_humanize(&config.bro_token)?.to_string(),
+            funds: vec![],
+            msg: to_binary(&Cw20ExecuteMsg::Send {
+                contract: deps.api.addr_humanize(&staking_contract)?.to_string(),
+                amount: bro_payout,
+                msg: to_binary(&StakingHookMsg::CommunityBondStake {
+                    sender: info.sender.to_string(),
+                    epochs_locked,
+                })?,
+            })?,
+        })),
+    };
+
+    Ok(Response::new().add_messages(msgs).add_attributes(vec![
+        ("action", "ust_bond"),
+        ("sender", &info.sender.to_string()),
+        ("bro_payout", &bro_payout.to_string()),
+    ]))
 }
 
 /// ## Description
@@ -280,7 +311,7 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 /// ## Params
 /// * **deps** is an object of type [`DepsMut`]
 ///
-/// * **lp_token** is an [`Option`] of type [`String`]
+/// * **rewards_pool_contract** is an [`Option`] of type [`String`]
 ///
 /// * **treasury_contract** is an [`Option`] of type [`String`]
 ///
@@ -288,40 +319,40 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 ///
 /// * **oracle_contract** is an [`Option`] of type [`String`]
 ///
-/// * **ust_bonding_reward_ratio** is an [`Option`] of type [`Decimal`]
-///
 /// * **ust_bonding_discount** is an [`Option`] of type [`Decimal`]
-///
-/// * **lp_bonding_discount** is an [`Option`] of type [`Decimal`]
 ///
 /// * **min_bro_payout** is an [`Option`] of type [`Uint128`]
 ///
-/// * **vesting_period_blocks** is an [`Option`] of type [`u64`]
+/// * **ust_bonding_reward_ratio_normal** is an [`Option`] of type [`Decimal`]
 ///
-/// * **lp_bonding_enabled** is an [`Option`] of type [`bool`]
+/// * **lp_token_normal** is an [`Option`] of type [`String`]
+///
+/// * **lp_bonding_discount_normal** is an [`Option`] of type [`Decimal`]
+///
+/// * **vesting_period_blocks_normal** is an [`Option`] of type [`u64`]
+///
+/// * **staking_contract_community** is an [`Option`] of type [`String`]
+///
+/// * **epochs_locked_community** is an [`Option`] of type [`u64`]
 #[allow(clippy::too_many_arguments)]
 pub fn update_config(
     deps: DepsMut,
-    lp_token: Option<String>,
     rewards_pool_contract: Option<String>,
     treasury_contract: Option<String>,
     astroport_factory: Option<String>,
     oracle_contract: Option<String>,
-    ust_bonding_reward_ratio: Option<Decimal>,
     ust_bonding_discount: Option<Decimal>,
-    lp_bonding_discount: Option<Decimal>,
     min_bro_payout: Option<Uint128>,
-    vesting_period_blocks: Option<u64>,
-    lp_bonding_enabled: Option<bool>,
+    ust_bonding_reward_ratio_normal: Option<Decimal>,
+    lp_token_normal: Option<String>,
+    lp_bonding_discount_normal: Option<Decimal>,
+    vesting_period_blocks_normal: Option<u64>,
+    staking_contract_community: Option<String>,
+    epochs_locked_community: Option<u64>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
     let mut attributes: Vec<Attribute> = vec![Attribute::new("action", "update_config")];
-
-    if let Some(lp_token) = lp_token {
-        config.lp_token = deps.api.addr_canonicalize(&lp_token)?;
-        attributes.push(Attribute::new("lp_token_changed", &lp_token));
-    }
 
     if let Some(rewards_pool_contract) = rewards_pool_contract {
         config.rewards_pool_contract = deps.api.addr_canonicalize(&rewards_pool_contract)?;
@@ -352,27 +383,11 @@ pub fn update_config(
         attributes.push(Attribute::new("oracle_contract_changed", &oracle_contract));
     }
 
-    if let Some(ust_bonding_reward_ratio) = ust_bonding_reward_ratio {
-        config.ust_bonding_reward_ratio = ust_bonding_reward_ratio;
-        attributes.push(Attribute::new(
-            "ust_bonding_reward_ratio_changed",
-            &ust_bonding_reward_ratio.to_string(),
-        ));
-    }
-
     if let Some(ust_bonding_discount) = ust_bonding_discount {
         config.ust_bonding_discount = ust_bonding_discount;
         attributes.push(Attribute::new(
             "ust_bonding_discount_changed",
             &ust_bonding_discount.to_string(),
-        ));
-    }
-
-    if let Some(lp_bonding_discount) = lp_bonding_discount {
-        config.lp_bonding_discount = lp_bonding_discount;
-        attributes.push(Attribute::new(
-            "lp_bonding_discount_changed",
-            &lp_bonding_discount.to_string(),
         ));
     }
 
@@ -384,21 +399,87 @@ pub fn update_config(
         ));
     }
 
-    if let Some(vesting_period_blocks) = vesting_period_blocks {
-        config.vesting_period_blocks = vesting_period_blocks;
-        attributes.push(Attribute::new(
-            "vesting_period_blocks_changed",
-            &vesting_period_blocks.to_string(),
-        ));
-    }
+    match config.bonding_mode {
+        BondingMode::Normal {
+            mut ust_bonding_reward_ratio,
+            mut lp_token,
+            mut lp_bonding_discount,
+            mut vesting_period_blocks,
+        } => {
+            if let Some(ust_bonding_reward_ratio_normal) = ust_bonding_reward_ratio_normal {
+                ust_bonding_reward_ratio = ust_bonding_reward_ratio_normal;
+                attributes.push(Attribute::new(
+                    "ust_bonding_reward_ratio_changed",
+                    &ust_bonding_reward_ratio_normal.to_string(),
+                ));
+            }
 
-    if let Some(lp_bonding_enabled) = lp_bonding_enabled {
-        config.lp_bonding_enabled = lp_bonding_enabled;
-        attributes.push(Attribute::new(
-            "lp_bonding_enabled_changed",
-            &lp_bonding_enabled.to_string(),
-        ));
-    }
+            if let Some(lp_token_normal) = lp_token_normal {
+                lp_token = deps.api.addr_canonicalize(&lp_token_normal)?;
+                attributes.push(Attribute::new("lp_token_changed", &lp_token_normal));
+            }
+
+            if let Some(lp_bonding_discount_normal) = lp_bonding_discount_normal {
+                lp_bonding_discount = lp_bonding_discount_normal;
+                attributes.push(Attribute::new(
+                    "lp_bonding_discount_changed",
+                    &lp_bonding_discount_normal.to_string(),
+                ));
+            }
+
+            if let Some(vesting_period_blocks_normal) = vesting_period_blocks_normal {
+                vesting_period_blocks = vesting_period_blocks_normal;
+                attributes.push(Attribute::new(
+                    "vesting_period_blocks_changed",
+                    &vesting_period_blocks_normal.to_string(),
+                ));
+            }
+
+            config.bonding_mode = BondingMode::Normal {
+                ust_bonding_reward_ratio,
+                lp_token,
+                lp_bonding_discount,
+                vesting_period_blocks,
+            };
+        }
+        BondingMode::Community {
+            mut staking_contract,
+            mut epochs_locked,
+        } => {
+            if let Some(staking_contract_community) = staking_contract_community {
+                staking_contract = deps.api.addr_canonicalize(&staking_contract_community)?;
+                attributes.push(Attribute::new(
+                    "staking_contract_changed",
+                    &staking_contract_community,
+                ));
+            }
+
+            if let Some(epochs_locked_community) = epochs_locked_community {
+                let staking_config = query_staking_config(
+                    &deps.querier,
+                    deps.api.addr_humanize(&staking_contract)?,
+                )?;
+
+                if epochs_locked_community < staking_config.lockup_config.min_lockup_period_epochs
+                    || epochs_locked_community
+                        > staking_config.lockup_config.max_lockup_period_epochs
+                {
+                    return Err(ContractError::InvalidLockupPeriodForCommunityBondingMode {});
+                }
+
+                epochs_locked = epochs_locked_community;
+                attributes.push(Attribute::new(
+                    "epochs_locked_changed",
+                    &epochs_locked_community.to_string(),
+                ));
+            }
+
+            config.bonding_mode = BondingMode::Community {
+                staking_contract,
+                epochs_locked,
+            };
+        }
+    };
 
     config.validate()?;
     store_config(deps.storage, &config)?;

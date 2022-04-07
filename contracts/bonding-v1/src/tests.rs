@@ -9,19 +9,20 @@ use cosmwasm_std::{
     Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
-use services::ownership_proposal::OwnershipProposalResponse;
 
 use crate::mock_querier::{
     mock_dependencies, MOCK_ASTRO_FACTORY_ADDR, MOCK_BRO_TOKEN_ADDR, MOCK_BRO_UST_PAIR_ADDR,
-    MOCK_LP_TOKEN_ADDR, MOCK_ORACLE_ADDR,
+    MOCK_LP_TOKEN_ADDR, MOCK_ORACLE_ADDR, MOCK_STAKING_ADDR,
 };
 
 use services::{
     bonding::{
-        ClaimInfoResponse, ClaimsResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg,
-        QueryMsg, StateResponse,
+        BondingModeMsg, ClaimInfoResponse, ClaimsResponse, ConfigResponse, Cw20HookMsg, ExecuteMsg,
+        InstantiateMsg, QueryMsg, StateResponse,
     },
     oracle::ExecuteMsg as OracleExecuteMsg,
+    ownership_proposal::OwnershipProposalResponse,
+    staking::Cw20HookMsg as StakingCw20HookMsg,
 };
 
 /// WasmMockQuerier messages:
@@ -48,49 +49,24 @@ use services::{
 fn proper_initialization() {
     let mut deps = mock_dependencies(&[]);
 
+    // normal mode
     // invalid ust_bonding_reward_ratio
     let mut msg = InstantiateMsg {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-        ust_bonding_reward_ratio: Decimal::from_str("1.1").unwrap(),
         ust_bonding_discount: Decimal::from_str("1.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("1.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
-        vesting_period_blocks: 10,
-        lp_bonding_enabled: true,
+        bonding_mode: BondingModeMsg::Normal {
+            ust_bonding_reward_ratio: Decimal::from_str("1.1").unwrap(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            lp_bonding_discount: Decimal::from_str("1.05").unwrap(),
+            vesting_period_blocks: 10,
+        },
     };
-
-    let info = mock_info("addr0001", &[]);
-    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
-    match res {
-        ContractError::Std(StdError::GenericErr { msg, .. }) => {
-            assert_eq!(
-                msg,
-                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
-            )
-        }
-        _ => panic!("DO NOT ENTER HERE"),
-    }
-
-    msg.ust_bonding_reward_ratio = Decimal::zero();
-    let info = mock_info("addr0001", &[]);
-    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
-    match res {
-        ContractError::Std(StdError::GenericErr { msg, .. }) => {
-            assert_eq!(
-                msg,
-                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
-            )
-        }
-        _ => panic!("DO NOT ENTER HERE"),
-    }
-
-    msg.ust_bonding_reward_ratio = Decimal::from_str("0.6").unwrap();
 
     let info = mock_info("addr0001", &[]);
     let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
@@ -105,6 +81,43 @@ fn proper_initialization() {
     }
 
     msg.ust_bonding_discount = Decimal::from_str("0.1").unwrap();
+    let info = mock_info("addr0001", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    msg.bonding_mode = BondingModeMsg::Normal {
+        ust_bonding_reward_ratio: Decimal::zero(),
+        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        lp_bonding_discount: Decimal::from_str("1.05").unwrap(),
+        vesting_period_blocks: 10,
+    };
+
+    let info = mock_info("addr0001", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    msg.bonding_mode = BondingModeMsg::Normal {
+        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        lp_bonding_discount: Decimal::from_str("1.05").unwrap(),
+        vesting_period_blocks: 10,
+    };
 
     let info = mock_info("addr0001", &[]);
     let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
@@ -119,7 +132,12 @@ fn proper_initialization() {
     }
 
     // proper initialization
-    msg.lp_bonding_discount = Decimal::from_str("0.05").unwrap();
+    msg.bonding_mode = BondingModeMsg::Normal {
+        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+        vesting_period_blocks: 10,
+    };
     let info = mock_info("addr0000", &[]);
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
@@ -131,17 +149,93 @@ fn proper_initialization() {
         ConfigResponse {
             owner: "owner".to_string(),
             bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
             rewards_pool_contract: "rewards".to_string(),
             treasury_contract: "treasury".to_string(),
             astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
             oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
             ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
             min_bro_payout: Uint128::from(1u128),
-            vesting_period_blocks: 10,
-            lp_bonding_enabled: true,
+            bonding_mode: BondingModeMsg::Normal {
+                ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+                lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+                lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+                vesting_period_blocks: 10,
+            },
+        },
+    );
+
+    assert_eq!(
+        from_binary::<StateResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+        )
+        .unwrap(),
+        StateResponse {
+            ust_bonding_balance: Uint128::zero(),
+            lp_bonding_balance: Uint128::zero(),
+        },
+    );
+
+    // community mode
+    // invalid epochs locked
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
+        treasury_contract: "treasury".to_string(),
+        astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+        min_bro_payout: Uint128::from(1u128),
+        bonding_mode: BondingModeMsg::Community {
+            staking_contract: MOCK_STAKING_ADDR.to_string(),
+            epochs_locked: 800,
+        },
+    };
+
+    let info = mock_info("addr0001", &[]);
+    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::InvalidLockupPeriodForCommunityBondingMode {}) => (),
+        _ => panic!("DO NOT ENTER HERE!"),
+    }
+
+    // proper initialization
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
+        treasury_contract: "treasury".to_string(),
+        astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+        min_bro_payout: Uint128::from(1u128),
+        bonding_mode: BondingModeMsg::Community {
+            staking_contract: MOCK_STAKING_ADDR.to_string(),
+            epochs_locked: 500,
+        },
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner".to_string(),
+            bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+            rewards_pool_contract: "rewards".to_string(),
+            treasury_contract: "treasury".to_string(),
+            astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+            oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+            ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+            min_bro_payout: Uint128::from(1u128),
+            bonding_mode: BondingModeMsg::Community {
+                staking_contract: MOCK_STAKING_ADDR.to_string(),
+                epochs_locked: 500,
+            },
         },
     );
 
@@ -163,17 +257,18 @@ fn distribute_reward() {
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
-        vesting_period_blocks: 10,
-        lp_bonding_enabled: true,
+        bonding_mode: BondingModeMsg::Normal {
+            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+            vesting_period_blocks: 10,
+        },
     };
 
     let info = mock_info("addr0000", &[]);
@@ -201,7 +296,7 @@ fn distribute_reward() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    // distribute reward with enabled lp bonding
+    // // normal type distribution
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "rewards".to_string(),
         amount: Uint128::from(100u128),
@@ -222,24 +317,26 @@ fn distribute_reward() {
         },
     );
 
-    // disable lp bonding option
-    let msg = ExecuteMsg::UpdateConfig {
-        lp_token: None,
-        rewards_pool_contract: None,
-        treasury_contract: None,
-        astroport_factory: None,
-        oracle_contract: None,
-        ust_bonding_reward_ratio: None,
-        ust_bonding_discount: None,
-        lp_bonding_discount: None,
-        min_bro_payout: None,
-        vesting_period_blocks: None,
-        lp_bonding_enabled: Some(false),
+    // community type distribution
+    let mut deps = mock_dependencies(&[]);
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
+        treasury_contract: "treasury".to_string(),
+        astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+        min_bro_payout: Uint128::from(1u128),
+        bonding_mode: BondingModeMsg::Community {
+            staking_contract: MOCK_STAKING_ADDR.to_string(),
+            epochs_locked: 10,
+        },
     };
-    let info = mock_info("owner", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 
-    // distribute reward with disabled lp bonding
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "rewards".to_string(),
         amount: Uint128::from(100u128),
@@ -255,8 +352,8 @@ fn distribute_reward() {
         )
         .unwrap(),
         StateResponse {
-            ust_bonding_balance: Uint128::from(160u128),
-            lp_bonding_balance: Uint128::from(40u128),
+            ust_bonding_balance: Uint128::from(100u128),
+            lp_bonding_balance: Uint128::zero(),
         },
     );
 }
@@ -283,17 +380,18 @@ fn lp_bond() {
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(3_000000u128),
-        vesting_period_blocks: 10,
-        lp_bonding_enabled: true,
+        bonding_mode: BondingModeMsg::Normal {
+            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+            vesting_period_blocks: 10,
+        },
     };
 
     let info = mock_info("addr0000", &[]);
@@ -351,17 +449,18 @@ fn lp_bond() {
     // proper execution
     // update min_bro_payout
     let msg = ExecuteMsg::UpdateConfig {
-        lp_token: None,
+        min_bro_payout: Some(Uint128::from(2_000000u128)),
         rewards_pool_contract: None,
         treasury_contract: None,
         astroport_factory: None,
         oracle_contract: None,
-        ust_bonding_reward_ratio: None,
         ust_bonding_discount: None,
-        lp_bonding_discount: None,
-        min_bro_payout: Some(Uint128::from(2_000000u128)),
-        vesting_period_blocks: None,
-        lp_bonding_enabled: None,
+        ust_bonding_reward_ratio_normal: None,
+        lp_token_normal: None,
+        lp_bonding_discount_normal: None,
+        vesting_period_blocks_normal: None,
+        staking_contract_community: None,
+        epochs_locked_community: None,
     };
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
@@ -432,22 +531,24 @@ fn lp_bond() {
         },
     );
 
-    // disable lp bonding option
-    let msg = ExecuteMsg::UpdateConfig {
-        lp_token: None,
-        rewards_pool_contract: None,
-        treasury_contract: None,
-        astroport_factory: None,
-        oracle_contract: None,
-        ust_bonding_reward_ratio: None,
-        ust_bonding_discount: None,
-        lp_bonding_discount: None,
-        min_bro_payout: None,
-        vesting_period_blocks: None,
-        lp_bonding_enabled: Some(false),
+    // try to bond lp with community mode
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
+        treasury_contract: "treasury".to_string(),
+        astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+        min_bro_payout: Uint128::from(3_000000u128),
+        bonding_mode: BondingModeMsg::Community {
+            staking_contract: MOCK_STAKING_ADDR.to_string(),
+            epochs_locked: 10,
+        },
     };
-    let info = mock_info("owner", &[]);
-    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     // error: lp bonding disabled
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
@@ -464,7 +565,7 @@ fn lp_bond() {
 }
 
 #[test]
-fn ust_bond() {
+fn ust_bond_normal_mode() {
     // setup initial balances for UST-BRO pool
     let mut deps = mock_dependencies(&[(
         MOCK_BRO_UST_PAIR_ADDR,
@@ -485,17 +586,18 @@ fn ust_bond() {
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(6_000000u128),
-        vesting_period_blocks: 10,
-        lp_bonding_enabled: true,
+        bonding_mode: BondingModeMsg::Normal {
+            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+            vesting_period_blocks: 10,
+        },
     };
 
     let info = mock_info("addr0000", &[]);
@@ -590,17 +692,18 @@ fn ust_bond() {
     // proper execution
     // update min_bro_payout
     let msg = ExecuteMsg::UpdateConfig {
-        lp_token: None,
+        min_bro_payout: Some(Uint128::from(5_000000u128)),
         rewards_pool_contract: None,
         treasury_contract: None,
         astroport_factory: None,
         oracle_contract: None,
-        ust_bonding_reward_ratio: None,
         ust_bonding_discount: None,
-        lp_bonding_discount: None,
-        min_bro_payout: Some(Uint128::from(5_000000u128)),
-        vesting_period_blocks: None,
-        lp_bonding_enabled: None,
+        ust_bonding_reward_ratio_normal: None,
+        lp_token_normal: None,
+        lp_bonding_discount_normal: None,
+        vesting_period_blocks_normal: None,
+        staking_contract_community: None,
+        epochs_locked_community: None,
     };
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
@@ -672,23 +775,149 @@ fn ust_bond() {
 }
 
 #[test]
+fn ust_bond_community_mode() {
+    // setup initial balances for UST-BRO pool
+    let mut deps = mock_dependencies(&[(
+        MOCK_BRO_UST_PAIR_ADDR,
+        &[Coin {
+            denom: "uusd".to_string(),
+            amount: Uint128::from(1000_000000u128),
+        }],
+    )]);
+
+    deps.querier.with_token_balances(&[(
+        &MOCK_BRO_TOKEN_ADDR.to_string(),
+        &[(
+            &MOCK_BRO_UST_PAIR_ADDR.to_string(),
+            &Uint128::from(100_000000u128),
+        )],
+    )]);
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
+        treasury_contract: "treasury".to_string(),
+        astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+        min_bro_payout: Uint128::from(1_000000u128),
+        bonding_mode: BondingModeMsg::Community {
+            staking_contract: MOCK_STAKING_ADDR.to_string(),
+            epochs_locked: 100,
+        },
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // distribute rewards
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "rewards".to_string(),
+        amount: Uint128::from(100_000000u128),
+        msg: to_binary(&Cw20HookMsg::DistributeReward {}).unwrap(),
+    });
+    let info = mock_info(MOCK_BRO_TOKEN_ADDR, &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    // perform bond
+    let msg = ExecuteMsg::UstBond {};
+    let info = mock_info(
+        "addr0000",
+        &[Coin {
+            denom: "uusd".to_string(),
+            amount: Uint128::from(50_000000u128),
+        }],
+    );
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    let ust_transfer_msg = res.messages.get(0).expect("no message");
+    assert_eq!(
+        ust_transfer_msg,
+        &SubMsg::new(CosmosMsg::Bank(BankMsg::Send {
+            to_address: "treasury".to_string(),
+            amount: vec![Coin {
+                denom: "uusd".to_string(),
+                amount: Uint128::from(50_000000u128),
+            }]
+        })),
+    );
+
+    let update_oracle_price_msg = res.messages.get(1).expect("no message");
+    assert_eq!(
+        update_oracle_price_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: MOCK_ORACLE_ADDR.to_string(),
+            funds: vec![],
+            msg: to_binary(&OracleExecuteMsg::UpdatePrice {}).unwrap()
+        }))
+    );
+
+    let stake_bonded_tokens_msg = res.messages.get(2).expect("no message");
+    assert_eq!(
+        stake_bonded_tokens_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: MOCK_BRO_TOKEN_ADDR.to_string(),
+            funds: vec![],
+            msg: to_binary(&Cw20ExecuteMsg::Send {
+                contract: MOCK_STAKING_ADDR.to_string(),
+                amount: Uint128::from(5_500000u128),
+                msg: to_binary(&StakingCw20HookMsg::CommunityBondStake {
+                    sender: "addr0000".to_string(),
+                    epochs_locked: 100,
+                })
+                .unwrap(),
+            })
+            .unwrap(),
+        }))
+    );
+
+    assert_eq!(
+        from_binary::<StateResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+        )
+        .unwrap(),
+        StateResponse {
+            ust_bonding_balance: Uint128::from(94_500000u128),
+            lp_bonding_balance: Uint128::zero(),
+        },
+    );
+
+    assert_eq!(
+        from_binary::<ClaimsResponse>(
+            &query(
+                deps.as_ref(),
+                mock_env(),
+                QueryMsg::Claims {
+                    address: "addr0000".to_string()
+                }
+            )
+            .unwrap()
+        )
+        .unwrap(),
+        ClaimsResponse { claims: vec![] },
+    );
+}
+
+#[test]
 fn claim() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
-        vesting_period_blocks: 10,
-        lp_bonding_enabled: true,
+        bonding_mode: BondingModeMsg::Normal {
+            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+            vesting_period_blocks: 10,
+        },
     };
 
     let info = mock_info("addr0000", &[]);
@@ -807,17 +1036,18 @@ fn update_config() {
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
-        vesting_period_blocks: 10,
-        lp_bonding_enabled: true,
+        bonding_mode: BondingModeMsg::Normal {
+            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+            vesting_period_blocks: 10,
+        },
     };
 
     let info = mock_info("addr0000", &[]);
@@ -825,17 +1055,18 @@ fn update_config() {
 
     // unauthorized: only owner allowed to execute
     let msg = ExecuteMsg::UpdateConfig {
-        lp_token: Some("new_lp".to_string()),
         rewards_pool_contract: Some("new_rewards".to_string()),
         treasury_contract: Some("new_treasury".to_string()),
         astroport_factory: Some("new_astro".to_string()),
         oracle_contract: Some("new_oracle".to_string()),
-        ust_bonding_reward_ratio: Some(Decimal::from_str("1.01").unwrap()),
         ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
-        lp_bonding_discount: Some(Decimal::from_str("0.06").unwrap()),
         min_bro_payout: Some(Uint128::from(2u128)),
-        vesting_period_blocks: Some(11),
-        lp_bonding_enabled: Some(false),
+        ust_bonding_reward_ratio_normal: Some(Decimal::from_str("1.01").unwrap()),
+        lp_token_normal: Some("new_lp".to_string()),
+        lp_bonding_discount_normal: Some(Decimal::from_str("0.06").unwrap()),
+        vesting_period_blocks_normal: Some(11),
+        staking_contract_community: None,
+        epochs_locked_community: None,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -860,17 +1091,18 @@ fn update_config() {
 
     // proper execution
     let msg = ExecuteMsg::UpdateConfig {
-        lp_token: Some("new_lp".to_string()),
         rewards_pool_contract: Some("new_rewards".to_string()),
         treasury_contract: Some("new_treasury".to_string()),
         astroport_factory: Some("new_astro".to_string()),
         oracle_contract: Some("new_oracle".to_string()),
-        ust_bonding_reward_ratio: Some(Decimal::from_str("0.61").unwrap()),
         ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
-        lp_bonding_discount: Some(Decimal::from_str("0.06").unwrap()),
         min_bro_payout: Some(Uint128::from(2u128)),
-        vesting_period_blocks: Some(11),
-        lp_bonding_enabled: Some(false),
+        ust_bonding_reward_ratio_normal: Some(Decimal::from_str("0.61").unwrap()),
+        lp_token_normal: Some("new_lp".to_string()),
+        lp_bonding_discount_normal: Some(Decimal::from_str("0.06").unwrap()),
+        vesting_period_blocks_normal: Some(11),
+        staking_contract_community: None,
+        epochs_locked_community: None,
     };
 
     let info = mock_info("owner", &[]);
@@ -879,47 +1111,43 @@ fn update_config() {
     assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
     assert_eq!(
         res.attributes[1],
-        Attribute::new("lp_token_changed", "new_lp")
-    );
-    assert_eq!(
-        res.attributes[2],
         Attribute::new("rewards_pool_contract_changed", "new_rewards")
     );
     assert_eq!(
-        res.attributes[3],
+        res.attributes[2],
         Attribute::new("treasury_contract_changed", "new_treasury")
     );
     assert_eq!(
-        res.attributes[4],
+        res.attributes[3],
         Attribute::new("astroport_factory_changed", "new_astro")
     );
     assert_eq!(
-        res.attributes[5],
+        res.attributes[4],
         Attribute::new("oracle_contract_changed", "new_oracle")
     );
     assert_eq!(
-        res.attributes[6],
-        Attribute::new("ust_bonding_reward_ratio_changed", "0.61")
-    );
-    assert_eq!(
-        res.attributes[7],
+        res.attributes[5],
         Attribute::new("ust_bonding_discount_changed", "0.11")
     );
     assert_eq!(
+        res.attributes[6],
+        Attribute::new("min_bro_payout_changed", "2")
+    );
+    assert_eq!(
+        res.attributes[7],
+        Attribute::new("ust_bonding_reward_ratio_changed", "0.61")
+    );
+    assert_eq!(
         res.attributes[8],
-        Attribute::new("lp_bonding_discount_changed", "0.06")
+        Attribute::new("lp_token_changed", "new_lp")
     );
     assert_eq!(
         res.attributes[9],
-        Attribute::new("min_bro_payout_changed", "2")
+        Attribute::new("lp_bonding_discount_changed", "0.06")
     );
     assert_eq!(
         res.attributes[10],
         Attribute::new("vesting_period_blocks_changed", "11")
-    );
-    assert_eq!(
-        res.attributes[11],
-        Attribute::new("lp_bonding_enabled_changed", "false")
     );
 
     assert_eq!(
@@ -930,17 +1158,105 @@ fn update_config() {
         ConfigResponse {
             owner: "owner".to_string(),
             bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-            lp_token: "new_lp".to_string(),
             rewards_pool_contract: "new_rewards".to_string(),
             treasury_contract: "new_treasury".to_string(),
             astroport_factory: "new_astro".to_string(),
             oracle_contract: "new_oracle".to_string(),
-            ust_bonding_reward_ratio: Decimal::from_str("0.61").unwrap(),
             ust_bonding_discount: Decimal::from_str("0.11").unwrap(),
-            lp_bonding_discount: Decimal::from_str("0.06").unwrap(),
             min_bro_payout: Uint128::from(2u128),
-            vesting_period_blocks: 11,
-            lp_bonding_enabled: false,
+            bonding_mode: BondingModeMsg::Normal {
+                ust_bonding_reward_ratio: Decimal::from_str("0.61").unwrap(),
+                lp_token: "new_lp".to_string(),
+                lp_bonding_discount: Decimal::from_str("0.06").unwrap(),
+                vesting_period_blocks: 11,
+            }
+        },
+    );
+
+    // community mode update config
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
+        treasury_contract: "treasury".to_string(),
+        astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+        min_bro_payout: Uint128::from(1u128),
+        bonding_mode: BondingModeMsg::Community {
+            staking_contract: MOCK_STAKING_ADDR.to_string(),
+            epochs_locked: 10,
+        },
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // error: invalid epochs_locked
+    let msg = ExecuteMsg::UpdateConfig {
+        rewards_pool_contract: None,
+        treasury_contract: None,
+        astroport_factory: None,
+        oracle_contract: None,
+        ust_bonding_discount: None,
+        min_bro_payout: None,
+        ust_bonding_reward_ratio_normal: None,
+        lp_token_normal: None,
+        lp_bonding_discount_normal: None,
+        vesting_period_blocks_normal: None,
+        staking_contract_community: None,
+        epochs_locked_community: Some(1),
+    };
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::InvalidLockupPeriodForCommunityBondingMode {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // proper execution
+    let msg = ExecuteMsg::UpdateConfig {
+        rewards_pool_contract: None,
+        treasury_contract: None,
+        astroport_factory: None,
+        oracle_contract: None,
+        ust_bonding_discount: None,
+        min_bro_payout: None,
+        ust_bonding_reward_ratio_normal: None,
+        lp_token_normal: None,
+        lp_bonding_discount_normal: None,
+        vesting_period_blocks_normal: None,
+        staking_contract_community: None,
+        epochs_locked_community: Some(11),
+    };
+
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(
+        res.attributes[1],
+        Attribute::new("epochs_locked_changed", "11")
+    );
+
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner".to_string(),
+            bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+            rewards_pool_contract: "rewards".to_string(),
+            treasury_contract: "treasury".to_string(),
+            astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+            oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+            ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+            min_bro_payout: Uint128::from(1u128),
+            bonding_mode: BondingModeMsg::Community {
+                staking_contract: MOCK_STAKING_ADDR.to_string(),
+                epochs_locked: 11,
+            }
         },
     );
 }
@@ -952,17 +1268,18 @@ fn update_owner() {
     let msg = InstantiateMsg {
         owner: "owner0000".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         rewards_pool_contract: "rewards".to_string(),
         treasury_contract: "treasury".to_string(),
         astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
         oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-        ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-        lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
         min_bro_payout: Uint128::from(1u128),
-        vesting_period_blocks: 10,
-        lp_bonding_enabled: true,
+        bonding_mode: BondingModeMsg::Normal {
+            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+            vesting_period_blocks: 10,
+        },
     };
 
     let info = mock_info("addr0000", &[]);
@@ -1003,17 +1320,18 @@ fn update_owner() {
         ConfigResponse {
             owner: "owner0001".to_string(),
             bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
-            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
             rewards_pool_contract: "rewards".to_string(),
             treasury_contract: "treasury".to_string(),
             astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
             oracle_contract: MOCK_ORACLE_ADDR.to_string(),
-            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
             ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
-            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
             min_bro_payout: Uint128::from(1u128),
-            vesting_period_blocks: 10,
-            lp_bonding_enabled: true,
+            bonding_mode: BondingModeMsg::Normal {
+                ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+                lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+                lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+                vesting_period_blocks: 10,
+            }
         },
     );
 }

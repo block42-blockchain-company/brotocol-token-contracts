@@ -16,8 +16,14 @@ pub enum ContractError {
     #[error("{0}")]
     OwnershipProposal(#[from] OwnershipProposalError),
 
+    #[error("Migration error")]
+    MigrationError {},
+
     #[error("Unauthorized")]
     Unauthorized {},
+
+    #[error("Invalid lockup period for Community bonding mode")]
+    InvalidLockupPeriodForCommunityBondingMode {},
 
     #[error("Invalid receive hook msg")]
     InvalidHookData {},

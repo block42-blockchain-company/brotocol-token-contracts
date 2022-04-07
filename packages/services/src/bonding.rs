@@ -1,4 +1,4 @@
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{Binary, Decimal, Uint128};
 use cw20::{Cw20ReceiveMsg, Expiration};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -11,8 +11,6 @@ pub struct InstantiateMsg {
     pub owner: String,
     /// bro token address
     pub bro_token: String,
-    /// bro/ust lp token address
-    pub lp_token: String,
     /// rewards pool address
     pub rewards_pool_contract: String,
     /// treasury contract address
@@ -21,18 +19,42 @@ pub struct InstantiateMsg {
     pub astroport_factory: String,
     /// price oracle contract address
     pub oracle_contract: String,
-    /// distributed reward percentage for ust bonding balance
-    pub ust_bonding_reward_ratio: Decimal,
     /// discount percentage for ust bonding
     pub ust_bonding_discount: Decimal,
-    /// discount percentage for lp bonding
-    pub lp_bonding_discount: Decimal,
     /// minimum amount of bro to receive via bonding
     pub min_bro_payout: Uint128,
-    /// vesting period for withdrawal
-    pub vesting_period_blocks: u64,
-    /// sets lp bonding option either to enabled or disabled
-    pub lp_bonding_enabled: bool,
+    /// bonding mode
+    pub bonding_mode: BondingModeMsg,
+}
+
+/// ## BondingModeMsg
+/// This structure describes the bonding contract mode.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum BondingModeMsg {
+    /// ## Description
+    /// Enables both ust and lp bonding option.
+    /// Exchanged bro tokens will become claimable after vesting period.
+    Normal {
+        /// distributed reward percentage for ust bonding balance
+        ust_bonding_reward_ratio: Decimal,
+        /// bro/ust lp token address
+        lp_token: String,
+        /// discount percentage for lp bonding
+        lp_bonding_discount: Decimal,
+        /// vesting period for withdrawal
+        vesting_period_blocks: u64,
+    },
+    /// ## Description
+    /// Enables only ust bonding option.
+    /// Exchanged bro tokens will be locked in staking contract for configured amount of epochs
+    /// and then claimable with extra bro/bbro reward from it.
+    Community {
+        /// staking contract address
+        staking_contract: String,
+        /// how many epochs specified amount will be locked
+        epochs_locked: u64,
+    },
 }
 
 /// ## ExecuteMsg
@@ -55,28 +77,30 @@ pub enum ExecuteMsg {
     /// ## Executor
     /// Only owner can execute this function
     UpdateConfig {
-        /// new bro/ust lp token address
-        lp_token: Option<String>,
         /// rewards pool address
         rewards_pool_contract: Option<String>,
         /// new treasury contract address
         treasury_contract: Option<String>,
         /// new astroport factory address
         astroport_factory: Option<String>,
-        /// price oracle contract address
+        /// new price oracle contract address
         oracle_contract: Option<String>,
-        /// new distributed reward percentage for ust bonding balance
-        ust_bonding_reward_ratio: Option<Decimal>,
         /// new discount percentage for ust bonding
         ust_bonding_discount: Option<Decimal>,
-        /// new discount percentage for lp bonding
-        lp_bonding_discount: Option<Decimal>,
         /// new minimum amount of bro to receive via bonding
         min_bro_payout: Option<Uint128>,
-        /// new vesting period for withdrawal
-        vesting_period_blocks: Option<u64>,
-        /// sets lp bonding option either to enabled or disabled
-        lp_bonding_enabled: Option<bool>,
+        /// normal bonding mode: new distributed reward percentage for ust bonding balance
+        ust_bonding_reward_ratio_normal: Option<Decimal>,
+        /// normal bonding mode: new bro/ust lp token address
+        lp_token_normal: Option<String>,
+        /// normal bonding mode: new discount percentage for lp bonding
+        lp_bonding_discount_normal: Option<Decimal>,
+        /// normal bonding mode: new vesting period for withdrawal
+        vesting_period_blocks_normal: Option<u64>,
+        /// community bonding mode: new staking contract address
+        staking_contract_community: Option<String>,
+        /// community bonding mode: new amount of epochs for lockup
+        epochs_locked_community: Option<u64>,
     },
     /// ## Description
     /// Creates an offer for a new owner.
@@ -142,7 +166,10 @@ pub enum QueryMsg {
 /// This structure describes a migration message.
 /// We currently take no arguments for migrations.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct MigrateMsg {}
+pub struct MigrateMsg {
+    /// params for performing migration
+    pub params: Binary,
+}
 
 /// ## ConfigResponse
 /// This structure describes the fields for config response message.
@@ -152,8 +179,6 @@ pub struct ConfigResponse {
     pub owner: String,
     /// bro token address
     pub bro_token: String,
-    /// bro/ust lp token address
-    pub lp_token: String,
     /// rewards pool address
     pub rewards_pool_contract: String,
     /// treasury contract address
@@ -162,18 +187,12 @@ pub struct ConfigResponse {
     pub astroport_factory: String,
     /// price oracle contract address
     pub oracle_contract: String,
-    /// distributed reward percentage for ust bonding balance
-    pub ust_bonding_reward_ratio: Decimal,
     /// discount percentage for ust bonding
     pub ust_bonding_discount: Decimal,
-    /// discount percentage for lp bonding
-    pub lp_bonding_discount: Decimal,
     /// minimum amount of bro to receive via bonding
     pub min_bro_payout: Uint128,
-    /// vesting period for withdrawal
-    pub vesting_period_blocks: u64,
-    /// sets lp bonding option either to enabled or disabled
-    pub lp_bonding_enabled: bool,
+    /// bonding mode
+    pub bonding_mode: BondingModeMsg,
 }
 
 /// ## StateResponse

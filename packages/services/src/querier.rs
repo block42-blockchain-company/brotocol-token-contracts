@@ -5,6 +5,7 @@ use crate::{
     epoch_manager::{EpochInfoResponse, QueryMsg as EpochManagerQueryMsg},
     oracle::{ConsultPriceResponse, QueryMsg as OracleQueryMsg},
     rewards::{QueryMsg as RewardsPoolQueryMsg, RewardsPoolBalanceResponse},
+    staking::{ConfigResponse as StakingConfigResponse, QueryMsg as StakingQueryMsg},
 };
 
 use astroport::{
@@ -154,5 +155,21 @@ pub fn query_oracle_price(
             asset: asset_info,
             amount,
         })?,
+    }))
+}
+
+/// ## Description
+/// Returns staking contract config in the [`StakingConfigResponse`] object.
+/// ## Params
+/// * **querier** is an object of type [`QuerierWrapper`].
+///
+/// * **staking_contract** is an object of type [`Addr`]
+pub fn query_staking_config(
+    querier: &QuerierWrapper,
+    staking_contract: Addr,
+) -> StdResult<StakingConfigResponse> {
+    querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: staking_contract.to_string(),
+        msg: to_binary(&StakingQueryMsg::Config {})?,
     }))
 }

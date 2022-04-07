@@ -4,11 +4,16 @@ use cosmwasm_std::{
     from_binary, from_slice, to_binary, Addr, Coin, ContractResult, Decimal, OwnedDeps, Querier,
     QuerierResult, QueryRequest, SystemError, SystemResult, Uint128, WasmQuery,
 };
+use services::staking::LockupConfigResponse;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use astroport::{asset::PairInfo, factory::QueryMsg as FactoryQueryMsg};
 use cw20::{BalanceResponse as Cw20BalanceResponse, Cw20QueryMsg, TokenInfoResponse};
-use services::oracle::{ConsultPriceResponse, QueryMsg as OracleQueryMsg};
+use services::{
+    oracle::{ConsultPriceResponse, QueryMsg as OracleQueryMsg},
+    staking::{ConfigResponse as StakingConfigResponse, QueryMsg as StakingQueryMsg},
+};
 use terra_cosmwasm::{TaxCapResponse, TaxRateResponse, TerraQuery, TerraQueryWrapper, TerraRoute};
 
 pub const MOCK_ASTRO_FACTORY_ADDR: &str = "astrofactory";
@@ -16,6 +21,7 @@ pub const MOCK_BRO_UST_PAIR_ADDR: &str = "bro_ust_pair";
 pub const MOCK_LP_TOKEN_ADDR: &str = "bro_ust_lp";
 pub const MOCK_BRO_TOKEN_ADDR: &str = "bro_token";
 pub const MOCK_ORACLE_ADDR: &str = "oracle";
+pub const MOCK_STAKING_ADDR: &str = "bro_staking";
 
 /// mock_dependencies is a drop-in replacement for cosmwasm_std::testing::mock_dependencies
 /// this uses our CustomQuerier.
@@ -148,6 +154,30 @@ impl WasmMockQuerier {
                                 .unwrap(),
                             ))
                         }
+                        _ => panic!("DO NOT ENTER HERE"),
+                    }
+                } else if contract_addr == MOCK_STAKING_ADDR {
+                    match from_binary(msg).unwrap() {
+                        StakingQueryMsg::Config {} => SystemResult::Ok(ContractResult::Ok(
+                            to_binary(&StakingConfigResponse {
+                                owner: "owner".to_string(),
+                                paused: false,
+                                bro_token: "bro_token".to_string(),
+                                rewards_pool_contract: "rewards".to_string(),
+                                bbro_minter_contract: "bbro_minter".to_string(),
+                                epoch_manager_contract: "epoch_manager".to_string(),
+                                unstake_period_blocks: 10,
+                                min_staking_amount: Uint128::from(1u128),
+                                lockup_config: LockupConfigResponse {
+                                    min_lockup_period_epochs: 2,
+                                    max_lockup_period_epochs: 725,
+                                    base_rate: Decimal::from_str("0.1").unwrap(),
+                                    linear_growth: Decimal::from_str("0.1").unwrap(),
+                                    exponential_growth: Decimal::from_str("0.1").unwrap(),
+                                },
+                            })
+                            .unwrap(),
+                        )),
                         _ => panic!("DO NOT ENTER HERE"),
                     }
                 } else {

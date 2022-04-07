@@ -1,7 +1,9 @@
 use cosmwasm_std::{Deps, StdResult};
-use services::bonding::{ClaimInfoResponse, ClaimsResponse, ConfigResponse, StateResponse};
+use services::bonding::{
+    BondingModeMsg, ClaimInfoResponse, ClaimsResponse, ConfigResponse, StateResponse,
+};
 
-use crate::state::{load_claims, load_config, load_state};
+use crate::state::{load_claims, load_config, load_state, BondingMode};
 
 /// ## Description
 /// Returns bonding contract config in the [`ConfigResponse`] object
@@ -9,10 +11,31 @@ use crate::state::{load_claims, load_config, load_state};
 /// * **deps** is an object of type [`Deps`]
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
+
+    let bonding_mode = match config.bonding_mode {
+        BondingMode::Normal {
+            ust_bonding_reward_ratio,
+            lp_token,
+            lp_bonding_discount,
+            vesting_period_blocks,
+        } => BondingModeMsg::Normal {
+            ust_bonding_reward_ratio,
+            lp_token: deps.api.addr_humanize(&lp_token)?.to_string(),
+            lp_bonding_discount,
+            vesting_period_blocks,
+        },
+        BondingMode::Community {
+            staking_contract,
+            epochs_locked,
+        } => BondingModeMsg::Community {
+            staking_contract: deps.api.addr_humanize(&staking_contract)?.to_string(),
+            epochs_locked,
+        },
+    };
+
     let resp = ConfigResponse {
         owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         bro_token: deps.api.addr_humanize(&config.bro_token)?.to_string(),
-        lp_token: deps.api.addr_humanize(&config.lp_token)?.to_string(),
         rewards_pool_contract: deps
             .api
             .addr_humanize(&config.rewards_pool_contract)?
@@ -26,12 +49,9 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
             .addr_humanize(&config.astroport_factory)?
             .to_string(),
         oracle_contract: deps.api.addr_humanize(&config.oracle_contract)?.to_string(),
-        ust_bonding_reward_ratio: config.ust_bonding_reward_ratio,
         ust_bonding_discount: config.ust_bonding_discount,
-        lp_bonding_discount: config.lp_bonding_discount,
         min_bro_payout: config.min_bro_payout,
-        vesting_period_blocks: config.vesting_period_blocks,
-        lp_bonding_enabled: config.lp_bonding_enabled,
+        bonding_mode,
     };
 
     Ok(resp)

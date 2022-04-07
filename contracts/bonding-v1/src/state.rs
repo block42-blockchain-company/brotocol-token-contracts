@@ -1,10 +1,16 @@
 use std::str::FromStr;
 
-use cosmwasm_std::{CanonicalAddr, Decimal, StdError, StdResult, Storage, Uint128};
+use cosmwasm_std::{
+    Api, CanonicalAddr, Decimal, QuerierWrapper, StdError, StdResult, Storage, Uint128,
+};
 use cw20::Expiration;
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use crate::ContractError;
+
+use services::{bonding::BondingModeMsg, querier::query_staking_config};
 
 /// ## Description
 /// Stores config struct of type [`Config`] at the given key
@@ -26,8 +32,6 @@ pub struct Config {
     pub owner: CanonicalAddr,
     /// bro token address
     pub bro_token: CanonicalAddr,
-    /// bro/ust lp token address
-    pub lp_token: CanonicalAddr,
     /// rewards pool address
     pub rewards_pool_contract: CanonicalAddr,
     /// treasury contract address
@@ -36,29 +40,17 @@ pub struct Config {
     pub astroport_factory: CanonicalAddr,
     /// price oracle contract address
     pub oracle_contract: CanonicalAddr,
-    /// distributed reward percentage for ust bonding balance
-    pub ust_bonding_reward_ratio: Decimal,
     /// discount percentage for ust bonding
     pub ust_bonding_discount: Decimal,
-    /// discount percentage for lp bonding
-    pub lp_bonding_discount: Decimal,
     /// minimum amount of bro to receive via bonding
     pub min_bro_payout: Uint128,
-    /// vesting period for withdrawal
-    pub vesting_period_blocks: u64,
-    /// sets lp bonding option either to enabled or disabled
-    pub lp_bonding_enabled: bool,
+    /// bonding mode
+    pub bonding_mode: BondingMode,
 }
 
 impl Config {
     pub fn validate(&self) -> StdResult<()> {
         let one = Decimal::from_str("1.0")?;
-
-        if self.ust_bonding_reward_ratio > one || self.ust_bonding_reward_ratio <= Decimal::zero() {
-            return Err(StdError::generic_err(
-                "ust_bonding_reward_ratio must be less than 1.0 and non-negative",
-            ));
-        }
 
         if self.ust_bonding_discount > one || self.ust_bonding_discount <= Decimal::zero() {
             return Err(StdError::generic_err(
@@ -66,13 +58,104 @@ impl Config {
             ));
         }
 
-        if self.lp_bonding_discount > one || self.lp_bonding_discount <= Decimal::zero() {
-            return Err(StdError::generic_err(
-                "lp_bonding_discount must be less than 1.0 and non-negative",
-            ));
+        match self.bonding_mode {
+            BondingMode::Normal {
+                ust_bonding_reward_ratio,
+                lp_bonding_discount,
+                vesting_period_blocks,
+                ..
+            } => {
+                if ust_bonding_reward_ratio > one || ust_bonding_reward_ratio <= Decimal::zero() {
+                    return Err(StdError::generic_err(
+                        "ust_bonding_reward_ratio must be less than 1.0 and non-negative",
+                    ));
+                }
+
+                if lp_bonding_discount > one || lp_bonding_discount <= Decimal::zero() {
+                    return Err(StdError::generic_err(
+                        "lp_bonding_discount must be less than 1.0 and non-negative",
+                    ));
+                }
+
+                if vesting_period_blocks == 0 {
+                    return Err(StdError::generic_err(
+                        "vesting_period_blocks must be greater than zero",
+                    ));
+                }
+            }
+            BondingMode::Community { .. } => {}
         }
 
         Ok(())
+    }
+}
+
+/// ## Description
+/// This structure describes the bonding contract mode.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum BondingMode {
+    /// ## Description
+    /// Enables both ust and lp bonding option.
+    /// Exchanged bro tokens will become claimable after vesting period.
+    Normal {
+        /// distributed reward percentage for ust bonding balance
+        ust_bonding_reward_ratio: Decimal,
+        /// bro/ust lp token address
+        lp_token: CanonicalAddr,
+        /// discount percentage for lp bonding
+        lp_bonding_discount: Decimal,
+        /// vesting period for withdrawal
+        vesting_period_blocks: u64,
+    },
+    /// ## Description
+    /// Enables only ust bonding option.
+    /// Exchanged bro tokens will be locked in staking contract for configured amount of epochs
+    /// and then claimable with extra bro/bbro reward from it.
+    Community {
+        /// staking contract address
+        staking_contract: CanonicalAddr,
+        /// how many epochs specified amount will be locked
+        epochs_locked: u64,
+    },
+}
+
+impl BondingMode {
+    pub fn from_msg(
+        mode: BondingModeMsg,
+        querier: &QuerierWrapper,
+        api: &dyn Api,
+    ) -> Result<Self, ContractError> {
+        match mode {
+            BondingModeMsg::Normal {
+                ust_bonding_reward_ratio,
+                lp_bonding_discount,
+                lp_token,
+                vesting_period_blocks,
+            } => Ok(BondingMode::Normal {
+                ust_bonding_reward_ratio,
+                lp_bonding_discount,
+                lp_token: api.addr_canonicalize(&lp_token)?,
+                vesting_period_blocks,
+            }),
+            BondingModeMsg::Community {
+                staking_contract,
+                epochs_locked,
+            } => {
+                let staking_config =
+                    query_staking_config(querier, api.addr_validate(&staking_contract)?)?;
+                if epochs_locked < staking_config.lockup_config.min_lockup_period_epochs
+                    || epochs_locked > staking_config.lockup_config.max_lockup_period_epochs
+                {
+                    return Err(ContractError::InvalidLockupPeriodForCommunityBondingMode {});
+                }
+
+                Ok(BondingMode::Community {
+                    staking_contract: api.addr_canonicalize(&staking_contract)?,
+                    epochs_locked,
+                })
+            }
+        }
     }
 }
 
@@ -84,6 +167,15 @@ pub struct State {
     pub ust_bonding_balance: Uint128,
     /// available bro balance for lp token bonding
     pub lp_bonding_balance: Uint128,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        State {
+            ust_bonding_balance: Uint128::zero(),
+            lp_bonding_balance: Uint128::zero(),
+        }
+    }
 }
 
 /// ## Description

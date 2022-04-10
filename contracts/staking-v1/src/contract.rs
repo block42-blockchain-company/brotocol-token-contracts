@@ -48,6 +48,12 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
+    let community_bonding_contract = if let Some(addr) = msg.community_bonding_contract {
+        Some(deps.api.addr_canonicalize(&addr)?)
+    } else {
+        None
+    };
+
     let config = Config {
         owner: deps.api.addr_canonicalize(&msg.owner)?,
         paused: false,
@@ -55,9 +61,7 @@ pub fn instantiate(
         rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
         bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
         epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
-        community_bonding_contract: deps
-            .api
-            .addr_canonicalize(&msg.community_bonding_contract)?,
+        community_bonding_contract,
         unstake_period_blocks: msg.unstake_period_blocks,
         min_staking_amount: msg.min_staking_amount,
         lockup_config: LockupConfig {
@@ -122,6 +126,7 @@ pub fn instantiate(
 ///         base_rate,
 ///         linear_growth,
 ///         exponential_growth,
+///         community_bonding_contract,
 ///     }** Updates contract settings
 ///
 /// * **ExecuteMsg::ProposeNewOwner {
@@ -176,6 +181,7 @@ pub fn execute(
             base_rate,
             linear_growth,
             exponential_growth,
+            community_bonding_contract,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(
@@ -188,6 +194,7 @@ pub fn execute(
                 base_rate,
                 linear_growth,
                 exponential_growth,
+                community_bonding_contract,
             )
         }
         ExecuteMsg::ProposeNewOwner {
@@ -256,8 +263,15 @@ pub fn receive_cw20(
             sender,
             epochs_locked,
         }) => {
+            let community_bonding_contract = match config.community_bonding_contract {
+                Some(addr) => addr,
+                None => {
+                    return Err(ContractError::StakingFromCommunityBondingContractIsNotEnabled {})
+                }
+            };
+
             // only community bonding contract allowed to stake bonded bro tokens with locked staking type
-            if config.community_bonding_contract != deps.api.addr_canonicalize(&cw20_msg.sender)? {
+            if community_bonding_contract != deps.api.addr_canonicalize(&cw20_msg.sender)? {
                 return Err(ContractError::Unauthorized {});
             }
 
@@ -348,6 +362,13 @@ pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, Co
                 let msg: MigrationMsgV100 = from_binary(&msg.params)?;
                 let config = load_config_v100(deps.storage)?;
 
+                let community_bonding_contract = if let Some(addr) = msg.community_bonding_contract
+                {
+                    Some(deps.api.addr_canonicalize(&addr)?)
+                } else {
+                    None
+                };
+
                 let new_config = Config {
                     owner: config.owner,
                     paused: config.paused,
@@ -355,9 +376,7 @@ pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, Co
                     rewards_pool_contract: config.rewards_pool_contract,
                     bbro_minter_contract: config.bbro_minter_contract,
                     epoch_manager_contract: config.epoch_manager_contract,
-                    community_bonding_contract: deps
-                        .api
-                        .addr_canonicalize(&msg.community_bonding_contract)?,
+                    community_bonding_contract,
                     unstake_period_blocks: config.unstake_period_blocks,
                     min_staking_amount: config.min_staking_amount,
                     lockup_config: config.lockup_config,

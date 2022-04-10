@@ -44,8 +44,10 @@ pub struct Config {
     pub bbro_minter_contract: CanonicalAddr,
     /// epoch manager contract address
     pub epoch_manager_contract: CanonicalAddr,
-    /// community bonding address
-    pub community_bonding_contract: CanonicalAddr,
+    /// community bonding address,
+    /// if value is set to none
+    /// than option to stake from community bonding contract is disabled
+    pub community_bonding_contract: Option<CanonicalAddr>,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
     /// minimum staking amount

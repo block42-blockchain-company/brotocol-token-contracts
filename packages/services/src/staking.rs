@@ -17,8 +17,10 @@ pub struct InstantiateMsg {
     pub bbro_minter_contract: String,
     /// epoch manager contract address
     pub epoch_manager_contract: String,
-    /// community bonding address
-    pub community_bonding_contract: String,
+    /// community bonding address,
+    /// if value is set to none
+    /// than option to stake from community bonding contract is disabled
+    pub community_bonding_contract: Option<String>,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
     /// minimum staking amount
@@ -89,6 +91,8 @@ pub enum ExecuteMsg {
         linear_growth: Option<Decimal>,
         /// exponential growth for bbro premium reward calculation
         exponential_growth: Option<Decimal>,
+        /// community bonding contract
+        community_bonding_contract: Option<String>,
     },
     /// ## Description
     /// Creates an offer for a new owner.
@@ -215,6 +219,10 @@ pub struct ConfigResponse {
     pub bbro_minter_contract: String,
     /// epoch manager contract address
     pub epoch_manager_contract: String,
+    /// community bonding address,
+    /// if value is set to none
+    /// than option to stake from community bonding contract is disabled
+    pub community_bonding_contract: Option<String>,
     /// vesting period for withdrawal
     pub unstake_period_blocks: u64,
     /// minimum staking amount

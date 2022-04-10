@@ -13,6 +13,13 @@ use crate::state::{load_config, load_state, load_withdrawals, read_staker_info};
 /// * **deps** is an object of type [`Deps`]
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = load_config(deps.storage)?;
+
+    let community_bonding_contract = if let Some(addr) = config.community_bonding_contract {
+        Some(deps.api.addr_humanize(&addr)?.to_string())
+    } else {
+        None
+    };
+
     let resp = ConfigResponse {
         owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         paused: config.paused,
@@ -29,6 +36,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
             .api
             .addr_humanize(&config.epoch_manager_contract)?
             .to_string(),
+        community_bonding_contract,
         unstake_period_blocks: config.unstake_period_blocks,
         min_staking_amount: config.min_staking_amount,
         lockup_config: LockupConfigResponse {

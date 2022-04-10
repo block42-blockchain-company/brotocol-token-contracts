@@ -169,6 +169,9 @@ impl WasmMockQuerier {
                                 rewards_pool_contract: "rewards".to_string(),
                                 bbro_minter_contract: "bbro_minter".to_string(),
                                 epoch_manager_contract: "epoch_manager".to_string(),
+                                community_bonding_contract: Some(
+                                    "community_bonding0000".to_string(),
+                                ),
                                 unstake_period_blocks: 10,
                                 min_staking_amount: Uint128::from(1u128),
                                 lockup_config: LockupConfigResponse {

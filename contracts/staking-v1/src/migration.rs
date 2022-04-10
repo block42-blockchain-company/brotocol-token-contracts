@@ -14,7 +14,7 @@ static CONFIGV100: Item<ConfigV100> = Item::new("config");
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct MigrationMsgV100 {
     /// community bonding address
-    pub community_bonding_contract: String,
+    pub community_bonding_contract: Option<String>,
 }
 
 /// ## Description

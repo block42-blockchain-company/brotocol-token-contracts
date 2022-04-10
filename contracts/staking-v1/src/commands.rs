@@ -570,6 +570,8 @@ pub fn claim_bbro_rewards(
 /// * **linear_growth** is an [`Option`] of type [`Decimal`]
 ///
 /// * **exponential_growth** is an [`Option`] of type [`Decimal`]
+///
+/// * **community_bonding_contract** is an [`Option`] of type [`String`]
 #[allow(clippy::too_many_arguments)]
 pub fn update_config(
     deps: DepsMut,
@@ -581,6 +583,7 @@ pub fn update_config(
     base_rate: Option<Decimal>,
     linear_growth: Option<Decimal>,
     exponential_growth: Option<Decimal>,
+    community_bonding_contract: Option<String>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
@@ -641,6 +644,15 @@ pub fn update_config(
         attributes.push(Attribute::new(
             "exponential_growth_changed",
             &exponential_growth.to_string(),
+        ));
+    }
+
+    if let Some(community_bonding_contract) = community_bonding_contract {
+        config.community_bonding_contract =
+            Some(deps.api.addr_canonicalize(&community_bonding_contract)?);
+        attributes.push(Attribute::new(
+            "community_bonding_contract_changed",
+            &community_bonding_contract,
         ));
     }
 

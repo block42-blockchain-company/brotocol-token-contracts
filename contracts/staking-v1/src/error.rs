@@ -22,6 +22,9 @@ pub enum ContractError {
     #[error("Unauthorized")]
     Unauthorized {},
 
+    #[error("Staking from community bonding contract is not enabled")]
+    StakingFromCommunityBondingContractIsNotEnabled {},
+
     #[error("Contract is paused")]
     ContractIsPaused {},
 

@@ -16,12 +16,16 @@ Price calculation will depend on current BRO market price.
     "treasury_contract": "terra1...",
     "astroport_factory": "terra1...",
     "oracle_contract": "terra1...",
-    "ust_bonding_reward_ratio": "0.6",
     "ust_bonding_discount": "0.05",
-    "lp_bonding_discount": "0.05",
     "min_bro_payout": "100",
-    "vesting_period_blocks": 50,
-    "lp_bonding_enabled": true
+    "bonding_mode": {
+        "normal": {
+            "ust_bonding_reward_ratio": "0.6",
+            "lp_bonding_discount": "0.05",
+            "vesting_period_blocks": 50,
+            "lp_bonding_enabled": true
+        }
+    }
 }
 ```
 
@@ -94,12 +98,25 @@ Message params are optional.
         "treasury_contract": "terra1...",
         "astroport_factory": "terra1...",
         "oracle_contract": "terra1...",
-        "ust_bonding_reward_ratio": "0.6",
         "ust_bonding_discount": "0.05",
-        "lp_bonding_discount": "0.05",
         "min_bro_payout": "100",
-        "vesting_period_blocks": 50,
-        "lp_bonding_enabled": true
+    }
+}
+```
+
+### `update_bonding_mode_config`
+Updates specific settings for bonding mode config. Can be executed only by owner.
+Message params are optional.
+
+```json
+{
+    "update_bonding_mode_config": {
+        "ust_bonding_reward_ratio_normal": "0.1",
+        "lp_token_normal": "terra1...",
+        "lp_bonding_discount_normal": "0.1",
+        "vesting_period_blocks_normal": 100,
+        "staking_contract_community": "terra1...",
+        "epochs_locked_community": 100
     }
 }
 ```

@@ -89,6 +89,12 @@ pub enum ExecuteMsg {
         ust_bonding_discount: Option<Decimal>,
         /// new minimum amount of bro to receive via bonding
         min_bro_payout: Option<Uint128>,
+    },
+    /// ## Description
+    /// Updates specific settings for bonding mode config
+    /// ## Executor
+    /// Only owner can execute this function
+    UpdateBondingModeConfig {
         /// normal bonding mode: new distributed reward percentage for ust bonding balance
         ust_bonding_reward_ratio_normal: Option<Decimal>,
         /// normal bonding mode: new bro/ust lp token address

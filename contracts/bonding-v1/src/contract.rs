@@ -97,13 +97,16 @@ pub fn instantiate(
 ///         oracle_contract,
 ///         ust_bonding_discount,
 ///         min_bro_payout,
+///     }** Updates contract settings
+///
+/// * **ExecuteMsg::UpdateBondingModeConfig {
 ///         ust_bonding_reward_ratio_normal,
 ///         lp_token_normal,
 ///         lp_bonding_discount_normal,
 ///         vesting_period_blocks_normal,
 ///         staking_contract_community,
 ///         epochs_locked_community,
-///     }** Updates contract settings
+///     }** Updates specific settings for bonding mode config
 ///
 /// * **ExecuteMsg::ProposeNewOwner {
 ///         new_owner,
@@ -131,12 +134,6 @@ pub fn execute(
             oracle_contract,
             ust_bonding_discount,
             min_bro_payout,
-            ust_bonding_reward_ratio_normal,
-            lp_token_normal,
-            lp_bonding_discount_normal,
-            vesting_period_blocks_normal,
-            staking_contract_community,
-            epochs_locked_community,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(
@@ -147,6 +144,19 @@ pub fn execute(
                 oracle_contract,
                 ust_bonding_discount,
                 min_bro_payout,
+            )
+        }
+        ExecuteMsg::UpdateBondingModeConfig {
+            ust_bonding_reward_ratio_normal,
+            lp_token_normal,
+            lp_bonding_discount_normal,
+            vesting_period_blocks_normal,
+            staking_contract_community,
+            epochs_locked_community,
+        } => {
+            assert_owner(deps.storage, deps.api, info.sender)?;
+            commands::update_bonding_mode_config(
+                deps,
                 ust_bonding_reward_ratio_normal,
                 lp_token_normal,
                 lp_bonding_discount_normal,

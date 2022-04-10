@@ -455,12 +455,6 @@ fn lp_bond() {
         astroport_factory: None,
         oracle_contract: None,
         ust_bonding_discount: None,
-        ust_bonding_reward_ratio_normal: None,
-        lp_token_normal: None,
-        lp_bonding_discount_normal: None,
-        vesting_period_blocks_normal: None,
-        staking_contract_community: None,
-        epochs_locked_community: None,
     };
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
@@ -698,12 +692,6 @@ fn ust_bond_normal_mode() {
         astroport_factory: None,
         oracle_contract: None,
         ust_bonding_discount: None,
-        ust_bonding_reward_ratio_normal: None,
-        lp_token_normal: None,
-        lp_bonding_discount_normal: None,
-        vesting_period_blocks_normal: None,
-        staking_contract_community: None,
-        epochs_locked_community: None,
     };
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
@@ -1059,14 +1047,8 @@ fn update_config() {
         treasury_contract: Some("new_treasury".to_string()),
         astroport_factory: Some("new_astro".to_string()),
         oracle_contract: Some("new_oracle".to_string()),
-        ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
+        ust_bonding_discount: Some(Decimal::from_str("1.1").unwrap()),
         min_bro_payout: Some(Uint128::from(2u128)),
-        ust_bonding_reward_ratio_normal: Some(Decimal::from_str("1.01").unwrap()),
-        lp_token_normal: Some("new_lp".to_string()),
-        lp_bonding_discount_normal: Some(Decimal::from_str("0.06").unwrap()),
-        vesting_period_blocks_normal: Some(11),
-        staking_contract_community: None,
-        epochs_locked_community: None,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -1076,14 +1058,14 @@ fn update_config() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    // error: invalid ust_bonding_reward_ratio
+    // error: invalid ust_bonding_discount
     let info = mock_info("owner", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
     match res {
         ContractError::Std(StdError::GenericErr { msg, .. }) => {
             assert_eq!(
                 msg,
-                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
+                "ust_bonding_discount must be less than 1.0 and non-negative".to_string()
             )
         }
         _ => panic!("DO NOT ENTER HERE"),
@@ -1097,12 +1079,6 @@ fn update_config() {
         oracle_contract: Some("new_oracle".to_string()),
         ust_bonding_discount: Some(Decimal::from_str("0.11").unwrap()),
         min_bro_payout: Some(Uint128::from(2u128)),
-        ust_bonding_reward_ratio_normal: Some(Decimal::from_str("0.61").unwrap()),
-        lp_token_normal: Some("new_lp".to_string()),
-        lp_bonding_discount_normal: Some(Decimal::from_str("0.06").unwrap()),
-        vesting_period_blocks_normal: Some(11),
-        staking_contract_community: None,
-        epochs_locked_community: None,
     };
 
     let info = mock_info("owner", &[]);
@@ -1133,22 +1109,6 @@ fn update_config() {
         res.attributes[6],
         Attribute::new("min_bro_payout_changed", "2")
     );
-    assert_eq!(
-        res.attributes[7],
-        Attribute::new("ust_bonding_reward_ratio_changed", "0.61")
-    );
-    assert_eq!(
-        res.attributes[8],
-        Attribute::new("lp_token_changed", "new_lp")
-    );
-    assert_eq!(
-        res.attributes[9],
-        Attribute::new("lp_bonding_discount_changed", "0.06")
-    );
-    assert_eq!(
-        res.attributes[10],
-        Attribute::new("vesting_period_blocks_changed", "11")
-    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(
@@ -1165,15 +1125,176 @@ fn update_config() {
             ust_bonding_discount: Decimal::from_str("0.11").unwrap(),
             min_bro_payout: Uint128::from(2u128),
             bonding_mode: BondingModeMsg::Normal {
-                ust_bonding_reward_ratio: Decimal::from_str("0.61").unwrap(),
-                lp_token: "new_lp".to_string(),
+                ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+                lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+                lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+                vesting_period_blocks: 10,
+            }
+        },
+    );
+}
+
+#[test]
+fn update_bonding_mode_config() {
+    // noramal mode
+    let mut deps = mock_dependencies(&[]);
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+        rewards_pool_contract: "rewards".to_string(),
+        treasury_contract: "treasury".to_string(),
+        astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+        oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+        ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+        min_bro_payout: Uint128::from(1u128),
+        bonding_mode: BondingModeMsg::Normal {
+            ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
+            lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
+            lp_bonding_discount: Decimal::from_str("0.05").unwrap(),
+            vesting_period_blocks: 10,
+        },
+    };
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    // error: unauthorized
+    let msg = ExecuteMsg::UpdateBondingModeConfig {
+        ust_bonding_reward_ratio_normal: None,
+        lp_token_normal: None,
+        lp_bonding_discount_normal: None,
+        vesting_period_blocks_normal: None,
+        staking_contract_community: None,
+        epochs_locked_community: None,
+    };
+    let info = mock_info("addr000", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
+    match res {
+        Err(ContractError::Unauthorized {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // error: invalid ust_bonding_reward_ratio
+    let msg = ExecuteMsg::UpdateBondingModeConfig {
+        ust_bonding_reward_ratio_normal: Some(Decimal::from_str("1.1").unwrap()),
+        lp_token_normal: None,
+        lp_bonding_discount_normal: None,
+        vesting_period_blocks_normal: None,
+        staking_contract_community: None,
+        epochs_locked_community: None,
+    };
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // error: invalid lp_bonding_discount
+    let msg = ExecuteMsg::UpdateBondingModeConfig {
+        ust_bonding_reward_ratio_normal: None,
+        lp_token_normal: None,
+        lp_bonding_discount_normal: Some(Decimal::from_str("1.1").unwrap()),
+        vesting_period_blocks_normal: None,
+        staking_contract_community: None,
+        epochs_locked_community: None,
+    };
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "lp_bonding_discount must be less than 1.0 and non-negative".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // error: invalid vesting_period_blocks
+    let msg = ExecuteMsg::UpdateBondingModeConfig {
+        ust_bonding_reward_ratio_normal: None,
+        lp_token_normal: None,
+        lp_bonding_discount_normal: None,
+        vesting_period_blocks_normal: Some(0),
+        staking_contract_community: None,
+        epochs_locked_community: None,
+    };
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(
+                msg,
+                "vesting_period_blocks must be greater than zero".to_string()
+            )
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // proper execution
+    let msg = ExecuteMsg::UpdateBondingModeConfig {
+        ust_bonding_reward_ratio_normal: Some(Decimal::from_str("0.5").unwrap()),
+        lp_token_normal: Some("new_lp_token".to_string()),
+        lp_bonding_discount_normal: Some(Decimal::from_str("0.06").unwrap()),
+        vesting_period_blocks_normal: Some(11),
+        staking_contract_community: None,
+        epochs_locked_community: None,
+    };
+
+    let info = mock_info("owner", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
+
+    assert_eq!(
+        res.attributes[0],
+        Attribute::new("action", "update_bonding_mode_config")
+    );
+    assert_eq!(
+        res.attributes[1],
+        Attribute::new("ust_bonding_reward_ratio_changed", "0.5")
+    );
+    assert_eq!(
+        res.attributes[2],
+        Attribute::new("lp_token_changed", "new_lp_token")
+    );
+    assert_eq!(
+        res.attributes[3],
+        Attribute::new("lp_bonding_discount_changed", "0.06")
+    );
+    assert_eq!(
+        res.attributes[4],
+        Attribute::new("vesting_period_blocks_changed", "11")
+    );
+
+    assert_eq!(
+        from_binary::<ConfigResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()
+        )
+        .unwrap(),
+        ConfigResponse {
+            owner: "owner".to_string(),
+            bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
+            rewards_pool_contract: "rewards".to_string(),
+            treasury_contract: "treasury".to_string(),
+            astroport_factory: MOCK_ASTRO_FACTORY_ADDR.to_string(),
+            oracle_contract: MOCK_ORACLE_ADDR.to_string(),
+            ust_bonding_discount: Decimal::from_str("0.1").unwrap(),
+            min_bro_payout: Uint128::from(1u128),
+            bonding_mode: BondingModeMsg::Normal {
+                ust_bonding_reward_ratio: Decimal::from_str("0.5").unwrap(),
+                lp_token: "new_lp_token".to_string(),
                 lp_bonding_discount: Decimal::from_str("0.06").unwrap(),
                 vesting_period_blocks: 11,
             }
         },
     );
 
-    // community mode update config
+    // community mode
     let msg = InstantiateMsg {
         owner: "owner".to_string(),
         bro_token: MOCK_BRO_TOKEN_ADDR.to_string(),
@@ -1193,13 +1314,7 @@ fn update_config() {
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
     // error: invalid epochs_locked
-    let msg = ExecuteMsg::UpdateConfig {
-        rewards_pool_contract: None,
-        treasury_contract: None,
-        astroport_factory: None,
-        oracle_contract: None,
-        ust_bonding_discount: None,
-        min_bro_payout: None,
+    let msg = ExecuteMsg::UpdateBondingModeConfig {
         ust_bonding_reward_ratio_normal: None,
         lp_token_normal: None,
         lp_bonding_discount_normal: None,
@@ -1215,13 +1330,7 @@ fn update_config() {
     }
 
     // proper execution
-    let msg = ExecuteMsg::UpdateConfig {
-        rewards_pool_contract: None,
-        treasury_contract: None,
-        astroport_factory: None,
-        oracle_contract: None,
-        ust_bonding_discount: None,
-        min_bro_payout: None,
+    let msg = ExecuteMsg::UpdateBondingModeConfig {
         ust_bonding_reward_ratio_normal: None,
         lp_token_normal: None,
         lp_bonding_discount_normal: None,
@@ -1233,7 +1342,10 @@ fn update_config() {
     let info = mock_info("owner", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 
-    assert_eq!(res.attributes[0], Attribute::new("action", "update_config"));
+    assert_eq!(
+        res.attributes[0],
+        Attribute::new("action", "update_bonding_mode_config")
+    );
     assert_eq!(
         res.attributes[1],
         Attribute::new("epochs_locked_changed", "11")

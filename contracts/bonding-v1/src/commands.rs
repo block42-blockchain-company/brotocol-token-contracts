@@ -330,18 +330,6 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, Con
 /// * **ust_bonding_discount** is an [`Option`] of type [`Decimal`]
 ///
 /// * **min_bro_payout** is an [`Option`] of type [`Uint128`]
-///
-/// * **ust_bonding_reward_ratio_normal** is an [`Option`] of type [`Decimal`]
-///
-/// * **lp_token_normal** is an [`Option`] of type [`String`]
-///
-/// * **lp_bonding_discount_normal** is an [`Option`] of type [`Decimal`]
-///
-/// * **vesting_period_blocks_normal** is an [`Option`] of type [`u64`]
-///
-/// * **staking_contract_community** is an [`Option`] of type [`String`]
-///
-/// * **epochs_locked_community** is an [`Option`] of type [`u64`]
 #[allow(clippy::too_many_arguments)]
 pub fn update_config(
     deps: DepsMut,
@@ -351,12 +339,6 @@ pub fn update_config(
     oracle_contract: Option<String>,
     ust_bonding_discount: Option<Decimal>,
     min_bro_payout: Option<Uint128>,
-    ust_bonding_reward_ratio_normal: Option<Decimal>,
-    lp_token_normal: Option<String>,
-    lp_bonding_discount_normal: Option<Decimal>,
-    vesting_period_blocks_normal: Option<u64>,
-    staking_contract_community: Option<String>,
-    epochs_locked_community: Option<u64>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
@@ -406,6 +388,45 @@ pub fn update_config(
             &min_bro_payout.to_string(),
         ));
     }
+
+    config.validate()?;
+    store_config(deps.storage, &config)?;
+
+    Ok(Response::new().add_attributes(attributes))
+}
+
+/// ## Description
+/// Updates specific settings for bonding mode config.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **ust_bonding_reward_ratio_normal** is an [`Option`] of type [`Decimal`]
+///
+/// * **lp_token_normal** is an [`Option`] of type [`String`]
+///
+/// * **lp_bonding_discount_normal** is an [`Option`] of type [`Decimal`]
+///
+/// * **vesting_period_blocks_normal** is an [`Option`] of type [`u64`]
+///
+/// * **staking_contract_community** is an [`Option`] of type [`String`]
+///
+/// * **epochs_locked_community** is an [`Option`] of type [`u64`]
+#[allow(clippy::too_many_arguments)]
+pub fn update_bonding_mode_config(
+    deps: DepsMut,
+    ust_bonding_reward_ratio_normal: Option<Decimal>,
+    lp_token_normal: Option<String>,
+    lp_bonding_discount_normal: Option<Decimal>,
+    vesting_period_blocks_normal: Option<u64>,
+    staking_contract_community: Option<String>,
+    epochs_locked_community: Option<u64>,
+) -> Result<Response, ContractError> {
+    let mut config = load_config(deps.storage)?;
+
+    let mut attributes: Vec<Attribute> =
+        vec![Attribute::new("action", "update_bonding_mode_config")];
 
     match config.bonding_mode {
         BondingMode::Normal {

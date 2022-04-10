@@ -154,6 +154,9 @@ impl WasmMockQuerier {
                                 .unwrap(),
                             ))
                         }
+                        OracleQueryMsg::IsReadyToTrigger {} => {
+                            SystemResult::Ok(ContractResult::Ok(to_binary(&true).unwrap()))
+                        }
                         _ => panic!("DO NOT ENTER HERE"),
                     }
                 } else if contract_addr == MOCK_STAKING_ADDR {

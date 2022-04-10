@@ -159,6 +159,22 @@ pub fn query_oracle_price(
 }
 
 /// ## Description
+/// Returns a [`bool`] type whether prices are ready to be updated or not.
+/// ## Params
+/// * **querier** is an object of type [`QuerierWrapper`].
+///
+/// * **oracle_contract** is an object of type [`Addr`].
+pub fn query_is_oracle_ready_to_trigger(
+    querier: &QuerierWrapper,
+    oracle_contract: Addr,
+) -> StdResult<bool> {
+    querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: oracle_contract.to_string(),
+        msg: to_binary(&OracleQueryMsg::IsReadyToTrigger {})?,
+    }))
+}
+
+/// ## Description
 /// Returns staking contract config in the [`StakingConfigResponse`] object.
 /// ## Params
 /// * **querier** is an object of type [`QuerierWrapper`].

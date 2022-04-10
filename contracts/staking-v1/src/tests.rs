@@ -1585,6 +1585,159 @@ fn test_locked_stake_tokens() {
 }
 
 #[test]
+fn community_bond_stake() {
+    let mut deps = mock_dependencies(&[]);
+    let mut env = mock_env();
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: "community_bonding0000".to_string(),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::from(10u128),
+        min_lockup_period_epochs: 2,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    env.block.height += 1;
+
+    // error: unauthorized
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "addr0000".to_string(),
+        amount: Uint128::from(1u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+            sender: "addr0000".to_string(),
+            epochs_locked: 1,
+        })
+        .unwrap(),
+    });
+    let info = mock_info("bro0000", &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::Unauthorized {}) => (),
+        _ => panic!("expecting ContractError::Unauthorized"),
+    }
+
+    // error: stake amount is too small
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "community_bonding0000".to_string(),
+        amount: Uint128::from(1u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+            sender: "addr0000".to_string(),
+            epochs_locked: 1,
+        })
+        .unwrap(),
+    });
+    let info = mock_info("bro0000", &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::StakingAmountMustBeHigherThanMinAmount {}) => (),
+        _ => panic!("expecting ContractError::StakingAmountMustBeHigherThanMinAmount"),
+    }
+
+    // error: invalid lockup period
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "community_bonding0000".to_string(),
+        amount: Uint128::from(100u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+            sender: "addr0000".to_string(),
+            epochs_locked: 1,
+        })
+        .unwrap(),
+    });
+    let info = mock_info("bro0000", &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::InvalidLockupPeriod {}) => (),
+        _ => panic!("expecting ContractError::InvalidLockupPeriod"),
+    }
+
+    // proper execution
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "community_bonding0000".to_string(),
+        amount: Uint128::from(50_000000u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+            sender: "addr0000".to_string(),
+            epochs_locked: 10,
+        })
+        .unwrap(),
+    });
+
+    let info = mock_info("bro0000", &[]);
+    let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    assert_eq!(
+        res.attributes[0],
+        Attribute::new("action", "community_bond_stake")
+    );
+    assert_eq!(res.attributes[1], Attribute::new("staker", "addr0000"));
+    assert_eq!(res.attributes[2], Attribute::new("amount", "50000000"));
+    assert_eq!(
+        res.attributes[3],
+        Attribute::new("bbro_premium_lockup_reward", "267500")
+    );
+
+    let mint_bbro_premium_msg = res.messages.get(0).expect("no message");
+    assert_eq!(
+        mint_bbro_premium_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: "bbrominter0000".to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: "addr0000".to_string(),
+                amount: Uint128::from(267500u128),
+            })
+            .unwrap(),
+        }))
+    );
+
+    assert_eq!(
+        from_binary::<StakerInfoResponse>(
+            &query(
+                deps.as_ref(),
+                env.clone(),
+                QueryMsg::StakerInfo {
+                    staker: "addr0000".to_string(),
+                },
+            )
+            .unwrap(),
+        )
+        .unwrap(),
+        StakerInfoResponse {
+            staker: "addr0000".to_string(),
+            reward_index: Decimal::zero(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::from(50_000000u128),
+            pending_bro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::zero(),
+            last_balance_update: 12346,
+            lockups: vec![LockupInfoResponse {
+                amount: Uint128::from(50_000000u128),
+                unlocked_at: Expiration::AtHeight(12356),
+            }],
+        },
+    );
+
+    assert_eq!(
+        from_binary::<StateResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+        )
+        .unwrap(),
+        StateResponse {
+            total_stake_amount: Uint128::from(50_000000u128),
+            global_reward_index: Decimal::zero(),
+            last_distribution_block: 12345,
+        },
+    );
+}
+
+#[test]
 fn update_config() {
     let mut deps = mock_dependencies(&[]);
     let env = mock_env();

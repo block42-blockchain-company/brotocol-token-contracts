@@ -1,14 +1,10 @@
 use cosmwasm_std::{
-    to_binary, Addr, Attribute, CanonicalAddr, Coin, CosmosMsg, Decimal, DepsMut, Env, MessageInfo,
-    QuerierWrapper, Response, StdResult, Uint128, WasmMsg,
+    to_binary, Attribute, CanonicalAddr, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response,
+    Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Expiration};
-use std::str::FromStr;
 
-use astroport::{
-    asset::{Asset, AssetInfo},
-    querier::query_supply,
-};
+use astroport::asset::AssetInfo;
 
 use crate::{
     error::ContractError,
@@ -16,12 +12,14 @@ use crate::{
         load_claims, load_config, load_state, store_claims, store_config, store_state, BondType,
         BondingMode, ClaimInfo,
     },
+    utils::{apply_discount, extract_native_token, get_share_in_assets},
 };
 
 use services::{
     oracle::ExecuteMsg as OracleExecuteMsg,
     querier::{
-        query_is_oracle_ready_to_trigger, query_oracle_price, query_pools, query_staking_config,
+        query_bro_ust_pair, query_is_oracle_ready_to_trigger, query_oracle_price,
+        query_staking_config,
     },
     staking::Cw20HookMsg as StakingHookMsg,
 };
@@ -514,91 +512,4 @@ pub fn update_bonding_mode_config(
     store_config(deps.storage, &config)?;
 
     Ok(Response::new().add_attributes(attributes))
-}
-
-/// ## Description
-/// Extracts ust amount from provided info.funds input.
-/// Otherwise returns [`ContractError`]
-/// ## Params
-/// * **funds** is an object of type [`&[Coin]`]
-fn extract_native_token(funds: &[Coin]) -> Result<Asset, ContractError> {
-    if funds.len() != 1 || funds[0].denom != "uusd" || funds[0].amount.is_zero() {
-        return Err(ContractError::InvalidFundsInput {});
-    }
-
-    Ok(Asset {
-        info: AssetInfo::NativeToken {
-            denom: "uusd".to_string(),
-        },
-        amount: funds[0].amount,
-    })
-}
-
-/// ## Description
-/// Returns the share of assets in the [`Uint128`] object
-/// ## Params
-/// * **querier** is an object of type [`QuerierWrapper`]
-///
-/// * **bro_pool** is an object of type [`Asset`]
-///
-/// * **ust_pool** is an object of type [`Asset`]
-///
-/// * **lp_amount** is an object of type [`Uint128`]
-///
-/// * **lp_token_addr** is an object of type [`Addr`]
-fn get_share_in_assets(
-    querier: &QuerierWrapper,
-    bro_pool: &Asset,
-    ust_pool: &Asset,
-    lp_amount: Uint128,
-    lp_token_addr: Addr,
-) -> StdResult<(Uint128, Uint128)> {
-    let total_share = query_supply(querier, lp_token_addr)?;
-    let share_ratio = Decimal::from_ratio(lp_amount, total_share);
-
-    Ok((bro_pool.amount * share_ratio, ust_pool.amount * share_ratio))
-}
-
-/// ## Description
-/// Queries bro/ust pair using astroport factory.
-/// result.0 - bro asset info of type [`Asset`]
-/// result.1 - ust asset info of type [`Asset`]
-/// ## Params
-/// * **querier** is an object of type [`QuerierWrapper`]
-///
-/// * **astro_factory** is an object of type [`Addr`]
-///
-/// * **bro_token** is an object of type [`Addr`]
-fn query_bro_ust_pair(
-    querier: &QuerierWrapper,
-    astro_factory: Addr,
-    bro_token: Addr,
-) -> StdResult<(Asset, Asset)> {
-    let asset_info = [
-        AssetInfo::NativeToken {
-            denom: "uusd".to_string(),
-        },
-        AssetInfo::Token {
-            contract_addr: bro_token,
-        },
-    ];
-
-    let pools = query_pools(querier, astro_factory, &asset_info)?;
-    match &pools[0].info {
-        AssetInfo::Token { .. } => Ok((pools[0].clone(), pools[1].clone())),
-        AssetInfo::NativeToken { .. } => Ok((pools[1].clone(), pools[0].clone())),
-    }
-}
-
-/// ## Description
-/// Applies bonding discount for provided token amount
-/// and returns result in the [`Uint128`] object
-/// ## Params
-/// * **discount_ratio** is an object of type [`Decimal`]
-///
-/// * **amount** is an object of type [`Uint128`]
-fn apply_discount(discount_ratio: Decimal, amount: Uint128) -> StdResult<Uint128> {
-    let discount = Decimal::from_str("1.0")? + discount_ratio;
-    let payout = amount * discount;
-    Ok(payout)
 }

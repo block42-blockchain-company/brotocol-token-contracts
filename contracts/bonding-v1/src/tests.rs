@@ -9,6 +9,7 @@ use cosmwasm_std::{
     Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, Expiration};
+use services::bonding::SimulateExchangeResponse;
 
 use crate::mock_querier::{
     mock_dependencies, MOCK_ASTRO_FACTORY_ADDR, MOCK_BRO_TOKEN_ADDR, MOCK_BRO_UST_PAIR_ADDR,
@@ -459,6 +460,25 @@ fn lp_bond() {
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 
+    // simulate lp bond
+    assert_eq!(
+        from_binary::<SimulateExchangeResponse>(
+            &query(
+                deps.as_ref(),
+                mock_env(),
+                QueryMsg::SimulateLpBond {
+                    lp_amount: Uint128::from(10_000000u128),
+                }
+            )
+            .unwrap()
+        )
+        .unwrap(),
+        SimulateExchangeResponse {
+            bro_payout: Uint128::from(2_100000u128),
+            can_be_exchanged: true,
+        },
+    );
+
     // perform bond
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
@@ -696,6 +716,25 @@ fn ust_bond_normal_mode() {
     let info = mock_info("owner", &[]);
     let _res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 
+    // simulate ust bond
+    assert_eq!(
+        from_binary::<SimulateExchangeResponse>(
+            &query(
+                deps.as_ref(),
+                mock_env(),
+                QueryMsg::SimulateUstBond {
+                    uusd_amount: Uint128::from(50_000000u128),
+                }
+            )
+            .unwrap()
+        )
+        .unwrap(),
+        SimulateExchangeResponse {
+            bro_payout: Uint128::from(5_500000u128),
+            can_be_exchanged: true,
+        },
+    );
+
     // perform bond
     let msg = ExecuteMsg::UstBond {};
     let info = mock_info(
@@ -884,6 +923,19 @@ fn ust_bond_community_mode() {
         )
         .unwrap(),
         ClaimsResponse { claims: vec![] },
+    );
+
+    // error: simulate lp bond is disabled
+    assert_eq!(
+        query(
+            deps.as_ref(),
+            mock_env(),
+            QueryMsg::SimulateLpBond {
+                lp_amount: Uint128::from(10_000000u128),
+            }
+        )
+        .unwrap_err(),
+        StdError::generic_err("LP Token bonding disabled"),
     );
 }
 

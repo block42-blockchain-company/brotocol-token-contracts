@@ -286,6 +286,10 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 ///
 /// * **QueryMsg::Claims { address }** Returns available claims for bonder by specified address
 ///
+/// * **QueryMsg::SimulateUstBond { uusd_amount }** Returns simulated bro bond using specified uusd amount
+///
+/// * **QueryMsg::SimulateLpBond { lp_amount }** Returns simulated bro bond using specified ust/bro lp token amount
+///
 /// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
@@ -293,6 +297,12 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
         QueryMsg::Claims { address } => to_binary(&queries::query_claims(deps, address)?),
+        QueryMsg::SimulateUstBond { uusd_amount } => {
+            to_binary(&queries::simulate_ust_bond(deps, uusd_amount)?)
+        }
+        QueryMsg::SimulateLpBond { lp_amount } => {
+            to_binary(&queries::simulate_lp_bond(deps, lp_amount)?)
+        }
         QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }

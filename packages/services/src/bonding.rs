@@ -163,6 +163,12 @@ pub enum QueryMsg {
         address: String,
     },
     /// ## Description
+    /// Returns simulated bro bond using specified uusd amount in the [`SimulateExchangeResponse`] object
+    SimulateUstBond { uusd_amount: Uint128 },
+    /// ## Description
+    /// Returns simulated bro bond using specified ust/bro lp token amount in the [`SimulateExchangeResponse`] object
+    SimulateLpBond { lp_amount: Uint128 },
+    /// ## Description
     /// Returns information about created ownership proposal in the [`OwnershipProposalResponse`] object
     /// otherwise returns not-found error
     OwnershipProposal {},
@@ -229,4 +235,12 @@ pub struct ClaimInfoResponse {
 pub struct ClaimsResponse {
     /// a list of bonder claims
     pub claims: Vec<ClaimInfoResponse>,
+}
+
+/// ## SimulateExchangeResponse
+/// This structure describes the fields for simulated exchange response.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct SimulateExchangeResponse {
+    pub bro_payout: Uint128,
+    pub can_be_exchanged: bool,
 }

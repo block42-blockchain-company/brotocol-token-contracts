@@ -189,6 +189,31 @@ Returns available claims for bonder by specified address.
 }
 ```
 
+### `simulate_ust_bond`
+
+Returns simulated bro bond using specified uusd amount.
+
+```json
+{
+    "simulate_ust_bond": {
+        "uusd_amount": "100"
+    }
+}
+```
+
+### `simulate_lp_bond`
+
+Returns simulated bro bond using specified ust/bro lp token amount.
+Disabled for `BondingMode::Community` mode.
+
+```json
+{
+    "simulate_lp_bond": {
+        "lp_amount": "100"
+    }
+}
+```
+
 ### `ownership_proposal`
 
 Returns information about created ownership proposal otherwise returns not-found error.
@@ -202,5 +227,14 @@ Returns information about created ownership proposal otherwise returns not-found
 ## MigrateMsg
 
 ```json
-{}
+{
+    "bonding_mode": {
+        "normal": {
+            "ust_bonding_reward_ratio": "0.5",
+            "lp_token": "terra1...",
+            "lp_bonding_discount": "0.05",
+            "vesting_period_blocks": 10
+        }
+    }
+}
 ```

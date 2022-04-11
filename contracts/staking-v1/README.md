@@ -247,5 +247,7 @@ Returns information about created ownership proposal otherwise returns not-found
 ## MigrateMsg
 
 ```json
-{}
+{
+    "community_bonding_contract": "terra1..."
+}
 ```

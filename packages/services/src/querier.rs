@@ -189,3 +189,34 @@ pub fn query_staking_config(
         msg: to_binary(&StakingQueryMsg::Config {})?,
     }))
 }
+
+/// ## Description
+/// Queries bro/ust pair using astroport factory.
+/// result.0 - bro asset info of type [`Asset`]
+/// result.1 - ust asset info of type [`Asset`]
+/// ## Params
+/// * **querier** is an object of type [`QuerierWrapper`]
+///
+/// * **astro_factory** is an object of type [`Addr`]
+///
+/// * **bro_token** is an object of type [`Addr`]
+pub fn query_bro_ust_pair(
+    querier: &QuerierWrapper,
+    astro_factory: Addr,
+    bro_token: Addr,
+) -> StdResult<(Asset, Asset)> {
+    let asset_info = [
+        AssetInfo::NativeToken {
+            denom: "uusd".to_string(),
+        },
+        AssetInfo::Token {
+            contract_addr: bro_token,
+        },
+    ];
+
+    let pools = query_pools(querier, astro_factory, &asset_info)?;
+    match &pools[0].info {
+        AssetInfo::Token { .. } => Ok((pools[0].clone(), pools[1].clone())),
+        AssetInfo::NativeToken { .. } => Ok((pools[1].clone(), pools[0].clone())),
+    }
+}

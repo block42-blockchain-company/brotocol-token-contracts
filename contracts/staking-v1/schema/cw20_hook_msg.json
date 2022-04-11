@@ -54,6 +54,36 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Locks bonded amount of tokens via community bonding contract to get reward shares ## Executor Only community bonding contract can execute this function",
+      "type": "object",
+      "required": [
+        "community_bond_stake"
+      ],
+      "properties": {
+        "community_bond_stake": {
+          "type": "object",
+          "required": [
+            "epochs_locked",
+            "sender"
+          ],
+          "properties": {
+            "epochs_locked": {
+              "description": "how many epochs specified amount will be locked",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "sender": {
+              "description": "address which performed bond via community bonding contract",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

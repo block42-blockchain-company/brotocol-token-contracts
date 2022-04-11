@@ -130,17 +130,29 @@ export interface StakingV1Config {
 export interface BondingV1Config {
     owner: string,
     bro_token: string,
-    lp_token: string,
     rewards_pool_contract: string,
     treasury_contract: string,
     astroport_factory: string,
     oracle_contract: string,
-    ust_bonding_reward_ratio: string,
     ust_bonding_discount: string,
-    lp_bonding_discount: string,
     min_bro_payout: string,
-    vesting_period_blocks: number,
-    lp_bonding_enabled: boolean,
+    bonding_mode: BondingNormalMode | BondingCommnityMode,
+}
+
+export interface BondingNormalMode {
+    normal: {
+        ust_bonding_reward_ratio: string,
+        lp_token: string,
+        lp_bonding_discount: string,
+        vesting_period_blocks: number,
+    }
+}
+
+export interface BondingCommnityMode {
+    community: {
+        staking_contract: string,
+        epochs_locked: number,
+    }
 }
 
 export interface DistributorV1Config {

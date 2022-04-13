@@ -1,8 +1,11 @@
 use cosmwasm_std::{Deps, Env, StdResult};
 
-use services::staking::{
-    ConfigResponse, LockupConfigResponse, LockupInfoResponse, StakerInfoResponse, StateResponse,
-    WithdrawalInfoResponse, WithdrawalsResponse,
+use services::{
+    querier::query_epoch_info,
+    staking::{
+        ConfigResponse, LockupConfigResponse, LockupInfoResponse, StakerInfoResponse,
+        StateResponse, WithdrawalInfoResponse, WithdrawalsResponse,
+    },
 };
 
 use crate::state::{load_config, load_state, load_withdrawals, read_staker_info};
@@ -80,17 +83,17 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
     let config = load_config(deps.storage)?;
     let state = load_state(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &staker_raw, env.block.height)?;
+    let epoch_info = query_epoch_info(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+    )?;
 
     let last_balance_update = staker_info.last_balance_update;
 
-    staker_info.compute_normal_bbro_reward(
-        &deps.querier,
-        deps.api.addr_humanize(&config.epoch_manager_contract)?,
-        &state,
-        env.block.height,
-    )?;
+    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
     staker_info.compute_bro_reward(&state)?;
-    staker_info.unlock_expired_lockups(&env.block)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+
     let resp = StakerInfoResponse {
         staker,
         reward_index: staker_info.reward_index,
@@ -104,7 +107,8 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
             .into_iter()
             .map(|l| LockupInfoResponse {
                 amount: l.amount,
-                unlocked_at: l.unlocked_at,
+                locked_at_block: l.locked_at_block,
+                epochs_locked: l.epochs_locked,
             })
             .collect(),
     };

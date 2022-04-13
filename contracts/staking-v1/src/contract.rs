@@ -10,7 +10,7 @@ use cw20::Cw20ReceiveMsg;
 use crate::{
     commands,
     error::ContractError,
-    migration::{load_config_v100, MigrationMsgV100},
+    migration::{load_config_v100, migrate_stakers_info_to_v110, MigrationMsgV100},
     queries,
     state::{load_config, store_config, store_state, update_owner, Config, LockupConfig, State},
 };
@@ -349,11 +349,11 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 /// ## Params
 /// * **deps** is an object of type [`Deps`].
 ///
-/// * **_env** is an object of type [`Env`].
+/// * **env** is an object of type [`Env`].
 ///
 /// * **msg** is an object of type [`MigrateMsg`].
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
+pub fn migrate(deps: DepsMut, env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
     let contract_version = get_contract_version(deps.storage)?;
 
     match contract_version.contract.as_ref() {
@@ -384,6 +384,8 @@ pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, Co
 
                 new_config.validate()?;
                 store_config(deps.storage, &new_config)?;
+
+                migrate_stakers_info_to_v110(deps.storage, env, msg.current_epoch_blocks)?;
             }
             _ => return Err(ContractError::MigrationError {}),
         },

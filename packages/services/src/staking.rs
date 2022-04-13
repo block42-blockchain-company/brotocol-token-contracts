@@ -287,8 +287,10 @@ pub struct StakerInfoResponse {
 pub struct LockupInfoResponse {
     /// locked amount
     pub amount: Uint128,
-    /// block at which amount will be unlocked
-    pub unlocked_at: Expiration,
+    /// block at whick locup was created
+    pub locked_at_block: u64,
+    /// amount of epochs until lockup will be unlocked
+    pub epochs_locked: u64,
 }
 
 /// ## WithdrawalInfoResponse

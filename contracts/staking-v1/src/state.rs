@@ -1,8 +1,6 @@
 use std::str::FromStr;
 
-use cosmwasm_std::{
-    Addr, BlockInfo, CanonicalAddr, Decimal, QuerierWrapper, StdError, StdResult, Storage, Uint128,
-};
+use cosmwasm_std::{BlockInfo, CanonicalAddr, Decimal, StdError, StdResult, Storage, Uint128};
 use cw20::Expiration;
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
@@ -10,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::math::{decimal_mul_in_256, decimal_sub_in_256, decimal_sum_in_256};
 
-use services::querier::query_epoch_info;
+use services::epoch_manager::EpochInfoResponse;
 
 /// ## Description
 /// Stores config struct of type [`Config`] at the given key
@@ -159,8 +157,10 @@ pub struct State {
 pub struct LockupInfo {
     /// locked amount
     pub amount: Uint128,
-    /// block at which amount will be unlocked
-    pub unlocked_at: Expiration,
+    /// block at whick locup was created
+    pub locked_at_block: u64,
+    /// amount of epochs until lockup will be unlocked
+    pub epochs_locked: u64,
 }
 
 /// ## Description
@@ -208,8 +208,7 @@ impl StakerInfo {
     /// Computes normal bbro reward for staked BRO
     pub fn compute_normal_bbro_reward(
         &mut self,
-        querier: &QuerierWrapper,
-        epoch_manager_contract: Addr,
+        epoch_info: &EpochInfoResponse,
         state: &State,
         current_block: u64,
     ) -> StdResult<()> {
@@ -218,8 +217,6 @@ impl StakerInfo {
         if stake_amount.is_zero() || state.last_distribution_block < self.last_balance_update {
             return Ok(());
         }
-
-        let epoch_info = query_epoch_info(querier, epoch_manager_contract)?;
 
         let epochs_staked = Uint128::from(state.last_distribution_block - self.last_balance_update)
             .checked_div(Uint128::from(epoch_info.epoch))?;
@@ -277,19 +274,15 @@ impl StakerInfo {
     /// Adds new lockup period for staker
     pub fn add_lockup(
         &mut self,
-        querier: &QuerierWrapper,
-        epoch_manager_contract: Addr,
         current_block: u64,
         amount: Uint128,
         epochs_locked: u64,
     ) -> StdResult<()> {
-        let epoch_blocks = query_epoch_info(querier, epoch_manager_contract)?.epoch;
-        let unlocked_at_block = current_block + (epoch_blocks * epochs_locked);
-
         self.locked_stake_amount = self.locked_stake_amount.checked_add(amount)?;
         self.lockups.push(LockupInfo {
             amount,
-            unlocked_at: Expiration::AtHeight(unlocked_at_block),
+            locked_at_block: current_block,
+            epochs_locked,
         });
 
         Ok(())
@@ -297,14 +290,19 @@ impl StakerInfo {
 
     /// ## Description
     /// Removes passed lockups from list and updates balances
-    pub fn unlock_expired_lockups(&mut self, current_block: &BlockInfo) -> StdResult<()> {
+    pub fn unlock_expired_lockups(
+        &mut self,
+        current_block: &BlockInfo,
+        epoch_info: &EpochInfoResponse,
+    ) -> StdResult<()> {
         let mut unlocked_amount = Uint128::zero();
         let lockups: Vec<LockupInfo> = self
             .lockups
             .clone()
             .into_iter()
             .filter(|l| {
-                if l.unlocked_at.is_expired(current_block) {
+                let unlocked_at_block = l.locked_at_block + (l.epochs_locked * epoch_info.epoch);
+                if current_block.height >= unlocked_at_block {
                     unlocked_amount += l.amount;
                     false
                 } else {
@@ -349,7 +347,7 @@ pub fn store_config(storage: &mut dyn Storage, config: &Config) -> StdResult<()>
     CONFIG.save(storage, config)
 }
 
-// ## Description
+/// ## Description
 /// Returns config struct of type [`Config`]
 /// ## Params
 /// * **storage** is an object of type [`Storage`]

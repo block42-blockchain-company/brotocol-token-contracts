@@ -1332,7 +1332,8 @@ fn test_locked_stake_tokens() {
             last_balance_update: 12346,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(1_000000u128),
-                unlocked_at: Expiration::AtHeight(12347),
+                locked_at_block: 12346,
+                epochs_locked: 1,
             }],
         },
     );
@@ -1387,7 +1388,8 @@ fn test_locked_stake_tokens() {
             last_balance_update: 12346,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(1_000000u128),
-                unlocked_at: Expiration::AtHeight(12352),
+                locked_at_block: 12347,
+                epochs_locked: 5,
             }],
         },
     );
@@ -1441,7 +1443,8 @@ fn test_locked_stake_tokens() {
             last_balance_update: 12346,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(1000000u128),
-                unlocked_at: Expiration::AtHeight(12352),
+                locked_at_block: 12347,
+                epochs_locked: 5,
             }],
         },
     );
@@ -1579,8 +1582,34 @@ fn test_locked_stake_tokens() {
             last_balance_update: 12352,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(2_000000u128),
-                unlocked_at: Expiration::AtHeight(12375),
+                locked_at_block: 12370,
+                epochs_locked: 5,
             }],
+        },
+    );
+
+    env.block.height = 12400;
+    assert_eq!(
+        from_binary::<StakerInfoResponse>(
+            &query(
+                deps.as_ref(),
+                env.clone(),
+                QueryMsg::StakerInfo {
+                    staker: addr1.clone(),
+                },
+            )
+            .unwrap(),
+        )
+        .unwrap(),
+        StakerInfoResponse {
+            staker: addr1.clone(),
+            reward_index: Decimal::from_str("0.0005").unwrap(),
+            unlocked_stake_amount: Uint128::from(2_000000u128),
+            locked_stake_amount: Uint128::zero(),
+            pending_bro_reward: Uint128::from(1000u128),
+            pending_bbro_reward: Uint128::zero(),
+            last_balance_update: 12352,
+            lockups: vec![],
         },
     );
 }
@@ -1752,7 +1781,8 @@ fn community_bond_stake() {
             last_balance_update: 12346,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(50_000000u128),
-                unlocked_at: Expiration::AtHeight(12356),
+                locked_at_block: 12346,
+                epochs_locked: 10,
             }],
         },
     );

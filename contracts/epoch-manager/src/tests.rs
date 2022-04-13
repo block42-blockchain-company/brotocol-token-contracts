@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-use cosmwasm_std::{from_binary, Attribute, Decimal};
+use cosmwasm_std::{from_binary, Attribute, Decimal, StdError};
 use cw20::Expiration;
 use services::ownership_proposal::OwnershipProposalResponse;
 
@@ -76,7 +76,29 @@ fn update_state() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    // error: epoch must be higher then zero
+    let msg = ExecuteMsg::UpdateState {
+        epoch: Some(0),
+        blocks_per_year: Some(100),
+        bbro_emission_rate: Some(Decimal::from_str("0.9").unwrap()),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
+    match res {
+        ContractError::Std(StdError::GenericErr { msg, .. }) => {
+            assert_eq!(msg, "epoch must be higher than zero".to_string())
+        }
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
     // proper execution
+    let msg = ExecuteMsg::UpdateState {
+        epoch: Some(2000),
+        blocks_per_year: Some(100),
+        bbro_emission_rate: Some(Decimal::from_str("0.9").unwrap()),
+    };
+
     let info = mock_info("addr0000", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone()).unwrap();
 

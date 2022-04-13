@@ -21,11 +21,8 @@ fn proper_initialization() {
     };
 
     let info = mock_info("addr0000", &[]);
-
-    // we can just call .unwrap() to assert this was a success
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    // it worked, let's query the state
     let config: ConfigResponse =
         from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()).unwrap();
     assert_eq!("gov", config.owner.as_str());
@@ -46,11 +43,8 @@ fn update_config() {
     };
 
     let info = mock_info("addr0000", &[]);
-
-    // we can just call .unwrap() to assert this was a success
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    // it worked, let's query the state
     let config: ConfigResponse =
         from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::Config {}).unwrap()).unwrap();
     assert_eq!("gov", config.owner.as_str());
@@ -106,11 +100,9 @@ fn add_distributor() {
     };
 
     let info = mock_info("addr0000", &[]);
-
-    // we can just call .unwrap() to assert this was a success
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    // try to add already existing distributor
+    // error: try to add already existing distributor
     let msg = ExecuteMsg::AddDistributor {
         distributor: "distr0000".to_string(),
     };
@@ -122,7 +114,7 @@ fn add_distributor() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    // add new one
+    // proper execution
     let msg = ExecuteMsg::AddDistributor {
         distributor: "distr0001".to_string(),
     };
@@ -154,23 +146,21 @@ fn remove_distributor() {
     };
 
     let info = mock_info("addr0000", &[]);
-
-    // we can just call .unwrap() to assert this was a success
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    // try to remove not existing distributor
+    // error: try to remove not existing distributor
     let msg = ExecuteMsg::RemoveDistributor {
         distributor: "distr0001".to_string(),
     };
+
     let info = mock_info("gov", &[]);
     let res = execute(deps.as_mut(), mock_env(), info, msg.clone());
-
     match res {
         Err(ContractError::DistributorNotFound {}) => assert_eq!(true, true),
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    // remove proper one
+    // proper execution
     let msg = ExecuteMsg::RemoveDistributor {
         distributor: "distr0000".to_string(),
     };
@@ -191,7 +181,7 @@ fn remove_distributor() {
 }
 
 #[test]
-fn test_reward() {
+fn distribute_reward() {
     let mut deps = mock_dependencies(&[]);
 
     let msg = InstantiateMsg {
@@ -209,10 +199,9 @@ fn test_reward() {
     })
     .unwrap();
 
-    // we can just call .unwrap() to assert this was a success
     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-    // permission failed
+    // error: permission failed
     let msg = ExecuteMsg::DistributeRewards {
         distributions: vec![DistributeRewardMsg {
             contract: "staking0000".to_string(),
@@ -228,7 +217,7 @@ fn test_reward() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
-    // failed due to spend limit
+    // error: failed due to spend limit(1 msg)
     let msg = ExecuteMsg::DistributeRewards {
         distributions: vec![DistributeRewardMsg {
             contract: "staking0000".to_string(),
@@ -244,6 +233,35 @@ fn test_reward() {
         _ => panic!("DO NOT ENTER HERE"),
     }
 
+    // error: failed due to spend limit(3 msgs)
+    let msg = ExecuteMsg::DistributeRewards {
+        distributions: vec![
+            DistributeRewardMsg {
+                contract: "staking0000".to_string(),
+                amount: Uint128::from(333_333u128),
+                msg: execute_msg.clone(),
+            },
+            DistributeRewardMsg {
+                contract: "staking0001".to_string(),
+                amount: Uint128::from(333_333u128),
+                msg: execute_msg.clone(),
+            },
+            DistributeRewardMsg {
+                contract: "staking0001".to_string(),
+                amount: Uint128::from(333_335u128),
+                msg: execute_msg.clone(),
+            },
+        ],
+    };
+
+    let info = mock_info("distr0000", &[]);
+    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    match res {
+        Err(ContractError::SpendLimitReached {}) => assert_eq!(true, true),
+        _ => panic!("DO NOT ENTER HERE"),
+    }
+
+    // proper execution
     let msg = ExecuteMsg::DistributeRewards {
         distributions: vec![DistributeRewardMsg {
             contract: "staking0000".to_string(),

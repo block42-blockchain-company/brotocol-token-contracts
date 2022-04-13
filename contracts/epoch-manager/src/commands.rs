@@ -48,6 +48,7 @@ pub fn update_state(
         ));
     }
 
+    state.validate()?;
     store_state(deps.storage, &state)?;
 
     Ok(Response::new().add_attributes(attributes))

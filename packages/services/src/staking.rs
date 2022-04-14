@@ -139,7 +139,7 @@ pub enum Cw20HookMsg {
     /// to get reward shares
     /// ## Executor
     /// Only community bonding contract can execute this function
-    CommunityBondStake {
+    CommunityBondLock {
         /// address which performed bond via community bonding contract
         sender: String,
         /// how many epochs specified amount will be locked

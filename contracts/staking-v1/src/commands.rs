@@ -169,7 +169,7 @@ pub fn stake(
 /// * **amount** is an object of type [`Uint128`]
 ///
 /// * **epochs_locked** is a field of type [`u64`]
-pub fn community_bond_stake(
+pub fn community_bond_lock(
     deps: DepsMut,
     env: Env,
     sender: String,

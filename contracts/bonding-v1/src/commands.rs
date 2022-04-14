@@ -244,7 +244,7 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
             msg: to_binary(&Cw20ExecuteMsg::Send {
                 contract: deps.api.addr_humanize(&staking_contract)?.to_string(),
                 amount: bro_payout,
-                msg: to_binary(&StakingHookMsg::CommunityBondStake {
+                msg: to_binary(&StakingHookMsg::CommunityBondLock {
                     sender: info.sender.to_string(),
                     epochs_locked,
                 })?,

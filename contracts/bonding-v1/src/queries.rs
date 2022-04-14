@@ -109,6 +109,7 @@ pub fn query_claims(deps: Deps, address: String) -> StdResult<ClaimsResponse> {
 /// * **uusd_amount** is an object of type [`Uint128`]
 pub fn simulate_ust_bond(deps: Deps, uusd_amount: Uint128) -> StdResult<SimulateExchangeResponse> {
     let config = load_config(deps.storage)?;
+    let state = load_state(deps.storage)?;
 
     let bro_amount = query_oracle_price(
         &deps.querier,
@@ -121,7 +122,8 @@ pub fn simulate_ust_bond(deps: Deps, uusd_amount: Uint128) -> StdResult<Simulate
     .amount;
 
     let bro_payout = apply_discount(config.ust_bonding_discount, bro_amount)?;
-    let can_be_exchanged = bro_payout >= config.min_bro_payout;
+    let can_be_exchanged =
+        bro_payout >= config.min_bro_payout && bro_payout <= state.ust_bonding_balance;
 
     let resp = SimulateExchangeResponse {
         bro_payout,
@@ -139,6 +141,7 @@ pub fn simulate_ust_bond(deps: Deps, uusd_amount: Uint128) -> StdResult<Simulate
 /// * **lp_amount** is an object of type [`Uint128`]
 pub fn simulate_lp_bond(deps: Deps, lp_amount: Uint128) -> StdResult<SimulateExchangeResponse> {
     let config = load_config(deps.storage)?;
+    let state = load_state(deps.storage)?;
 
     let (lp_token, lp_bonding_discount) = match config.bonding_mode {
         BondingMode::Normal {
@@ -178,7 +181,8 @@ pub fn simulate_lp_bond(deps: Deps, lp_amount: Uint128) -> StdResult<SimulateExc
     )?;
 
     let bro_payout = apply_discount(lp_bonding_discount, bro_amount)?;
-    let can_be_exchanged = bro_payout >= config.min_bro_payout;
+    let can_be_exchanged =
+        bro_payout >= config.min_bro_payout && bro_payout <= state.lp_bonding_balance;
 
     let resp = SimulateExchangeResponse {
         bro_payout,

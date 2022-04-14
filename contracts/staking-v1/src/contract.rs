@@ -259,7 +259,7 @@ pub fn receive_cw20(
             let cw20_sender = deps.api.addr_validate(&cw20_msg.sender)?;
             commands::stake(deps, env, cw20_sender, cw20_msg.amount, stake_type)
         }
-        Ok(Cw20HookMsg::CommunityBondStake {
+        Ok(Cw20HookMsg::CommunityBondLock {
             sender,
             epochs_locked,
         }) => {
@@ -275,7 +275,7 @@ pub fn receive_cw20(
                 return Err(ContractError::Unauthorized {});
             }
 
-            commands::community_bond_stake(deps, env, sender, cw20_msg.amount, epochs_locked)
+            commands::community_bond_lock(deps, env, sender, cw20_msg.amount, epochs_locked)
         }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }

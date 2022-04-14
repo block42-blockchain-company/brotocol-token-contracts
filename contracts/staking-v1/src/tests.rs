@@ -1642,7 +1642,7 @@ fn community_bond_stake() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(1u128),
-        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
             sender: "addr0000".to_string(),
             epochs_locked: 1,
         })
@@ -1676,7 +1676,7 @@ fn community_bond_stake() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "addr0000".to_string(),
         amount: Uint128::from(1u128),
-        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
             sender: "addr0000".to_string(),
             epochs_locked: 1,
         })
@@ -1692,7 +1692,7 @@ fn community_bond_stake() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "community_bonding0000".to_string(),
         amount: Uint128::from(1u128),
-        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
             sender: "addr0000".to_string(),
             epochs_locked: 1,
         })
@@ -1708,7 +1708,7 @@ fn community_bond_stake() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "community_bonding0000".to_string(),
         amount: Uint128::from(100u128),
-        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
             sender: "addr0000".to_string(),
             epochs_locked: 1,
         })
@@ -1724,7 +1724,7 @@ fn community_bond_stake() {
     let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
         sender: "community_bonding0000".to_string(),
         amount: Uint128::from(50_000000u128),
-        msg: to_binary(&Cw20HookMsg::CommunityBondStake {
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
             sender: "addr0000".to_string(),
             epochs_locked: 10,
         })

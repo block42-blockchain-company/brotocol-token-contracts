@@ -95,25 +95,6 @@ fn proper_initialization() {
     }
 
     msg.bonding_mode = BondingModeMsg::Normal {
-        ust_bonding_reward_ratio: Decimal::zero(),
-        lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
-        lp_bonding_discount: Decimal::from_str("1.05").unwrap(),
-        vesting_period_blocks: 10,
-    };
-
-    let info = mock_info("addr0001", &[]);
-    let res = instantiate(deps.as_mut(), mock_env(), info, msg.clone()).unwrap_err();
-    match res {
-        ContractError::Std(StdError::GenericErr { msg, .. }) => {
-            assert_eq!(
-                msg,
-                "ust_bonding_reward_ratio must be less than 1.0 and non-negative".to_string()
-            )
-        }
-        _ => panic!("DO NOT ENTER HERE"),
-    }
-
-    msg.bonding_mode = BondingModeMsg::Normal {
         ust_bonding_reward_ratio: Decimal::from_str("0.6").unwrap(),
         lp_token: MOCK_LP_TOKEN_ADDR.to_string(),
         lp_bonding_discount: Decimal::from_str("1.05").unwrap(),
@@ -889,7 +870,7 @@ fn ust_bond_community_mode() {
             msg: to_binary(&Cw20ExecuteMsg::Send {
                 contract: MOCK_STAKING_ADDR.to_string(),
                 amount: Uint128::from(5_500000u128),
-                msg: to_binary(&StakingCw20HookMsg::CommunityBondStake {
+                msg: to_binary(&StakingCw20HookMsg::CommunityBondLock {
                     sender: "addr0000".to_string(),
                     epochs_locked: 100,
                 })

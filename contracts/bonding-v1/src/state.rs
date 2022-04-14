@@ -65,7 +65,7 @@ impl Config {
                 vesting_period_blocks,
                 ..
             } => {
-                if ust_bonding_reward_ratio > one || ust_bonding_reward_ratio <= Decimal::zero() {
+                if ust_bonding_reward_ratio > one || ust_bonding_reward_ratio < Decimal::zero() {
                     return Err(StdError::generic_err(
                         "ust_bonding_reward_ratio must be less than 1.0 and non-negative",
                     ));

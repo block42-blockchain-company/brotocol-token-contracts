@@ -110,13 +110,17 @@ pub fn migrate_stakers_info_to_v110(
     let stakers_v100 = read_stakers_v100(storage)?;
     for (address, mut staker_info) in stakers_v100 {
         let mut lockups: Vec<LockupInfo> = vec![];
-        for lockup_v100 in staker_info.lockups {
+        for lockup_v100 in staker_info.lockups.iter() {
             let unlocked_at = match lockup_v100.unlocked_at {
                 Expiration::AtHeight(height) => height,
                 _ => return Err(StdError::generic_err("expecting Expiration::AtHeight")),
             };
 
-            let remaining_epochs = (unlocked_at - env.block.height) / current_epoch_blocks;
+            let remaining_epochs = (unlocked_at
+                .checked_sub(env.block.height)
+                .unwrap_or_default())
+                / current_epoch_blocks;
+
             if lockup_v100.unlocked_at.is_expired(&env.block) || remaining_epochs == 0 {
                 staker_info.unlocked_stake_amount += lockup_v100.amount;
                 staker_info.locked_stake_amount -= lockup_v100.amount;

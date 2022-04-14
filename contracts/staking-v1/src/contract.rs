@@ -4,12 +4,13 @@ use cosmwasm_std::{
     from_binary, to_binary, Addr, Api, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Response,
     StdResult, Storage, Uint128,
 };
-use cw2::set_contract_version;
+use cw2::{get_contract_version, set_contract_version};
 use cw20::Cw20ReceiveMsg;
 
 use crate::{
     commands,
     error::ContractError,
+    migration::{load_config_v100, migrate_stakers_info_to_v110, MigrationMsgV100},
     queries,
     state::{load_config, store_config, store_state, update_owner, Config, LockupConfig, State},
 };
@@ -47,6 +48,12 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
+    let community_bonding_contract = if let Some(addr) = msg.community_bonding_contract {
+        Some(deps.api.addr_canonicalize(&addr)?)
+    } else {
+        None
+    };
+
     let config = Config {
         owner: deps.api.addr_canonicalize(&msg.owner)?,
         paused: false,
@@ -54,6 +61,7 @@ pub fn instantiate(
         rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
         bbro_minter_contract: deps.api.addr_canonicalize(&msg.bbro_minter_contract)?,
         epoch_manager_contract: deps.api.addr_canonicalize(&msg.epoch_manager_contract)?,
+        community_bonding_contract,
         unstake_period_blocks: msg.unstake_period_blocks,
         min_staking_amount: msg.min_staking_amount,
         lockup_config: LockupConfig {
@@ -118,6 +126,7 @@ pub fn instantiate(
 ///         base_rate,
 ///         linear_growth,
 ///         exponential_growth,
+///         community_bonding_contract,
 ///     }** Updates contract settings
 ///
 /// * **ExecuteMsg::ProposeNewOwner {
@@ -172,6 +181,7 @@ pub fn execute(
             base_rate,
             linear_growth,
             exponential_growth,
+            community_bonding_contract,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(
@@ -184,6 +194,7 @@ pub fn execute(
                 base_rate,
                 linear_growth,
                 exponential_growth,
+                community_bonding_contract,
             )
         }
         ExecuteMsg::ProposeNewOwner {
@@ -247,6 +258,24 @@ pub fn receive_cw20(
         Ok(Cw20HookMsg::Stake { stake_type }) => {
             let cw20_sender = deps.api.addr_validate(&cw20_msg.sender)?;
             commands::stake(deps, env, cw20_sender, cw20_msg.amount, stake_type)
+        }
+        Ok(Cw20HookMsg::CommunityBondLock {
+            sender,
+            epochs_locked,
+        }) => {
+            let community_bonding_contract = match config.community_bonding_contract {
+                Some(addr) => addr,
+                None => {
+                    return Err(ContractError::StakingFromCommunityBondingContractIsNotEnabled {})
+                }
+            };
+
+            // only community bonding contract allowed to stake bonded bro tokens with locked staking type
+            if community_bonding_contract != deps.api.addr_canonicalize(&cw20_msg.sender)? {
+                return Err(ContractError::Unauthorized {});
+            }
+
+            commands::community_bond_lock(deps, env, sender, cw20_msg.amount, epochs_locked)
         }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }
@@ -318,12 +347,58 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 /// ## Description
 /// Used for migration of contract. Returns the default object of type [`Response`].
 /// ## Params
-/// * **_deps** is an object of type [`Deps`].
+/// * **deps** is an object of type [`Deps`].
 ///
-/// * **_env** is an object of type [`Env`].
+/// * **env** is an object of type [`Env`].
 ///
-/// * **_msg** is an object of type [`MigrateMsg`].
+/// * **msg** is an object of type [`MigrateMsg`].
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
-    Ok(Response::default())
+pub fn migrate(deps: DepsMut, env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
+    let contract_version = get_contract_version(deps.storage)?;
+
+    match contract_version.contract.as_ref() {
+        "brotocol-staking-v1" => match contract_version.version.as_ref() {
+            "1.0.0" => {
+                let msg: MigrationMsgV100 = from_binary(&msg.params)?;
+                let config = load_config_v100(deps.storage)?;
+
+                let community_bonding_contract = if let Some(addr) = msg.community_bonding_contract
+                {
+                    Some(deps.api.addr_canonicalize(&addr)?)
+                } else {
+                    None
+                };
+
+                let new_config = Config {
+                    owner: config.owner,
+                    paused: config.paused,
+                    bro_token: config.bro_token,
+                    rewards_pool_contract: config.rewards_pool_contract,
+                    bbro_minter_contract: config.bbro_minter_contract,
+                    epoch_manager_contract: config.epoch_manager_contract,
+                    community_bonding_contract,
+                    unstake_period_blocks: config.unstake_period_blocks,
+                    min_staking_amount: config.min_staking_amount,
+                    lockup_config: config.lockup_config,
+                };
+
+                new_config.validate()?;
+                store_config(deps.storage, &new_config)?;
+
+                migrate_stakers_info_to_v110(deps.storage, env, msg.current_epoch_blocks)?;
+            }
+            _ => return Err(ContractError::MigrationError {}),
+        },
+        _ => return Err(ContractError::MigrationError {}),
+    }
+
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
+    Ok(Response::new().add_attributes(vec![
+        ("action", "migrate"),
+        ("previous_contract_name", &contract_version.contract),
+        ("previous_contract_version", &contract_version.version),
+        ("new_contract_name", CONTRACT_NAME),
+        ("new_contract_version", CONTRACT_VERSION),
+    ]))
 }

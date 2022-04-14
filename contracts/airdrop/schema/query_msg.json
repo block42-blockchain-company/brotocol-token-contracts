@@ -5,7 +5,7 @@
   "oneOf": [
     {
       "title": "Description",
-      "description": "Returns airdrop contract config in the [`ConfigResponse`] object",
+      "description": "Returns staking contract config in the [`ConfigResponse`] object",
       "type": "object",
       "required": [
         "config"
@@ -19,13 +19,13 @@
     },
     {
       "title": "Description",
-      "description": "Returns the number of latest stage in the [`LatestStageResponse`] object",
+      "description": "Returns staking contract state in the [`StateResponse`] object",
       "type": "object",
       "required": [
-        "latest_stage"
+        "state"
       ],
       "properties": {
-        "latest_stage": {
+        "state": {
           "type": "object"
         }
       },
@@ -33,23 +33,21 @@
     },
     {
       "title": "Description",
-      "description": "Returns merkle root information by specified stage in the [`MerkleRootResponse`] object",
+      "description": "Returns staker info by specified address in the [`StakerInfoResponse`] object",
       "type": "object",
       "required": [
-        "merkle_root"
+        "staker_info"
       ],
       "properties": {
-        "merkle_root": {
+        "staker_info": {
           "type": "object",
           "required": [
-            "stage"
+            "staker"
           ],
           "properties": {
-            "stage": {
-              "description": "airdrop stage",
-              "type": "integer",
-              "format": "uint8",
-              "minimum": 0.0
+            "staker": {
+              "description": "staker address",
+              "type": "string"
             }
           }
         }
@@ -58,28 +56,21 @@
     },
     {
       "title": "Description",
-      "description": "Returns claim information by specified stage and address in the [`IsClaimedResponse`] object",
+      "description": "Returns available withdrawals for staker by specified address in the [`WithdrawalsResponse`] object",
       "type": "object",
       "required": [
-        "is_claimed"
+        "withdrawals"
       ],
       "properties": {
-        "is_claimed": {
+        "withdrawals": {
           "type": "object",
           "required": [
-            "address",
-            "stage"
+            "staker"
           ],
           "properties": {
-            "address": {
-              "description": "account address",
+            "staker": {
+              "description": "staker address",
               "type": "string"
-            },
-            "stage": {
-              "description": "airdrop stage",
-              "type": "integer",
-              "format": "uint8",
-              "minimum": 0.0
             }
           }
         }

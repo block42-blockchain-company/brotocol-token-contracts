@@ -63,31 +63,6 @@
                 "null"
               ]
             },
-            "lp_bonding_discount": {
-              "description": "new discount percentage for lp bonding",
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/Decimal"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "lp_bonding_enabled": {
-              "description": "sets lp bonding option either to enabled or disabled",
-              "type": [
-                "boolean",
-                "null"
-              ]
-            },
-            "lp_token": {
-              "description": "new bro/ust lp token address",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
             "min_bro_payout": {
               "description": "new minimum amount of bro to receive via bonding",
               "anyOf": [
@@ -100,7 +75,7 @@
               ]
             },
             "oracle_contract": {
-              "description": "price oracle contract address",
+              "description": "new price oracle contract address",
               "type": [
                 "string",
                 "null"
@@ -130,9 +105,34 @@
                   "type": "null"
                 }
               ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Description",
+      "description": "Updates specific settings for bonding mode config ## Executor Only owner can execute this function",
+      "type": "object",
+      "required": [
+        "update_bonding_mode_config"
+      ],
+      "properties": {
+        "update_bonding_mode_config": {
+          "type": "object",
+          "properties": {
+            "epochs_locked_community": {
+              "description": "community bonding mode: new amount of epochs for lockup",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
             },
-            "ust_bonding_reward_ratio": {
-              "description": "new distributed reward percentage for ust bonding balance",
+            "lp_bonding_discount_normal": {
+              "description": "normal bonding mode: new discount percentage for lp bonding",
               "anyOf": [
                 {
                   "$ref": "#/definitions/Decimal"
@@ -142,8 +142,33 @@
                 }
               ]
             },
-            "vesting_period_blocks": {
-              "description": "new vesting period for withdrawal",
+            "lp_token_normal": {
+              "description": "normal bonding mode: new bro/ust lp token address",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "staking_contract_community": {
+              "description": "community bonding mode: new staking contract address",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ust_bonding_reward_ratio_normal": {
+              "description": "normal bonding mode: new distributed reward percentage for ust bonding balance",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Decimal"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vesting_period_blocks_normal": {
+              "description": "normal bonding mode: new vesting period for withdrawal",
               "type": [
                 "integer",
                 "null"

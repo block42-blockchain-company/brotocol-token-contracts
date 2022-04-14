@@ -1,6 +1,6 @@
 [package]
 name = "brotocol-bonding-v1"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["block42"]
 edition = "2018"
 description = "A Bonding V1 contract for Brotocol"

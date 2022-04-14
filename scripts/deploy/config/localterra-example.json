@@ -83,12 +83,15 @@
     "bondingv1": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",
         "astroport_factory": "terra1ys7qglzew8ns39nl0wxalypc4nhwdqudd9rg2c",
-        "ust_bonding_reward_ratio": "0.6",
         "ust_bonding_discount": "0.05",
-        "lp_bonding_discount": "0.05",
         "min_bro_payout": "100",
-        "vesting_period_blocks": 25,
-        "lp_bonding_enabled": true
+        "bonding_mode": {
+            "normal": {
+                "ust_bonding_reward_ratio": "0.6",
+                "lp_bonding_discount": "0.05",
+                "vesting_period_blocks": 25
+            }
+        }
     },
     "whitelist_sale": {
         "owner": "terra1dcegyrekltswvyy0xy69ydgxn9x8x32zdtapd8",

@@ -142,6 +142,13 @@
                 }
               ]
             },
+            "community_bonding_contract": {
+              "description": "community bonding contract",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "exponential_growth": {
               "description": "exponential growth for bbro premium reward calculation",
               "anyOf": [

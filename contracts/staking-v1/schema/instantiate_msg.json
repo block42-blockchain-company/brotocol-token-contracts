@@ -34,6 +34,13 @@
       "description": "bro token address",
       "type": "string"
     },
+    "community_bonding_contract": {
+      "description": "community bonding address, if value is set to none than option to stake from community bonding contract is disabled",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "epoch_manager_contract": {
       "description": "epoch manager contract address",
       "type": "string"

@@ -5,6 +5,7 @@ use crate::{
     epoch_manager::{EpochInfoResponse, QueryMsg as EpochManagerQueryMsg},
     oracle::{ConsultPriceResponse, QueryMsg as OracleQueryMsg},
     rewards::{QueryMsg as RewardsPoolQueryMsg, RewardsPoolBalanceResponse},
+    staking::{ConfigResponse as StakingConfigResponse, QueryMsg as StakingQueryMsg},
 };
 
 use astroport::{
@@ -155,4 +156,67 @@ pub fn query_oracle_price(
             amount,
         })?,
     }))
+}
+
+/// ## Description
+/// Returns a [`bool`] type whether prices are ready to be updated or not.
+/// ## Params
+/// * **querier** is an object of type [`QuerierWrapper`].
+///
+/// * **oracle_contract** is an object of type [`Addr`].
+pub fn query_is_oracle_ready_to_trigger(
+    querier: &QuerierWrapper,
+    oracle_contract: Addr,
+) -> StdResult<bool> {
+    querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: oracle_contract.to_string(),
+        msg: to_binary(&OracleQueryMsg::IsReadyToTrigger {})?,
+    }))
+}
+
+/// ## Description
+/// Returns staking contract config in the [`StakingConfigResponse`] object.
+/// ## Params
+/// * **querier** is an object of type [`QuerierWrapper`].
+///
+/// * **staking_contract** is an object of type [`Addr`]
+pub fn query_staking_config(
+    querier: &QuerierWrapper,
+    staking_contract: Addr,
+) -> StdResult<StakingConfigResponse> {
+    querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: staking_contract.to_string(),
+        msg: to_binary(&StakingQueryMsg::Config {})?,
+    }))
+}
+
+/// ## Description
+/// Queries bro/ust pair using astroport factory.
+/// result.0 - bro asset info of type [`Asset`]
+/// result.1 - ust asset info of type [`Asset`]
+/// ## Params
+/// * **querier** is an object of type [`QuerierWrapper`]
+///
+/// * **astro_factory** is an object of type [`Addr`]
+///
+/// * **bro_token** is an object of type [`Addr`]
+pub fn query_bro_ust_pair(
+    querier: &QuerierWrapper,
+    astro_factory: Addr,
+    bro_token: Addr,
+) -> StdResult<(Asset, Asset)> {
+    let asset_info = [
+        AssetInfo::NativeToken {
+            denom: "uusd".to_string(),
+        },
+        AssetInfo::Token {
+            contract_addr: bro_token,
+        },
+    ];
+
+    let pools = query_pools(querier, astro_factory, &asset_info)?;
+    match &pools[0].info {
+        AssetInfo::Token { .. } => Ok((pools[0].clone(), pools[1].clone())),
+        AssetInfo::NativeToken { .. } => Ok((pools[1].clone(), pools[0].clone())),
+    }
 }

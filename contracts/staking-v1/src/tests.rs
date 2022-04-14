@@ -29,6 +29,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -55,6 +56,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -81,6 +83,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -107,6 +110,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -133,6 +137,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -159,6 +164,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -185,6 +191,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 5,
@@ -213,6 +220,7 @@ fn proper_initialization() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -237,6 +245,7 @@ fn proper_initialization() {
             rewards_pool_contract: "reward0000".to_string(),
             bbro_minter_contract: "bbrominter0000".to_string(),
             epoch_manager_contract: "epoch0000".to_string(),
+            community_bonding_contract: Some("community_bonding0000".to_string()),
             unstake_period_blocks: 10,
             min_staking_amount: Uint128::zero(),
             lockup_config: LockupConfigResponse {
@@ -315,6 +324,7 @@ fn test_fractional_rewards() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -536,6 +546,7 @@ fn test_unlocked_stake_tokens() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::from(1u128),
         min_lockup_period_epochs: 1,
@@ -1256,6 +1267,7 @@ fn test_locked_stake_tokens() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -1320,7 +1332,8 @@ fn test_locked_stake_tokens() {
             last_balance_update: 12346,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(1_000000u128),
-                unlocked_at: Expiration::AtHeight(12347),
+                locked_at_block: 12346,
+                epochs_locked: 1,
             }],
         },
     );
@@ -1375,7 +1388,8 @@ fn test_locked_stake_tokens() {
             last_balance_update: 12346,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(1_000000u128),
-                unlocked_at: Expiration::AtHeight(12352),
+                locked_at_block: 12347,
+                epochs_locked: 5,
             }],
         },
     );
@@ -1429,7 +1443,8 @@ fn test_locked_stake_tokens() {
             last_balance_update: 12346,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(1000000u128),
-                unlocked_at: Expiration::AtHeight(12352),
+                locked_at_block: 12347,
+                epochs_locked: 5,
             }],
         },
     );
@@ -1567,8 +1582,220 @@ fn test_locked_stake_tokens() {
             last_balance_update: 12352,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(2_000000u128),
-                unlocked_at: Expiration::AtHeight(12375),
+                locked_at_block: 12370,
+                epochs_locked: 5,
             }],
+        },
+    );
+
+    env.block.height = 12400;
+    assert_eq!(
+        from_binary::<StakerInfoResponse>(
+            &query(
+                deps.as_ref(),
+                env.clone(),
+                QueryMsg::StakerInfo {
+                    staker: addr1.clone(),
+                },
+            )
+            .unwrap(),
+        )
+        .unwrap(),
+        StakerInfoResponse {
+            staker: addr1.clone(),
+            reward_index: Decimal::from_str("0.0005").unwrap(),
+            unlocked_stake_amount: Uint128::from(2_000000u128),
+            locked_stake_amount: Uint128::zero(),
+            pending_bro_reward: Uint128::from(1000u128),
+            pending_bbro_reward: Uint128::zero(),
+            last_balance_update: 12352,
+            lockups: vec![],
+        },
+    );
+}
+
+#[test]
+fn community_bond_stake() {
+    let mut deps = mock_dependencies(&[]);
+    let mut env = mock_env();
+
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: None,
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::from(10u128),
+        min_lockup_period_epochs: 2,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    // error: option is disabled
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "addr0000".to_string(),
+        amount: Uint128::from(1u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
+            sender: "addr0000".to_string(),
+            epochs_locked: 1,
+        })
+        .unwrap(),
+    });
+    let info = mock_info("bro0000", &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::StakingFromCommunityBondingContractIsNotEnabled {}) => (),
+        _ => panic!("expecting ContractError::StakingFromCommunityBondingContractIsNotEnabled"),
+    }
+
+    // set community bonding contract
+    let msg = ExecuteMsg::UpdateConfig {
+        community_bonding_contract: Some("community_bonding0000".to_string()),
+        paused: None,
+        unstake_period_blocks: None,
+        min_staking_amount: None,
+        min_lockup_period_epochs: None,
+        max_lockup_period_epochs: None,
+        base_rate: None,
+        linear_growth: None,
+        exponential_growth: None,
+    };
+
+    let info = mock_info("owner", &[]);
+    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+    env.block.height += 1;
+
+    // error: unauthorized
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "addr0000".to_string(),
+        amount: Uint128::from(1u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
+            sender: "addr0000".to_string(),
+            epochs_locked: 1,
+        })
+        .unwrap(),
+    });
+    let info = mock_info("bro0000", &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::Unauthorized {}) => (),
+        _ => panic!("expecting ContractError::Unauthorized"),
+    }
+
+    // error: stake amount is too small
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "community_bonding0000".to_string(),
+        amount: Uint128::from(1u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
+            sender: "addr0000".to_string(),
+            epochs_locked: 1,
+        })
+        .unwrap(),
+    });
+    let info = mock_info("bro0000", &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::StakingAmountMustBeHigherThanMinAmount {}) => (),
+        _ => panic!("expecting ContractError::StakingAmountMustBeHigherThanMinAmount"),
+    }
+
+    // error: invalid lockup period
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "community_bonding0000".to_string(),
+        amount: Uint128::from(100u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
+            sender: "addr0000".to_string(),
+            epochs_locked: 1,
+        })
+        .unwrap(),
+    });
+    let info = mock_info("bro0000", &[]);
+    match execute(deps.as_mut(), env.clone(), info, msg) {
+        Err(ContractError::InvalidLockupPeriod {}) => (),
+        _ => panic!("expecting ContractError::InvalidLockupPeriod"),
+    }
+
+    // proper execution
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: "community_bonding0000".to_string(),
+        amount: Uint128::from(50_000000u128),
+        msg: to_binary(&Cw20HookMsg::CommunityBondLock {
+            sender: "addr0000".to_string(),
+            epochs_locked: 10,
+        })
+        .unwrap(),
+    });
+
+    let info = mock_info("bro0000", &[]);
+    let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    assert_eq!(
+        res.attributes[0],
+        Attribute::new("action", "community_bond_stake")
+    );
+    assert_eq!(res.attributes[1], Attribute::new("staker", "addr0000"));
+    assert_eq!(res.attributes[2], Attribute::new("amount", "50000000"));
+    assert_eq!(
+        res.attributes[3],
+        Attribute::new("bbro_premium_lockup_reward", "267500")
+    );
+
+    let mint_bbro_premium_msg = res.messages.get(0).expect("no message");
+    assert_eq!(
+        mint_bbro_premium_msg,
+        &SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: "bbrominter0000".to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: "addr0000".to_string(),
+                amount: Uint128::from(267500u128),
+            })
+            .unwrap(),
+        }))
+    );
+
+    assert_eq!(
+        from_binary::<StakerInfoResponse>(
+            &query(
+                deps.as_ref(),
+                env.clone(),
+                QueryMsg::StakerInfo {
+                    staker: "addr0000".to_string(),
+                },
+            )
+            .unwrap(),
+        )
+        .unwrap(),
+        StakerInfoResponse {
+            staker: "addr0000".to_string(),
+            reward_index: Decimal::zero(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::from(50_000000u128),
+            pending_bro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::zero(),
+            last_balance_update: 12346,
+            lockups: vec![LockupInfoResponse {
+                amount: Uint128::from(50_000000u128),
+                locked_at_block: 12346,
+                epochs_locked: 10,
+            }],
+        },
+    );
+
+    assert_eq!(
+        from_binary::<StateResponse>(
+            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+        )
+        .unwrap(),
+        StateResponse {
+            total_stake_amount: Uint128::from(50_000000u128),
+            global_reward_index: Decimal::zero(),
+            last_distribution_block: 12345,
         },
     );
 }
@@ -1584,6 +1811,7 @@ fn update_config() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -1606,6 +1834,7 @@ fn update_config() {
         base_rate: None,
         linear_growth: None,
         exponential_growth: None,
+        community_bonding_contract: None,
     };
 
     let info = mock_info("addr0000", &[]);
@@ -1625,6 +1854,7 @@ fn update_config() {
         base_rate: Some(Decimal::from_str("0.0002").unwrap()),
         linear_growth: Some(Decimal::from_str("0.0006").unwrap()),
         exponential_growth: Some(Decimal::from_str("0.0000076").unwrap()),
+        community_bonding_contract: Some("new_community_bonding".to_string()),
     };
 
     let info = mock_info("owner", &[]);
@@ -1660,6 +1890,13 @@ fn update_config() {
         res.attributes[8],
         Attribute::new("exponential_growth_changed", "0.0000076")
     );
+    assert_eq!(
+        res.attributes[9],
+        Attribute::new(
+            "community_bonding_contract_changed",
+            "new_community_bonding"
+        )
+    );
 
     assert_eq!(
         from_binary::<ConfigResponse>(
@@ -1673,6 +1910,7 @@ fn update_config() {
             rewards_pool_contract: "reward0000".to_string(),
             bbro_minter_contract: "bbrominter0000".to_string(),
             epoch_manager_contract: "epoch0000".to_string(),
+            community_bonding_contract: Some("new_community_bonding".to_string()),
             unstake_period_blocks: 11,
             min_staking_amount: Uint128::from(1u128),
             lockup_config: LockupConfigResponse {
@@ -1697,6 +1935,7 @@ fn pause_contract() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -1719,6 +1958,7 @@ fn pause_contract() {
         base_rate: None,
         linear_growth: None,
         exponential_growth: None,
+        community_bonding_contract: None,
     };
 
     let info = mock_info("owner", &[]);
@@ -1765,6 +2005,7 @@ fn pause_contract() {
         base_rate: None,
         linear_growth: None,
         exponential_growth: None,
+        community_bonding_contract: None,
     };
 
     let info = mock_info("owner", &[]);
@@ -1782,6 +2023,7 @@ fn pause_contract() {
             rewards_pool_contract: "reward0000".to_string(),
             bbro_minter_contract: "bbrominter0000".to_string(),
             epoch_manager_contract: "epoch0000".to_string(),
+            community_bonding_contract: Some("community_bonding0000".to_string()),
             unstake_period_blocks: 10,
             min_staking_amount: Uint128::zero(),
             lockup_config: LockupConfigResponse {
@@ -1805,6 +2047,7 @@ fn update_owner() {
         rewards_pool_contract: "reward0000".to_string(),
         bbro_minter_contract: "bbrominter0000".to_string(),
         epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
         unstake_period_blocks: 10,
         min_staking_amount: Uint128::zero(),
         min_lockup_period_epochs: 1,
@@ -1856,6 +2099,7 @@ fn update_owner() {
             rewards_pool_contract: "reward0000".to_string(),
             bbro_minter_contract: "bbrominter0000".to_string(),
             epoch_manager_contract: "epoch0000".to_string(),
+            community_bonding_contract: Some("community_bonding0000".to_string()),
             unstake_period_blocks: 10,
             min_staking_amount: Uint128::zero(),
             lockup_config: LockupConfigResponse {

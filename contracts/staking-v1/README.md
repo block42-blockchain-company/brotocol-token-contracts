@@ -14,6 +14,7 @@ Also bBRO tokens will be minted as a reward for staking BRO.
     "rewards_pool_contract": "terra1...",
     "bbro_minter_contract": "terra1...",
     "epoch_manager_contract": "terra1...",
+    "community_bonding_contract": "terra1..." | null,
     "unstake_period_blocks": 100,
     "min_staking_amount": "100",
     "min_lockup_period_epochs": 1,
@@ -62,6 +63,20 @@ Deposits specified amount of tokens to get reward shares.
         "stake_type": {
             "unlocked": {}
         }
+    }
+}
+```
+
+### `receive:community_bond_stake`
+
+Locks bonded amount of tokens via community bonding contract to get reward shares.
+Only community bonding contract can execute this function.
+
+```json
+{
+    "community_bond_stake": {
+        "sender": "terra1...",
+        "epochs_locked": 10
     }
 }
 ```
@@ -135,7 +150,8 @@ Message params are optional.
     "max_lockup_period_epochs": 10,
     "base_rate": "0.1",
     "linear_growth": "0.2",
-    "exponential_growth": "0.3"
+    "exponential_growth": "0.3",
+    "community_bonding_contract": "terra1..."
 }
 ```
 
@@ -231,5 +247,7 @@ Returns information about created ownership proposal otherwise returns not-found
 ## MigrateMsg
 
 ```json
-{}
+{
+    "community_bonding_contract": "terra1..."
+}
 ```

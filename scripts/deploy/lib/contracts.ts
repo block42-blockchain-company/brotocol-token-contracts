@@ -1,4 +1,4 @@
-import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TokenPoolConfig, TreasuryConfig, VestingConfig, WhitelistSaleConfig } from "./config.js";
+import { AirdropConfig, BbroMinterConfig, BbroTokenConfig, BondingCommnityMode, BondingNormalMode, BondingV1Config, BroTokenConfig, BroUstPairConfig, Config, DistributorV1Config, EpochManagerConfig, OracleConfig, RewardsPoolConfig, StakingV1Config, TokenPoolConfig, TreasuryConfig, VestingConfig, WhitelistSaleConfig } from "./config.js";
 import { TerraClient } from "./client.js";
 import { Artifact, writeArtifact } from "./artifact.js";
 
@@ -503,10 +503,25 @@ export class BondingV1 implements Contract {
 
     private setInstantiateMsg(config: BondingV1Config, artifact: Artifact): BondingV1Config {
         config.bro_token = artifact.bro_token;
-        config.lp_token = artifact.bro_ust_lp_token;
         config.rewards_pool_contract = artifact.rewards_pool;
         config.treasury_contract = artifact.mvp_treasury;
         config.oracle_contract = artifact.oracle;
+
+        switch (Object.keys(config.bonding_mode)[0]) {
+            case "normal":
+                let normalMode = config.bonding_mode as BondingNormalMode;
+                normalMode.normal.lp_token = artifact.bro_ust_lp_token;
+
+                config.bonding_mode = normalMode;
+                break;
+            case "community":
+                let communityMode = config.bonding_mode as BondingCommnityMode;
+                communityMode.community.staking_contract = artifact.staking_v1;
+
+                config.bonding_mode = communityMode;
+                break;
+        }
+
         return config;
     }
 }

@@ -5,42 +5,30 @@
   "type": "object",
   "required": [
     "astroport_factory",
+    "bonding_mode",
     "bro_token",
-    "lp_bonding_discount",
-    "lp_bonding_enabled",
-    "lp_token",
     "min_bro_payout",
     "oracle_contract",
     "owner",
     "rewards_pool_contract",
     "treasury_contract",
-    "ust_bonding_discount",
-    "ust_bonding_reward_ratio",
-    "vesting_period_blocks"
+    "ust_bonding_discount"
   ],
   "properties": {
     "astroport_factory": {
       "description": "astroport factory contract address",
       "type": "string"
     },
-    "bro_token": {
-      "description": "bro token address",
-      "type": "string"
-    },
-    "lp_bonding_discount": {
-      "description": "discount percentage for lp bonding",
+    "bonding_mode": {
+      "description": "bonding mode",
       "allOf": [
         {
-          "$ref": "#/definitions/Decimal"
+          "$ref": "#/definitions/BondingModeMsg"
         }
       ]
     },
-    "lp_bonding_enabled": {
-      "description": "sets lp bonding option either to enabled or disabled",
-      "type": "boolean"
-    },
-    "lp_token": {
-      "description": "bro/ust lp token address",
+    "bro_token": {
+      "description": "bro token address",
       "type": "string"
     },
     "min_bro_payout": {
@@ -74,23 +62,93 @@
           "$ref": "#/definitions/Decimal"
         }
       ]
-    },
-    "ust_bonding_reward_ratio": {
-      "description": "distributed reward percentage for ust bonding balance",
-      "allOf": [
-        {
-          "$ref": "#/definitions/Decimal"
-        }
-      ]
-    },
-    "vesting_period_blocks": {
-      "description": "vesting period for withdrawal",
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
     }
   },
   "definitions": {
+    "BondingModeMsg": {
+      "title": "BondingModeMsg",
+      "description": "This structure describes the bonding contract mode.",
+      "oneOf": [
+        {
+          "title": "Description",
+          "description": "Enables both ust and lp bonding option. Exchanged bro tokens will become claimable after vesting period.",
+          "type": "object",
+          "required": [
+            "normal"
+          ],
+          "properties": {
+            "normal": {
+              "type": "object",
+              "required": [
+                "lp_bonding_discount",
+                "lp_token",
+                "ust_bonding_reward_ratio",
+                "vesting_period_blocks"
+              ],
+              "properties": {
+                "lp_bonding_discount": {
+                  "description": "discount percentage for lp bonding",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Decimal"
+                    }
+                  ]
+                },
+                "lp_token": {
+                  "description": "bro/ust lp token address",
+                  "type": "string"
+                },
+                "ust_bonding_reward_ratio": {
+                  "description": "distributed reward percentage for ust bonding balance",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Decimal"
+                    }
+                  ]
+                },
+                "vesting_period_blocks": {
+                  "description": "vesting period for withdrawal",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "title": "Description",
+          "description": "Enables only ust bonding option. Exchanged bro tokens will be locked in staking contract for configured amount of epochs and then claimable with extra bro/bbro reward from it.",
+          "type": "object",
+          "required": [
+            "community"
+          ],
+          "properties": {
+            "community": {
+              "type": "object",
+              "required": [
+                "epochs_locked",
+                "staking_contract"
+              ],
+              "properties": {
+                "epochs_locked": {
+                  "description": "how many epochs specified amount will be locked",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "staking_contract": {
+                  "description": "staking contract address",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "Decimal": {
       "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
       "type": "string"

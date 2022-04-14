@@ -1,33 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Description",
-  "description": "This structure describes the fields for lockup info response message.",
+  "title": "SimulateExchangeResponse",
+  "description": "This structure describes the fields for simulated exchange response.",
   "type": "object",
   "required": [
-    "amount",
-    "epochs_locked",
-    "locked_at_block"
+    "bro_payout",
+    "can_be_exchanged"
   ],
   "properties": {
-    "amount": {
-      "description": "locked amount",
-      "allOf": [
-        {
-          "$ref": "#/definitions/Uint128"
-        }
-      ]
+    "bro_payout": {
+      "$ref": "#/definitions/Uint128"
     },
-    "epochs_locked": {
-      "description": "amount of epochs until lockup will be unlocked",
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
-    },
-    "locked_at_block": {
-      "description": "block at whick locup was created",
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
+    "can_be_exchanged": {
+      "type": "boolean"
     }
   },
   "definitions": {

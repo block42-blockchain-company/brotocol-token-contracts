@@ -83,12 +83,15 @@
     "bondingv1": {
         "owner": "",
         "astroport_factory": "",
-        "ust_bonding_reward_ratio": "0",
         "ust_bonding_discount": "0",
-        "lp_bonding_discount": "0",
         "min_bro_payout": "0",
-        "vesting_period_blocks": 0,
-        "lp_bonding_enabled": false
+        "bonding_mode": {
+            "normal": {
+                "ust_bonding_reward_ratio": "0.0",
+                "lp_bonding_discount": "0.0",
+                "vesting_period_blocks": 0
+            }
+        }
     },
     "whitelist_sale": {
         "owner": "",

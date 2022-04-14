@@ -12,7 +12,9 @@ use crate::{
     },
 };
 
-use services::{bbro_minter::ExecuteMsg as BbroMintMsg, staking::StakeType};
+use services::{
+    bbro_minter::ExecuteMsg as BbroMintMsg, querier::query_epoch_info, staking::StakeType,
+};
 
 /// ## Description
 /// Distributes received reward.
@@ -96,14 +98,12 @@ pub fn stake(
         return Err(ContractError::StakingAmountMustBeHigherThanMinAmount {});
     }
 
-    let epoch_manager_contract = deps.api.addr_humanize(&config.epoch_manager_contract)?;
-    staker_info.compute_normal_bbro_reward(
+    let epoch_info = query_epoch_info(
         &deps.querier,
-        epoch_manager_contract.clone(),
-        &state,
-        env.block.height,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
     )?;
 
+    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
     staker_info.compute_bro_reward(&state)?;
 
     let msgs: Vec<CosmosMsg> = match stake_type {
@@ -124,13 +124,7 @@ pub fn stake(
                 amount,
             );
 
-            staker_info.add_lockup(
-                &deps.querier,
-                epoch_manager_contract,
-                env.block.height,
-                amount,
-                epochs_locked,
-            )?;
+            staker_info.add_lockup(env.block.height, amount, epochs_locked)?;
 
             vec![CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: deps
@@ -146,7 +140,7 @@ pub fn stake(
         }
     };
 
-    staker_info.unlock_expired_lockups(&env.block)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
     store_staker_info(deps.storage, &sender_raw, &staker_info)?;
 
     // increase total stake amount
@@ -158,6 +152,85 @@ pub fn stake(
         ("staker", &sender_addr.to_string()),
         ("amount", &amount.to_string()),
     ]))
+}
+
+/// ## Description
+/// Locks bonded amount of tokens via community bonding contract
+/// to get reward shares.
+/// Returns [`Response`] with specified attributes and messages if operation was successful,
+/// otherwise returns [`ContractError`]
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`]
+///
+/// * **env** is an object of type [`Env`]
+///
+/// * **sender** is a field of type [`String`]
+///
+/// * **amount** is an object of type [`Uint128`]
+///
+/// * **epochs_locked** is a field of type [`u64`]
+pub fn community_bond_lock(
+    deps: DepsMut,
+    env: Env,
+    sender: String,
+    amount: Uint128,
+    epochs_locked: u64,
+) -> Result<Response, ContractError> {
+    let sender_raw = deps.api.addr_canonicalize(&sender)?;
+
+    let config = load_config(deps.storage)?;
+    let mut state = load_state(deps.storage)?;
+    let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
+
+    if amount < config.min_staking_amount {
+        return Err(ContractError::StakingAmountMustBeHigherThanMinAmount {});
+    }
+
+    let epoch_info = query_epoch_info(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+    )?;
+
+    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
+    staker_info.compute_bro_reward(&state)?;
+
+    if !config.lockup_config.valid_lockup_period(epochs_locked) {
+        return Err(ContractError::InvalidLockupPeriod {});
+    }
+
+    let bbro_premium_lockup_reward =
+        staker_info.compute_premium_bbro_reward(&config.lockup_config, epochs_locked, amount);
+
+    staker_info.add_lockup(env.block.height, amount, epochs_locked)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+
+    store_staker_info(deps.storage, &sender_raw, &staker_info)?;
+
+    // increase total stake amount
+    state.total_stake_amount = state.total_stake_amount.checked_add(amount)?;
+    store_state(deps.storage, &state)?;
+
+    Ok(Response::new()
+        .add_messages(vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: deps
+                .api
+                .addr_humanize(&config.bbro_minter_contract)?
+                .to_string(),
+            funds: vec![],
+            msg: to_binary(&BbroMintMsg::Mint {
+                recipient: sender.clone(),
+                amount: bbro_premium_lockup_reward,
+            })?,
+        })])
+        .add_attributes(vec![
+            ("action", "community_bond_stake"),
+            ("staker", &sender),
+            ("amount", &amount.to_string()),
+            (
+                "bbro_premium_lockup_reward",
+                &bbro_premium_lockup_reward.to_string(),
+            ),
+        ]))
 }
 
 /// ## Description
@@ -186,7 +259,12 @@ pub fn lockup_staked(
     let config = load_config(deps.storage)?;
     let mut staker_info = read_staker_info(deps.storage, &sender_raw, env.block.height)?;
 
-    staker_info.unlock_expired_lockups(&env.block)?;
+    let epoch_info = query_epoch_info(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+    )?;
+
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
     if staker_info.unlocked_stake_amount < amount {
         return Err(ContractError::ForbiddenToLockupMoreThanUnlocked {});
     }
@@ -202,13 +280,7 @@ pub fn lockup_staked(
         return Err(ContractError::LockupPremiumRewardIsZero {});
     }
 
-    staker_info.add_lockup(
-        &deps.querier,
-        deps.api.addr_humanize(&config.epoch_manager_contract)?,
-        env.block.height,
-        amount,
-        epochs_locked,
-    )?;
+    staker_info.add_lockup(env.block.height, amount, epochs_locked)?;
     staker_info.unlocked_stake_amount = staker_info.unlocked_stake_amount.checked_sub(amount)?;
     store_staker_info(deps.storage, &sender_raw, &staker_info)?;
 
@@ -259,18 +331,17 @@ pub fn unstake(
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
 
-    staker_info.unlock_expired_lockups(&env.block)?;
+    let epoch_info = query_epoch_info(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+    )?;
+
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
     if staker_info.unlocked_stake_amount < amount {
         return Err(ContractError::ForbiddenToUnstakeMoreThanUnlocked {});
     }
 
-    staker_info.compute_normal_bbro_reward(
-        &deps.querier,
-        deps.api.addr_humanize(&config.epoch_manager_contract)?,
-        &state,
-        env.block.height,
-    )?;
-
+    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
     staker_info.compute_bro_reward(&state)?;
 
     // decrease stake amount
@@ -380,8 +451,13 @@ pub fn claim_bro_rewards(
         return Err(ContractError::NothingToClaim {});
     }
 
+    let epoch_info = query_epoch_info(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+    )?;
+
     staker_info.pending_bro_reward = Uint128::zero();
-    staker_info.unlock_expired_lockups(&env.block)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
 
     if staker_info.can_be_removed()? {
         remove_staker_info(deps.storage, &sender_addr_raw);
@@ -426,12 +502,12 @@ pub fn claim_bbro_rewards(
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
 
-    staker_info.compute_normal_bbro_reward(
+    let epoch_info = query_epoch_info(
         &deps.querier,
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
-        &state,
-        env.block.height,
     )?;
+
+    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
 
     let bbro_reward = staker_info.pending_bbro_reward;
     if bbro_reward.is_zero() {
@@ -439,7 +515,7 @@ pub fn claim_bbro_rewards(
     }
 
     staker_info.pending_bbro_reward = Uint128::zero();
-    staker_info.unlock_expired_lockups(&env.block)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
     store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
 
     Ok(Response::new()
@@ -483,6 +559,8 @@ pub fn claim_bbro_rewards(
 /// * **linear_growth** is an [`Option`] of type [`Decimal`]
 ///
 /// * **exponential_growth** is an [`Option`] of type [`Decimal`]
+///
+/// * **community_bonding_contract** is an [`Option`] of type [`String`]
 #[allow(clippy::too_many_arguments)]
 pub fn update_config(
     deps: DepsMut,
@@ -494,6 +572,7 @@ pub fn update_config(
     base_rate: Option<Decimal>,
     linear_growth: Option<Decimal>,
     exponential_growth: Option<Decimal>,
+    community_bonding_contract: Option<String>,
 ) -> Result<Response, ContractError> {
     let mut config = load_config(deps.storage)?;
 
@@ -554,6 +633,15 @@ pub fn update_config(
         attributes.push(Attribute::new(
             "exponential_growth_changed",
             &exponential_growth.to_string(),
+        ));
+    }
+
+    if let Some(community_bonding_contract) = community_bonding_contract {
+        config.community_bonding_contract =
+            Some(deps.api.addr_canonicalize(&community_bonding_contract)?);
+        attributes.push(Attribute::new(
+            "community_bonding_contract_changed",
+            &community_bonding_contract,
         ));
     }
 

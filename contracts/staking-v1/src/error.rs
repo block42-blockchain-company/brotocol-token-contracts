@@ -16,8 +16,14 @@ pub enum ContractError {
     #[error("{0}")]
     OwnershipProposal(#[from] OwnershipProposalError),
 
+    #[error("Migration error")]
+    MigrationError {},
+
     #[error("Unauthorized")]
     Unauthorized {},
+
+    #[error("Staking from community bonding contract is not enabled")]
+    StakingFromCommunityBondingContractIsNotEnabled {},
 
     #[error("Contract is paused")]
     ContractIsPaused {},

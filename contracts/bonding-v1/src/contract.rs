@@ -2,16 +2,17 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     from_binary, to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Storage, Uint128,
+    StdResult, Storage,
 };
-use cw2::set_contract_version;
+use cw2::{get_contract_version, set_contract_version};
 use cw20::Cw20ReceiveMsg;
 
 use crate::{
     commands,
     error::ContractError,
+    migration::{load_config_v100, MigrationMsgV100},
     queries,
-    state::{load_config, store_config, store_state, update_owner, Config, State},
+    state::{load_config, store_config, store_state, update_owner, BondingMode, Config, State},
 };
 
 use services::{
@@ -47,32 +48,24 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
+    let bonding_mode = BondingMode::from_msg(msg.bonding_mode, &deps.querier, deps.api)?;
+
     let config = Config {
         owner: deps.api.addr_canonicalize(&msg.owner)?,
         bro_token: deps.api.addr_canonicalize(&msg.bro_token)?,
-        lp_token: deps.api.addr_canonicalize(&msg.lp_token)?,
         rewards_pool_contract: deps.api.addr_canonicalize(&msg.rewards_pool_contract)?,
         treasury_contract: deps.api.addr_canonicalize(&msg.treasury_contract)?,
         astroport_factory: deps.api.addr_canonicalize(&msg.astroport_factory)?,
         oracle_contract: deps.api.addr_canonicalize(&msg.oracle_contract)?,
-        ust_bonding_reward_ratio: msg.ust_bonding_reward_ratio,
         ust_bonding_discount: msg.ust_bonding_discount,
-        lp_bonding_discount: msg.lp_bonding_discount,
         min_bro_payout: msg.min_bro_payout,
-        vesting_period_blocks: msg.vesting_period_blocks,
-        lp_bonding_enabled: msg.lp_bonding_enabled,
+        bonding_mode,
     };
 
     config.validate()?;
     store_config(deps.storage, &config)?;
 
-    store_state(
-        deps.storage,
-        &State {
-            ust_bonding_balance: Uint128::zero(),
-            lp_bonding_balance: Uint128::zero(),
-        },
-    )?;
+    store_state(deps.storage, &State::default())?;
 
     Ok(Response::default())
 }
@@ -98,18 +91,22 @@ pub fn instantiate(
 /// * **ExecuteMsg::Claim {}** Claim available reward amount
 ///
 /// * **ExecuteMsg::UpdateConfig {
-///         lp_token,
 ///         rewards_pool_contract,
 ///         treasury_contract,
 ///         astroport_factory,
 ///         oracle_contract,
-///         ust_bonding_reward_ratio,
 ///         ust_bonding_discount,
-///         lp_bonding_discount,
 ///         min_bro_payout,
-///         vesting_period_blocks,
-///         lp_bonding_enabled,
 ///     }** Updates contract settings
+///
+/// * **ExecuteMsg::UpdateBondingModeConfig {
+///         ust_bonding_reward_ratio_normal,
+///         lp_token_normal,
+///         lp_bonding_discount_normal,
+///         vesting_period_blocks_normal,
+///         staking_contract_community,
+///         epochs_locked_community,
+///     }** Updates specific settings for bonding mode config
 ///
 /// * **ExecuteMsg::ProposeNewOwner {
 ///         new_owner,
@@ -131,32 +128,41 @@ pub fn execute(
         ExecuteMsg::UstBond {} => commands::ust_bond(deps, env, info),
         ExecuteMsg::Claim {} => commands::claim(deps, env, info),
         ExecuteMsg::UpdateConfig {
-            lp_token,
             rewards_pool_contract,
             treasury_contract,
             astroport_factory,
             oracle_contract,
-            ust_bonding_reward_ratio,
             ust_bonding_discount,
-            lp_bonding_discount,
             min_bro_payout,
-            vesting_period_blocks,
-            lp_bonding_enabled,
         } => {
             assert_owner(deps.storage, deps.api, info.sender)?;
             commands::update_config(
                 deps,
-                lp_token,
                 rewards_pool_contract,
                 treasury_contract,
                 astroport_factory,
                 oracle_contract,
-                ust_bonding_reward_ratio,
                 ust_bonding_discount,
-                lp_bonding_discount,
                 min_bro_payout,
-                vesting_period_blocks,
-                lp_bonding_enabled,
+            )
+        }
+        ExecuteMsg::UpdateBondingModeConfig {
+            ust_bonding_reward_ratio_normal,
+            lp_token_normal,
+            lp_bonding_discount_normal,
+            vesting_period_blocks_normal,
+            staking_contract_community,
+            epochs_locked_community,
+        } => {
+            assert_owner(deps.storage, deps.api, info.sender)?;
+            commands::update_bonding_mode_config(
+                deps,
+                ust_bonding_reward_ratio_normal,
+                lp_token_normal,
+                lp_bonding_discount_normal,
+                vesting_period_blocks_normal,
+                staking_contract_community,
+                epochs_locked_community,
             )
         }
         ExecuteMsg::ProposeNewOwner {
@@ -217,12 +223,30 @@ pub fn receive_cw20(
             commands::distribute_reward(deps, cw20_msg.amount)
         }
         Ok(Cw20HookMsg::LpBond {}) => {
-            if info.sender != deps.api.addr_humanize(&config.lp_token)? {
+            let (lp_token, lp_bonding_discount, vesting_period_blocks) = match config.bonding_mode {
+                BondingMode::Normal {
+                    lp_bonding_discount,
+                    lp_token,
+                    vesting_period_blocks,
+                    ..
+                } => (lp_token, lp_bonding_discount, vesting_period_blocks),
+                BondingMode::Community { .. } => return Err(ContractError::LpBondingDisabled {}),
+            };
+
+            if info.sender != deps.api.addr_humanize(&lp_token)? {
                 return Err(ContractError::Unauthorized {});
             }
 
             let sender_raw = deps.api.addr_canonicalize(&cw20_msg.sender)?;
-            commands::lp_bond(deps, env, sender_raw, cw20_msg.amount)
+            commands::lp_bond(
+                deps,
+                env,
+                sender_raw,
+                cw20_msg.amount,
+                lp_token,
+                lp_bonding_discount,
+                vesting_period_blocks,
+            )
         }
         Err(_) => Err(ContractError::InvalidHookData {}),
     }
@@ -262,6 +286,10 @@ fn assert_owner(storage: &dyn Storage, api: &dyn Api, sender: Addr) -> Result<()
 ///
 /// * **QueryMsg::Claims { address }** Returns available claims for bonder by specified address
 ///
+/// * **QueryMsg::SimulateUstBond { uusd_amount }** Returns simulated bro bond using specified uusd amount
+///
+/// * **QueryMsg::SimulateLpBond { lp_amount }** Returns simulated bro bond using specified ust/bro lp token amount
+///
 /// * **QueryMsg::OwnershipProposal {}** Returns information about created ownership proposal otherwise returns not-found error
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
@@ -269,6 +297,12 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Config {} => to_binary(&queries::query_config(deps)?),
         QueryMsg::State {} => to_binary(&queries::query_state(deps)?),
         QueryMsg::Claims { address } => to_binary(&queries::query_claims(deps, address)?),
+        QueryMsg::SimulateUstBond { uusd_amount } => {
+            to_binary(&queries::simulate_ust_bond(deps, uusd_amount)?)
+        }
+        QueryMsg::SimulateLpBond { lp_amount } => {
+            to_binary(&queries::simulate_lp_bond(deps, lp_amount)?)
+        }
         QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }
@@ -282,6 +316,45 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 ///
 /// * **_msg** is an object of type [`MigrateMsg`].
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
-    Ok(Response::default())
+pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
+    let contract_version = get_contract_version(deps.storage)?;
+
+    match contract_version.contract.as_ref() {
+        "brotocol-bonding-v1" => match contract_version.version.as_ref() {
+            "1.0.0" => {
+                let msg: MigrationMsgV100 = from_binary(&msg.params)?;
+                let config = load_config_v100(deps.storage)?;
+
+                let bonding_mode =
+                    BondingMode::from_msg(msg.bonding_mode, &deps.querier, deps.api)?;
+
+                let new_config = Config {
+                    owner: config.owner,
+                    bro_token: config.bro_token,
+                    rewards_pool_contract: config.rewards_pool_contract,
+                    treasury_contract: config.treasury_contract,
+                    astroport_factory: config.astroport_factory,
+                    oracle_contract: config.oracle_contract,
+                    ust_bonding_discount: config.ust_bonding_discount,
+                    min_bro_payout: config.min_bro_payout,
+                    bonding_mode,
+                };
+
+                new_config.validate()?;
+                store_config(deps.storage, &new_config)?;
+            }
+            _ => return Err(ContractError::MigrationError {}),
+        },
+        _ => return Err(ContractError::MigrationError {}),
+    }
+
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
+    Ok(Response::new().add_attributes(vec![
+        ("action", "migrate"),
+        ("previous_contract_name", &contract_version.contract),
+        ("previous_contract_version", &contract_version.version),
+        ("new_contract_name", CONTRACT_NAME),
+        ("new_contract_version", CONTRACT_VERSION),
+    ]))
 }

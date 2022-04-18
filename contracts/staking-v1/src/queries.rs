@@ -90,9 +90,9 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
 
     let last_balance_update = staker_info.last_balance_update;
 
-    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
+    staker_info.compute_normal_bbro_reward(&epoch_info, env.block.height)?;
     staker_info.compute_bro_reward(&state)?;
-    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
 
     let resp = StakerInfoResponse {
         staker,
@@ -107,8 +107,8 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
             .into_iter()
             .map(|l| LockupInfoResponse {
                 amount: l.amount,
-                locked_at_block: l.locked_at_block,
-                epochs_locked: l.epochs_locked,
+                locked_at_block: l.locked_at_block.unwrap_or_default(),
+                epochs_locked: l.epochs_locked.unwrap_or_default(),
             })
             .collect(),
     };

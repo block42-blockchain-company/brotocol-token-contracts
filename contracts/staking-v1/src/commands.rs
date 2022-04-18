@@ -103,7 +103,7 @@ pub fn stake(
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
     )?;
 
-    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
+    staker_info.compute_normal_bbro_reward(&epoch_info, env.block.height)?;
     staker_info.compute_bro_reward(&state)?;
 
     let msgs: Vec<CosmosMsg> = match stake_type {
@@ -140,7 +140,7 @@ pub fn stake(
         }
     };
 
-    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
     store_staker_info(deps.storage, &sender_raw, &staker_info)?;
 
     // increase total stake amount
@@ -191,7 +191,7 @@ pub fn community_bond_lock(
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
     )?;
 
-    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
+    staker_info.compute_normal_bbro_reward(&epoch_info, env.block.height)?;
     staker_info.compute_bro_reward(&state)?;
 
     if !config.lockup_config.valid_lockup_period(epochs_locked) {
@@ -202,7 +202,7 @@ pub fn community_bond_lock(
         staker_info.compute_premium_bbro_reward(&config.lockup_config, epochs_locked, amount);
 
     staker_info.add_lockup(env.block.height, amount, epochs_locked)?;
-    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
 
     store_staker_info(deps.storage, &sender_raw, &staker_info)?;
 
@@ -264,7 +264,7 @@ pub fn lockup_staked(
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
     )?;
 
-    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
     if staker_info.unlocked_stake_amount < amount {
         return Err(ContractError::ForbiddenToLockupMoreThanUnlocked {});
     }
@@ -336,12 +336,12 @@ pub fn unstake(
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
     )?;
 
-    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
     if staker_info.unlocked_stake_amount < amount {
         return Err(ContractError::ForbiddenToUnstakeMoreThanUnlocked {});
     }
 
-    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
+    staker_info.compute_normal_bbro_reward(&epoch_info, env.block.height)?;
     staker_info.compute_bro_reward(&state)?;
 
     // decrease stake amount
@@ -457,7 +457,7 @@ pub fn claim_bro_rewards(
     )?;
 
     staker_info.pending_bro_reward = Uint128::zero();
-    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
 
     if staker_info.can_be_removed()? {
         remove_staker_info(deps.storage, &sender_addr_raw);
@@ -497,7 +497,6 @@ pub fn claim_bbro_rewards(
     info: MessageInfo,
 ) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
-    let state = load_state(deps.storage)?;
 
     let sender_addr_raw = deps.api.addr_canonicalize(&info.sender.to_string())?;
     let mut staker_info = read_staker_info(deps.storage, &sender_addr_raw, env.block.height)?;
@@ -507,7 +506,7 @@ pub fn claim_bbro_rewards(
         deps.api.addr_humanize(&config.epoch_manager_contract)?,
     )?;
 
-    staker_info.compute_normal_bbro_reward(&epoch_info, &state, env.block.height)?;
+    staker_info.compute_normal_bbro_reward(&epoch_info, env.block.height)?;
 
     let bbro_reward = staker_info.pending_bbro_reward;
     if bbro_reward.is_zero() {
@@ -515,7 +514,7 @@ pub fn claim_bbro_rewards(
     }
 
     staker_info.pending_bbro_reward = Uint128::zero();
-    staker_info.unlock_expired_lockups(&env.block, &epoch_info)?;
+    staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
     store_staker_info(deps.storage, &sender_addr_raw, &staker_info)?;
 
     Ok(Response::new()

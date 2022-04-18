@@ -52,6 +52,8 @@ pub struct Config {
     pub min_staking_amount: Uint128,
     /// lockup config
     pub lockup_config: LockupConfig,
+    /// previous amount of blocks in epoch
+    pub prev_epoch_blocks: u64,
 }
 
 impl Config {
@@ -157,10 +159,12 @@ pub struct State {
 pub struct LockupInfo {
     /// locked amount
     pub amount: Uint128,
+    /// [DEPRECATED] block at which amount will be unlocked
+    pub unlocked_at: Expiration,
     /// block at whick locup was created
-    pub locked_at_block: u64,
+    pub locked_at_block: Option<u64>,
     /// amount of epochs until lockup will be unlocked
-    pub epochs_locked: u64,
+    pub epochs_locked: Option<u64>,
 }
 
 /// ## Description
@@ -177,7 +181,7 @@ pub struct StakerInfo {
     pub pending_bro_reward: Uint128,
     /// amount of pending bbro rewards of staker
     pub pending_bbro_reward: Uint128,
-    /// last balance update(stake, unstake) block
+    /// last balance update(stake, unstake, claim) block
     pub last_balance_update: u64,
     /// amounts locked for specified amount of epochs
     pub lockups: Vec<LockupInfo>,
@@ -209,24 +213,21 @@ impl StakerInfo {
     pub fn compute_normal_bbro_reward(
         &mut self,
         epoch_info: &EpochInfoResponse,
-        state: &State,
         current_block: u64,
     ) -> StdResult<()> {
         let stake_amount = self.total_staked()?;
-
-        if stake_amount.is_zero() || state.last_distribution_block < self.last_balance_update {
+        if stake_amount.is_zero() {
             return Ok(());
         }
-
-        let epochs_staked = Uint128::from(state.last_distribution_block - self.last_balance_update)
-            .checked_div(Uint128::from(epoch_info.epoch))?;
 
         let bbro_per_epoch_reward =
             stake_amount.checked_div(epoch_info.epochs_per_year())? * epoch_info.bbro_emission_rate;
 
-        let bbro_reward = bbro_per_epoch_reward.checked_mul(epochs_staked)?;
+        let epochs_staked = (current_block - self.last_balance_update) / epoch_info.epoch;
+        let bbro_reward = bbro_per_epoch_reward.checked_mul(Uint128::from(epochs_staked))?;
+
         self.pending_bbro_reward = self.pending_bbro_reward.checked_add(bbro_reward)?;
-        self.last_balance_update = current_block;
+        self.last_balance_update = self.last_balance_update + (epochs_staked * epoch_info.epoch);
 
         Ok(())
     }
@@ -281,8 +282,9 @@ impl StakerInfo {
         self.locked_stake_amount = self.locked_stake_amount.checked_add(amount)?;
         self.lockups.push(LockupInfo {
             amount,
-            locked_at_block: current_block,
-            epochs_locked,
+            unlocked_at: Expiration::Never {},
+            locked_at_block: Some(current_block),
+            epochs_locked: Some(epochs_locked),
         });
 
         Ok(())
@@ -294,19 +296,43 @@ impl StakerInfo {
         &mut self,
         current_block: &BlockInfo,
         epoch_info: &EpochInfoResponse,
+        prev_epoch_blocks: u64,
     ) -> StdResult<()> {
         let mut unlocked_amount = Uint128::zero();
         let lockups: Vec<LockupInfo> = self
             .lockups
             .clone()
             .into_iter()
-            .filter(|l| {
-                let unlocked_at_block = l.locked_at_block + (l.epochs_locked * epoch_info.epoch);
+            .filter_map(|mut l| {
+                if l.locked_at_block.is_none() {
+                    let unlocked_at = match l.unlocked_at {
+                        Expiration::AtHeight(height) => height,
+                        _ => return None,
+                    };
+
+                    let remaining_epochs = (unlocked_at
+                        .checked_sub(current_block.height)
+                        .unwrap_or_default())
+                        / prev_epoch_blocks;
+
+                    if l.unlocked_at.is_expired(current_block) || remaining_epochs == 0 {
+                        unlocked_amount += l.amount;
+                        return None;
+                    } else {
+                        l.locked_at_block = Some(current_block.height);
+                        l.epochs_locked = Some(remaining_epochs);
+                    }
+                }
+
+                let locked_at_block = l.locked_at_block?;
+                let epochs_locked = l.epochs_locked?;
+
+                let unlocked_at_block = locked_at_block + (epochs_locked * epoch_info.epoch);
                 if current_block.height >= unlocked_at_block {
                     unlocked_amount += l.amount;
-                    false
+                    None
                 } else {
-                    true
+                    Some(l)
                 }
             })
             .collect();

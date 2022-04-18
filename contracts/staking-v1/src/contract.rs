@@ -10,7 +10,7 @@ use cw20::Cw20ReceiveMsg;
 use crate::{
     commands,
     error::ContractError,
-    migration::{load_config_v100, migrate_stakers_info_to_v110, MigrationMsgV100},
+    migration::{load_config_v100, MigrationMsgV100},
     queries,
     state::{load_config, store_config, store_state, update_owner, Config, LockupConfig, State},
 };
@@ -19,6 +19,7 @@ use services::{
     ownership_proposal::{
         claim_ownership, drop_ownership_proposal, propose_new_owner, query_ownership_proposal,
     },
+    querier::query_epoch_info,
     staking::{Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
 };
 
@@ -54,6 +55,11 @@ pub fn instantiate(
         None
     };
 
+    let epoch_info = query_epoch_info(
+        &deps.querier,
+        deps.api.addr_validate(&msg.epoch_manager_contract)?,
+    )?;
+
     let config = Config {
         owner: deps.api.addr_canonicalize(&msg.owner)?,
         paused: false,
@@ -71,6 +77,7 @@ pub fn instantiate(
             linear_growth: msg.linear_growth,
             exponential_growth: msg.exponential_growth,
         },
+        prev_epoch_blocks: epoch_info.epoch,
     };
 
     config.validate()?;
@@ -349,11 +356,11 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 /// ## Params
 /// * **deps** is an object of type [`Deps`].
 ///
-/// * **env** is an object of type [`Env`].
+/// * **_env** is an object of type [`Env`].
 ///
 /// * **msg** is an object of type [`MigrateMsg`].
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
+pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
     let contract_version = get_contract_version(deps.storage)?;
 
     match contract_version.contract.as_ref() {
@@ -380,12 +387,11 @@ pub fn migrate(deps: DepsMut, env: Env, msg: MigrateMsg) -> Result<Response, Con
                     unstake_period_blocks: config.unstake_period_blocks,
                     min_staking_amount: config.min_staking_amount,
                     lockup_config: config.lockup_config,
+                    prev_epoch_blocks: msg.prev_epoch_blocks,
                 };
 
                 new_config.validate()?;
                 store_config(deps.storage, &new_config)?;
-
-                migrate_stakers_info_to_v110(deps.storage, env, msg.current_epoch_blocks)?;
             }
             _ => return Err(ContractError::MigrationError {}),
         },

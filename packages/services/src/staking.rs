@@ -275,7 +275,7 @@ pub struct StakerInfoResponse {
     pub pending_bro_reward: Uint128,
     /// amount of pending bbro rewards of staker
     pub pending_bbro_reward: Uint128,
-    /// last balance update(stake, unstake) block
+    /// last balance update(stake, unstake, claim) block
     pub last_balance_update: u64,
     /// amounts locked for specified amount of epochs
     pub lockups: Vec<LockupInfoResponse>,

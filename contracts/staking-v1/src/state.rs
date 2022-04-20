@@ -227,7 +227,7 @@ impl StakerInfo {
         let bbro_reward = bbro_per_epoch_reward.checked_mul(Uint128::from(epochs_staked))?;
 
         self.pending_bbro_reward = self.pending_bbro_reward.checked_add(bbro_reward)?;
-        self.last_balance_update = self.last_balance_update + (epochs_staked * epoch_info.epoch);
+        self.last_balance_update += epochs_staked * epoch_info.epoch;
 
         Ok(())
     }

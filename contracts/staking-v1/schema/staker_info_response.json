@@ -15,7 +15,7 @@
   ],
   "properties": {
     "last_balance_update": {
-      "description": "last balance update(stake, unstake) block",
+      "description": "last balance update(stake, unstake, claim) block",
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0

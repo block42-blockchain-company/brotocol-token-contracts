@@ -2236,7 +2236,7 @@ fn test_lockups_migration_v100() {
         deps.as_mut().storage,
         &stakers[0],
         &StakerInfo {
-            reward_index: Decimal::zero(),
+            reward_index: Decimal::from_str("1.0").unwrap(),
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::from(100u128),
             pending_bro_reward: Uint128::zero(),
@@ -2255,7 +2255,7 @@ fn test_lockups_migration_v100() {
         deps.as_mut().storage,
         &stakers[1],
         &StakerInfo {
-            reward_index: Decimal::zero(),
+            reward_index: Decimal::from_str("1.0").unwrap(),
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::from(100u128),
             pending_bro_reward: Uint128::zero(),
@@ -2274,7 +2274,7 @@ fn test_lockups_migration_v100() {
         deps.as_mut().storage,
         &stakers[2],
         &StakerInfo {
-            reward_index: Decimal::zero(),
+            reward_index: Decimal::from_str("1.0").unwrap(),
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::from(100u128),
             pending_bro_reward: Uint128::zero(),
@@ -2293,7 +2293,7 @@ fn test_lockups_migration_v100() {
         deps.as_mut().storage,
         &stakers[3],
         &StakerInfo {
-            reward_index: Decimal::zero(),
+            reward_index: Decimal::from_str("1.0").unwrap(),
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::from(100u128),
             pending_bro_reward: Uint128::zero(),

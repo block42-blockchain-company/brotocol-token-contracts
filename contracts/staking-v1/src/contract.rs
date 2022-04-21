@@ -204,6 +204,9 @@ pub fn execute(
                 community_bonding_contract,
             )
         }
+        ExecuteMsg::UpdateStakerLockups { stakers } => {
+            commands::update_staker_lockups(deps, env, stakers)
+        }
         ExecuteMsg::ProposeNewOwner {
             new_owner,
             expires_in_blocks,
@@ -347,6 +350,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
             to_binary(&queries::query_staker_info(deps, env, staker)?)
         }
         QueryMsg::Withdrawals { staker } => to_binary(&queries::query_withdrawals(deps, staker)?),
+        QueryMsg::StakersWithDeprecatedLockups { skip, limit } => to_binary(
+            &queries::query_stakers_with_deprecated_lockups(deps, skip, limit)?,
+        ),
         QueryMsg::OwnershipProposal {} => to_binary(&query_ownership_proposal(deps)?),
     }
 }

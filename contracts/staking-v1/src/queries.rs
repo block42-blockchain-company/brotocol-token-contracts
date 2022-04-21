@@ -8,7 +8,10 @@ use services::{
     },
 };
 
-use crate::state::{load_config, load_state, load_withdrawals, read_staker_info};
+use crate::state::{
+    load_config, load_state, load_withdrawals, read_staker_info,
+    read_stakers_with_deprecated_lockups,
+};
 
 /// ## Description
 /// Returns staking contract config in the [`ConfigResponse`] object
@@ -107,8 +110,8 @@ pub fn query_staker_info(deps: Deps, env: Env, staker: String) -> StdResult<Stak
             .into_iter()
             .map(|l| LockupInfoResponse {
                 amount: l.amount,
-                locked_at_block: l.locked_at_block.unwrap_or_default(),
-                epochs_locked: l.epochs_locked.unwrap_or_default(),
+                locked_at_block: l.locked_at_block.unwrap(),
+                epochs_locked: l.epochs_locked.unwrap(),
             })
             .collect(),
     };
@@ -134,4 +137,12 @@ pub fn query_withdrawals(deps: Deps, staker: String) -> StdResult<WithdrawalsRes
 
     let resp = WithdrawalsResponse { claims };
     Ok(resp)
+}
+
+pub fn query_stakers_with_deprecated_lockups(
+    deps: Deps,
+    skip: u32,
+    limit: Option<u32>,
+) -> StdResult<Vec<String>> {
+    read_stakers_with_deprecated_lockups(deps.storage, deps.api, skip, limit)
 }

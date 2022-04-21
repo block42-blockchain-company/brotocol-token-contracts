@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use cosmwasm_std::{BlockInfo, CanonicalAddr, Decimal, StdError, StdResult, Storage, Uint128};
+use cosmwasm_std::{Api, BlockInfo, CanonicalAddr, Decimal, StdError, StdResult, Storage, Uint128};
 use cw20::Expiration;
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
@@ -499,4 +499,43 @@ pub fn load_withdrawals(
     WITHDRAWALS
         .may_load(storage, staker.as_slice())
         .map(|res| res.unwrap_or_default())
+}
+
+const MAX_LIMIT: u32 = 100;
+const DEFAULT_LIMIT: u32 = 10;
+pub fn read_stakers_with_deprecated_lockups(
+    storage: &dyn Storage,
+    api: &dyn Api,
+    skip: u32,
+    limit: Option<u32>,
+) -> StdResult<Vec<String>> {
+    let skip = skip as usize;
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+
+    STAKERS
+        .range(storage, None, None, cosmwasm_std::Order::Ascending)
+        .filter(|item| match item {
+            Ok(staker) => {
+                let (_, info) = staker;
+                if info.lockups.is_empty() {
+                    return false;
+                }
+
+                for lockup in info.lockups.iter() {
+                    if lockup.locked_at_block.is_none() {
+                        return true;
+                    }
+                }
+
+                false
+            }
+            Err(_) => false,
+        })
+        .map(|item| {
+            let (addr, _) = item?;
+            Ok(api.addr_humanize(&addr.into())?.to_string())
+        })
+        .skip(skip)
+        .take(limit)
+        .collect()
 }

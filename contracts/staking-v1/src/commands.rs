@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    to_binary, Addr, Attribute, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, Uint128,
-    WasmMsg,
+    to_binary, Addr, Attribute, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, StdError,
+    Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Expiration};
 
@@ -648,4 +648,31 @@ pub fn update_config(
     store_config(deps.storage, &config)?;
 
     Ok(Response::new().add_attributes(attributes))
+}
+
+pub fn update_staker_lockups(
+    deps: DepsMut,
+    env: Env,
+    stakers: Vec<String>,
+) -> Result<Response, ContractError> {
+    let config = load_config(deps.storage)?;
+
+    for staker in stakers {
+        let staker_raw = deps.api.addr_canonicalize(&staker)?;
+        let mut staker_info = read_staker_info(deps.storage, &staker_raw, env.block.height)?;
+
+        if staker_info.reward_index == Decimal::zero() {
+            return Err(StdError::generic_err("staker not found").into());
+        }
+
+        let epoch_info = query_epoch_info(
+            &deps.querier,
+            deps.api.addr_humanize(&config.epoch_manager_contract)?,
+        )?;
+
+        staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
+        store_staker_info(deps.storage, &staker_raw, &staker_info)?;
+    }
+
+    Ok(Response::new().add_attributes(vec![("action", "update_staker_lockups")]))
 }

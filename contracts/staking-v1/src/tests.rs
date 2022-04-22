@@ -2,7 +2,9 @@ use crate::contract::{execute, instantiate, query};
 use crate::error::ContractError;
 use crate::math::{decimal_mul_in_256, decimal_sub_in_256, decimal_sum_in_256};
 use crate::mock_querier::mock_dependencies;
+use crate::state::{LockupInfo, StakerInfo};
 use services::bbro_minter::ExecuteMsg as BbroMintMsg;
+use services::epoch_manager::EpochInfoResponse;
 use services::ownership_proposal::OwnershipProposalResponse;
 use services::staking::{
     ConfigResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, LockupConfigResponse,
@@ -404,7 +406,7 @@ fn test_fractional_rewards() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0000".to_string()
                 },
@@ -418,7 +420,7 @@ fn test_fractional_rewards() {
             unlocked_stake_amount: Uint128::from(100u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::from(333u128),
-            pending_bbro_reward: Uint128::new(90u128),
+            pending_bbro_reward: Uint128::new(60u128),
             last_balance_update: 12346,
             lockups: vec![],
         }
@@ -429,7 +431,7 @@ fn test_fractional_rewards() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0001".to_string()
                 },
@@ -443,7 +445,7 @@ fn test_fractional_rewards() {
             unlocked_stake_amount: Uint128::from(100u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::from(333u128),
-            pending_bbro_reward: Uint128::new(60u128),
+            pending_bbro_reward: Uint128::new(30u128),
             last_balance_update: 12347,
             lockups: vec![],
         }
@@ -454,7 +456,7 @@ fn test_fractional_rewards() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0002".to_string()
                 },
@@ -468,7 +470,7 @@ fn test_fractional_rewards() {
             unlocked_stake_amount: Uint128::from(100u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::from(333u128),
-            pending_bbro_reward: Uint128::new(30u128),
+            pending_bbro_reward: Uint128::zero(),
             last_balance_update: 12348,
             lockups: vec![],
         }
@@ -476,7 +478,7 @@ fn test_fractional_rewards() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -510,7 +512,7 @@ fn test_fractional_rewards() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0000".to_string()
                 },
@@ -525,7 +527,7 @@ fn test_fractional_rewards() {
             unlocked_stake_amount: Uint128::from(100u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::from(999u128),
-            pending_bbro_reward: Uint128::new(120u128),
+            pending_bbro_reward: Uint128::new(90u128),
             last_balance_update: 12346,
             lockups: vec![],
         }
@@ -581,7 +583,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0000".to_string()
                 },
@@ -603,7 +605,7 @@ fn test_unlocked_stake_tokens() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -655,7 +657,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0000".to_string()
                 },
@@ -677,7 +679,7 @@ fn test_unlocked_stake_tokens() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -709,7 +711,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0001".to_string()
                 },
@@ -731,7 +733,7 @@ fn test_unlocked_stake_tokens() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -784,7 +786,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0000".to_string()
                 },
@@ -806,7 +808,7 @@ fn test_unlocked_stake_tokens() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -857,7 +859,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0000".to_string()
                 },
@@ -871,7 +873,7 @@ fn test_unlocked_stake_tokens() {
             unlocked_stake_amount: Uint128::from(100u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::zero(),
-            pending_bbro_reward: Uint128::from(60u128),
+            pending_bbro_reward: Uint128::from(90u128),
             last_balance_update: 12346,
             lockups: vec![],
         }
@@ -879,7 +881,7 @@ fn test_unlocked_stake_tokens() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -945,7 +947,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0000".to_string()
                 },
@@ -959,7 +961,7 @@ fn test_unlocked_stake_tokens() {
             unlocked_stake_amount: Uint128::from(50u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::zero(),
-            pending_bbro_reward: Uint128::new(60u128),
+            pending_bbro_reward: Uint128::new(120u128),
             last_balance_update: 12350,
             lockups: vec![],
         }
@@ -967,7 +969,7 @@ fn test_unlocked_stake_tokens() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -982,7 +984,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<WithdrawalsResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::Withdrawals {
                     staker: "addr0000".to_string()
                 }
@@ -1020,7 +1022,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0000".to_string()
                 },
@@ -1034,7 +1036,7 @@ fn test_unlocked_stake_tokens() {
             unlocked_stake_amount: Uint128::from(50u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::from(333u128),
-            pending_bbro_reward: Uint128::new(60u128),
+            pending_bbro_reward: Uint128::new(120u128),
             last_balance_update: 12350,
             lockups: vec![],
         }
@@ -1044,7 +1046,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0001".to_string()
                 },
@@ -1058,7 +1060,7 @@ fn test_unlocked_stake_tokens() {
             unlocked_stake_amount: Uint128::from(100u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::from(1166u128),
-            pending_bbro_reward: Uint128::new(30u128),
+            pending_bbro_reward: Uint128::new(90u128),
             last_balance_update: 12347,
             lockups: vec![],
         }
@@ -1156,7 +1158,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<StakerInfoResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::StakerInfo {
                     staker: "addr0001".to_string()
                 },
@@ -1170,7 +1172,7 @@ fn test_unlocked_stake_tokens() {
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::from(1166u128),
-            pending_bbro_reward: Uint128::new(30u128),
+            pending_bbro_reward: Uint128::new(450u128),
             last_balance_update: 12362,
             lockups: vec![],
         }
@@ -1178,7 +1180,7 @@ fn test_unlocked_stake_tokens() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -1194,7 +1196,7 @@ fn test_unlocked_stake_tokens() {
         from_binary::<WithdrawalsResponse>(
             &query(
                 deps.as_ref(),
-                mock_env(),
+                env.clone(),
                 QueryMsg::Withdrawals {
                     staker: "addr0001".to_string()
                 }
@@ -1249,7 +1251,7 @@ fn test_unlocked_stake_tokens() {
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::zero(),
-            pending_bbro_reward: Uint128::from(30u128),
+            pending_bbro_reward: Uint128::from(450u128),
             last_balance_update: 12362,
             lockups: vec![],
         }
@@ -1384,8 +1386,8 @@ fn test_locked_stake_tokens() {
             unlocked_stake_amount: Uint128::from(1_000000u128),
             locked_stake_amount: Uint128::from(1_000000u128),
             pending_bro_reward: Uint128::zero(),
-            pending_bbro_reward: Uint128::zero(),
-            last_balance_update: 12346,
+            pending_bbro_reward: Uint128::from(300000u128),
+            last_balance_update: 12347,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(1_000000u128),
                 locked_at_block: 12347,
@@ -1396,7 +1398,7 @@ fn test_locked_stake_tokens() {
 
     assert_eq!(
         from_binary::<StateResponse>(
-            &query(deps.as_ref(), mock_env(), QueryMsg::State {}).unwrap()
+            &query(deps.as_ref(), env.clone(), QueryMsg::State {}).unwrap()
         )
         .unwrap(),
         StateResponse {
@@ -1439,8 +1441,8 @@ fn test_locked_stake_tokens() {
             unlocked_stake_amount: Uint128::from(1000000u128),
             locked_stake_amount: Uint128::from(1000000u128),
             pending_bro_reward: Uint128::from(1000u128),
-            pending_bbro_reward: Uint128::from(1200000u128),
-            last_balance_update: 12346,
+            pending_bbro_reward: Uint128::from(300000u128),
+            last_balance_update: 12347,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(1000000u128),
                 locked_at_block: 12347,
@@ -1464,7 +1466,7 @@ fn test_locked_stake_tokens() {
             funds: vec![],
             msg: to_binary(&BbroMintMsg::Mint {
                 recipient: addr1.clone(),
-                amount: Uint128::from(1200000u128),
+                amount: Uint128::from(3300000u128),
             })
             .unwrap(),
         }))
@@ -1578,7 +1580,7 @@ fn test_locked_stake_tokens() {
             unlocked_stake_amount: Uint128::zero(),
             locked_stake_amount: Uint128::from(2_000000u128),
             pending_bro_reward: Uint128::from(1000u128),
-            pending_bbro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::from(10800000u128),
             last_balance_update: 12352,
             lockups: vec![LockupInfoResponse {
                 amount: Uint128::from(2_000000u128),
@@ -1607,7 +1609,7 @@ fn test_locked_stake_tokens() {
             unlocked_stake_amount: Uint128::from(2_000000u128),
             locked_stake_amount: Uint128::zero(),
             pending_bro_reward: Uint128::from(1000u128),
-            pending_bbro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::from(28800000u128),
             last_balance_update: 12352,
             lockups: vec![],
         },
@@ -2110,5 +2112,265 @@ fn update_owner() {
                 exponential_growth: Decimal::from_str("0.0000075").unwrap(),
             }
         },
+    );
+}
+
+#[test]
+fn test_lockups_migration_v100() {
+    let mut env = mock_env();
+    env.block.height = 1000;
+
+    let prev_epoch = 100u64;
+    let mut epoch_info = EpochInfoResponse {
+        epoch: 100,
+        blocks_per_year: 0,
+        bbro_emission_rate: Decimal::zero(),
+    };
+
+    let mut staker_info = StakerInfo {
+        reward_index: Decimal::zero(),
+        unlocked_stake_amount: Uint128::zero(),
+        locked_stake_amount: Uint128::from(100u128),
+        pending_bro_reward: Uint128::zero(),
+        pending_bbro_reward: Uint128::zero(),
+        last_balance_update: 0,
+        lockups: vec![LockupInfo {
+            amount: Uint128::from(100u128),
+            unlocked_at: Expiration::AtHeight(1200),
+            locked_at_block: None,
+            epochs_locked: None,
+        }],
+    };
+
+    // must recalculate locked_at_block and epochs_locked
+    staker_info
+        .unlock_expired_lockups(&env.block, &epoch_info, prev_epoch)
+        .unwrap();
+
+    assert_eq!(
+        staker_info.lockups,
+        vec![LockupInfo {
+            amount: Uint128::from(100u128),
+            unlocked_at: Expiration::AtHeight(1200),
+            locked_at_block: Some(1000),
+            epochs_locked: Some(2),
+        }]
+    );
+
+    // must unlock after using new epoch length
+    epoch_info.epoch = 50;
+    env.block.height = 1100;
+
+    staker_info
+        .unlock_expired_lockups(&env.block, &epoch_info, prev_epoch)
+        .unwrap();
+
+    assert_eq!(staker_info.lockups, vec![]);
+    assert_eq!(staker_info.unlocked_stake_amount, Uint128::from(100u128));
+    assert_eq!(staker_info.locked_stake_amount, Uint128::zero());
+
+    // must unlock both lockups
+    let mut env = mock_env();
+    env.block.height = 1000;
+
+    let mut staker_info = StakerInfo {
+        reward_index: Decimal::zero(),
+        unlocked_stake_amount: Uint128::zero(),
+        locked_stake_amount: Uint128::from(200u128),
+        pending_bro_reward: Uint128::zero(),
+        pending_bbro_reward: Uint128::zero(),
+        last_balance_update: 0,
+        lockups: vec![
+            LockupInfo {
+                amount: Uint128::from(100u128),
+                unlocked_at: Expiration::AtHeight(999), // aready expired
+                locked_at_block: None,
+                epochs_locked: None,
+            },
+            LockupInfo {
+                amount: Uint128::from(100u128),
+                unlocked_at: Expiration::AtHeight(1099), // less than 1 epoch left
+                locked_at_block: None,
+                epochs_locked: None,
+            },
+        ],
+    };
+
+    staker_info
+        .unlock_expired_lockups(&env.block, &epoch_info, prev_epoch)
+        .unwrap();
+
+    assert_eq!(staker_info.lockups, vec![]);
+    assert_eq!(staker_info.unlocked_stake_amount, Uint128::from(200u128));
+    assert_eq!(staker_info.locked_stake_amount, Uint128::zero());
+
+    // test query stakers with legacy lockups and update method
+    let mut deps = mock_dependencies(&[]);
+    let msg = InstantiateMsg {
+        owner: "owner".to_string(),
+        bro_token: "bro0000".to_string(),
+        rewards_pool_contract: "reward0000".to_string(),
+        bbro_minter_contract: "bbrominter0000".to_string(),
+        epoch_manager_contract: "epoch0000".to_string(),
+        community_bonding_contract: Some("community_bonding0000".to_string()),
+        unstake_period_blocks: 10,
+        min_staking_amount: Uint128::zero(),
+        min_lockup_period_epochs: 1,
+        max_lockup_period_epochs: 365,
+        base_rate: Decimal::from_str("0.0001").unwrap(),
+        linear_growth: Decimal::from_str("0.0005").unwrap(),
+        exponential_growth: Decimal::from_str("0.0000075").unwrap(),
+    };
+
+    let info = mock_info("addr0000", &[]);
+    let _res = instantiate(deps.as_mut(), env.clone(), info, msg).unwrap();
+
+    let stakers = vec![
+        deps.as_mut().api.addr_canonicalize("addr0000").unwrap(),
+        deps.as_mut().api.addr_canonicalize("addr0001").unwrap(),
+        deps.as_mut().api.addr_canonicalize("addr0002").unwrap(),
+        deps.as_mut().api.addr_canonicalize("addr0003").unwrap(),
+    ];
+
+    crate::state::store_staker_info(
+        deps.as_mut().storage,
+        &stakers[0],
+        &StakerInfo {
+            reward_index: Decimal::from_str("1.0").unwrap(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::from(100u128),
+            pending_bro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::zero(),
+            last_balance_update: 0,
+            lockups: vec![LockupInfo {
+                amount: Uint128::from(100u128),
+                unlocked_at: Expiration::AtHeight(1200),
+                locked_at_block: None,
+                epochs_locked: None,
+            }],
+        },
+    )
+    .unwrap();
+    crate::state::store_staker_info(
+        deps.as_mut().storage,
+        &stakers[1],
+        &StakerInfo {
+            reward_index: Decimal::from_str("1.0").unwrap(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::from(100u128),
+            pending_bro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::zero(),
+            last_balance_update: 0,
+            lockups: vec![LockupInfo {
+                amount: Uint128::from(100u128),
+                unlocked_at: Expiration::Never {},
+                locked_at_block: Some(env.block.height),
+                epochs_locked: Some(100),
+            }],
+        },
+    )
+    .unwrap();
+    crate::state::store_staker_info(
+        deps.as_mut().storage,
+        &stakers[2],
+        &StakerInfo {
+            reward_index: Decimal::from_str("1.0").unwrap(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::from(100u128),
+            pending_bro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::zero(),
+            last_balance_update: 0,
+            lockups: vec![LockupInfo {
+                amount: Uint128::from(100u128),
+                unlocked_at: Expiration::AtHeight(1200),
+                locked_at_block: None,
+                epochs_locked: None,
+            }],
+        },
+    )
+    .unwrap();
+    crate::state::store_staker_info(
+        deps.as_mut().storage,
+        &stakers[3],
+        &StakerInfo {
+            reward_index: Decimal::from_str("1.0").unwrap(),
+            unlocked_stake_amount: Uint128::zero(),
+            locked_stake_amount: Uint128::from(100u128),
+            pending_bro_reward: Uint128::zero(),
+            pending_bbro_reward: Uint128::zero(),
+            last_balance_update: 0,
+            lockups: vec![LockupInfo {
+                amount: Uint128::from(100u128),
+                unlocked_at: Expiration::AtHeight(1200),
+                locked_at_block: None,
+                epochs_locked: None,
+            }],
+        },
+    )
+    .unwrap();
+
+    assert_eq!(
+        from_binary::<Vec<String>>(
+            &query(
+                deps.as_ref(),
+                mock_env(),
+                QueryMsg::StakersWithDeprecatedLockups {
+                    skip: 0,
+                    limit: None,
+                }
+            )
+            .unwrap()
+        )
+        .unwrap(),
+        vec![
+            "addr0000".to_string(),
+            "addr0002".to_string(),
+            "addr0003".to_string()
+        ],
+    );
+
+    let msg = ExecuteMsg::UpdateStakerLockups {
+        stakers: vec!["addr0000".to_string()],
+    };
+    let info = mock_info("bruh0000", &[]);
+    let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();
+
+    assert_eq!(
+        from_binary::<Vec<String>>(
+            &query(
+                deps.as_ref(),
+                mock_env(),
+                QueryMsg::StakersWithDeprecatedLockups {
+                    skip: 0,
+                    limit: None,
+                }
+            )
+            .unwrap()
+        )
+        .unwrap(),
+        vec!["addr0002".to_string(), "addr0003".to_string()],
+    );
+
+    let msg = ExecuteMsg::UpdateStakerLockups {
+        stakers: vec!["addr0002".to_string(), "addr0003".to_string()],
+    };
+    let info = mock_info("bruh0000", &[]);
+    let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();
+
+    let empty: Vec<String> = vec![];
+    assert_eq!(
+        from_binary::<Vec<String>>(
+            &query(
+                deps.as_ref(),
+                mock_env(),
+                QueryMsg::StakersWithDeprecatedLockups {
+                    skip: 0,
+                    limit: None,
+                }
+            )
+            .unwrap()
+        )
+        .unwrap(),
+        empty,
     );
 }

@@ -1,9 +1,6 @@
 ## Description
 - short description of what you did, summary of the change (do not repeat information from Jira task)
 
-## Jira issue link
-(if there is any)
-
 #### Code
 Before submitting this PR I:
 - [ ] Self-reviewed the code as a whole once again

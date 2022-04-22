@@ -94,6 +94,9 @@ pub enum ExecuteMsg {
         /// community bonding contract
         community_bonding_contract: Option<String>,
     },
+    UpdateStakerLockups {
+        stakers: Vec<String>,
+    },
     /// ## Description
     /// Creates an offer for a new owner.
     /// The validity period of the offer is set in the `expires_in_blocks` variable
@@ -188,6 +191,10 @@ pub enum QueryMsg {
         /// staker address
         staker: String,
     },
+    StakersWithDeprecatedLockups {
+        skip: u32,
+        limit: Option<u32>,
+    },
     /// ## Description
     /// Returns information about created ownership proposal in the [`OwnershipProposalResponse`] object
     /// otherwise returns not-found error
@@ -275,7 +282,7 @@ pub struct StakerInfoResponse {
     pub pending_bro_reward: Uint128,
     /// amount of pending bbro rewards of staker
     pub pending_bbro_reward: Uint128,
-    /// last balance update(stake, unstake) block
+    /// last balance update(stake, unstake, claim) block
     pub last_balance_update: u64,
     /// amounts locked for specified amount of epochs
     pub lockups: Vec<LockupInfoResponse>,

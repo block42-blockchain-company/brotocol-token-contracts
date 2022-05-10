@@ -215,6 +215,8 @@ pub struct StateResponse {
     pub ust_bonding_balance: Uint128,
     /// available bro balance for lp token bonding
     pub lp_bonding_balance: Uint128,
+    /// bonded amount of bro tokens
+    pub bonded_bro_amount: Uint128,
 }
 
 /// ## ClaimInfoResponse

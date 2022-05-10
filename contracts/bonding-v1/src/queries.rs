@@ -75,6 +75,7 @@ pub fn query_state(deps: Deps) -> StdResult<StateResponse> {
     let resp = StateResponse {
         ust_bonding_balance: state.ust_bonding_balance,
         lp_bonding_balance: state.lp_bonding_balance,
+        bonded_bro_amount: state.bonded_bro_amount,
     };
 
     Ok(resp)

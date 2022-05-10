@@ -222,6 +222,29 @@
       "additionalProperties": false
     },
     {
+      "type": "object",
+      "required": [
+        "update_staker_lockups"
+      ],
+      "properties": {
+        "update_staker_lockups": {
+          "type": "object",
+          "required": [
+            "stakers"
+          ],
+          "properties": {
+            "stakers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "title": "Description",
       "description": "Creates an offer for a new owner. The validity period of the offer is set in the `expires_in_blocks` variable ## Executor Only owner can execute this function",
       "type": "object",

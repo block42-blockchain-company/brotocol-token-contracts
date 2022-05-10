@@ -11,7 +11,6 @@ Price calculation will depend on current BRO market price.
 {
     "owner": "terra1...",
     "bro_token": "terra1...",
-    "lp_token": "terra1...",
     "rewards_pool_contract": "terra1...",
     "treasury_contract": "terra1...",
     "astroport_factory": "terra1...",
@@ -21,9 +20,14 @@ Price calculation will depend on current BRO market price.
     "bonding_mode": {
         "normal": {
             "ust_bonding_reward_ratio": "0.6",
+            "lp_token": "terra1...",
             "lp_bonding_discount": "0.05",
-            "vesting_period_blocks": 50,
-            "lp_bonding_enabled": true
+            "vesting_period_blocks": 50
+        },
+        |
+        "community": {
+            "staking_contract": "terra1...",
+            "epochs_locked": 1
         }
     }
 }

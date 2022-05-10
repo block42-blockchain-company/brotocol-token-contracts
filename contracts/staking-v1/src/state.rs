@@ -432,6 +432,20 @@ pub fn store_staker_info(
 
 /// ## Description
 /// Returns staker info object of type [`StakerInfo`] by specified key of type [`CanonicalAddr`] from map [`STAKERS`]
+/// if staker not exists throws an error
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+///
+/// * **staker** is an object of type [`CanonicalAddr`]
+pub fn load_staker_info(
+    storage: &mut dyn Storage,
+    staker: &CanonicalAddr,
+) -> StdResult<StakerInfo> {
+    STAKERS.load(storage, staker.as_slice())
+}
+
+/// ## Description
+/// Returns staker info object of type [`StakerInfo`] by specified key of type [`CanonicalAddr`] from map [`STAKERS`]
 /// ## Params
 /// * **storage** is an object of type [`Storage`]
 ///

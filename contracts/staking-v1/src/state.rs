@@ -473,6 +473,25 @@ pub fn read_staker_info(
     }
 }
 
+pub fn read_stakers_info(
+    storage: &dyn Storage,
+    skip: u32,
+    limit: Option<u32>,
+) -> StdResult<Vec<StakerInfo>> {
+    let skip = skip as usize;
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+
+    STAKERS
+        .range(storage, None, None, cosmwasm_std::Order::Ascending)
+        .map(|item| {
+            let (_, info) = item?;
+            Ok(info)
+        })
+        .skip(skip)
+        .take(limit)
+        .collect()
+}
+
 /// ## Description
 /// Removes staker info object of type [`StakerInfo`] by specified key of type [`CanonicalAddr`] from map [`STAKERS`]
 /// ## Params

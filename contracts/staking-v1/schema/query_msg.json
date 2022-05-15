@@ -80,6 +80,36 @@
     {
       "type": "object",
       "required": [
+        "stakers_info"
+      ],
+      "properties": {
+        "stakers_info": {
+          "type": "object",
+          "required": [
+            "skip"
+          ],
+          "properties": {
+            "limit": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "skip": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "stakers_with_deprecated_lockups"
       ],
       "properties": {

@@ -191,6 +191,10 @@ pub enum QueryMsg {
         /// staker address
         staker: String,
     },
+    StakersInfo {
+        skip: u32,
+        limit: Option<u32>,
+    },
     StakersWithDeprecatedLockups {
         skip: u32,
         limit: Option<u32>,

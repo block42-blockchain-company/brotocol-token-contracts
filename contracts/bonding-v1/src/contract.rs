@@ -2,7 +2,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     from_binary, to_binary, Addr, Api, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Storage,
+    StdResult, Storage, Uint128,
 };
 use cw2::{get_contract_version, set_contract_version};
 use cw20::Cw20ReceiveMsg;
@@ -10,7 +10,7 @@ use cw20::Cw20ReceiveMsg;
 use crate::{
     commands,
     error::ContractError,
-    migration::{load_config_v100, MigrationMsgV100},
+    migration::{load_config_v100, load_state_v110, MigrationMsgV100},
     queries,
     state::{load_config, store_config, store_state, update_owner, BondingMode, Config, State},
 };
@@ -342,6 +342,27 @@ pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, Co
 
                 new_config.validate()?;
                 store_config(deps.storage, &new_config)?;
+
+                let state = load_state_v110(deps.storage)?;
+
+                let new_state = State {
+                    ust_bonding_balance: state.ust_bonding_balance,
+                    lp_bonding_balance: state.lp_bonding_balance,
+                    bonded_bro_amount: Uint128::zero(),
+                };
+
+                store_state(deps.storage, &new_state)?;
+            }
+            "1.1.0" => {
+                let state = load_state_v110(deps.storage)?;
+
+                let new_state = State {
+                    ust_bonding_balance: state.ust_bonding_balance,
+                    lp_bonding_balance: state.lp_bonding_balance,
+                    bonded_bro_amount: Uint128::zero(),
+                };
+
+                store_state(deps.storage, &new_state)?;
             }
             _ => return Err(ContractError::MigrationError {}),
         },

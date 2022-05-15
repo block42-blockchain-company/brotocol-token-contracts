@@ -432,6 +432,20 @@ pub fn store_staker_info(
 
 /// ## Description
 /// Returns staker info object of type [`StakerInfo`] by specified key of type [`CanonicalAddr`] from map [`STAKERS`]
+/// if staker not exists throws an error
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+///
+/// * **staker** is an object of type [`CanonicalAddr`]
+pub fn load_staker_info(
+    storage: &mut dyn Storage,
+    staker: &CanonicalAddr,
+) -> StdResult<StakerInfo> {
+    STAKERS.load(storage, staker.as_slice())
+}
+
+/// ## Description
+/// Returns staker info object of type [`StakerInfo`] by specified key of type [`CanonicalAddr`] from map [`STAKERS`]
 /// ## Params
 /// * **storage** is an object of type [`Storage`]
 ///
@@ -457,6 +471,25 @@ pub fn read_staker_info(
             lockups: vec![],
         }),
     }
+}
+
+pub fn read_stakers_info(
+    storage: &dyn Storage,
+    skip: u32,
+    limit: Option<u32>,
+) -> StdResult<Vec<StakerInfo>> {
+    let skip = skip as usize;
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+
+    STAKERS
+        .range(storage, None, None, cosmwasm_std::Order::Ascending)
+        .map(|item| {
+            let (_, info) = item?;
+            Ok(info)
+        })
+        .skip(skip)
+        .take(limit)
+        .collect()
 }
 
 /// ## Description

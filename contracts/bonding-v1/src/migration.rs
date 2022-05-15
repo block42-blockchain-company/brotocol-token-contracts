@@ -6,6 +6,8 @@ use services::bonding::BondingModeMsg;
 
 static CONFIGV100: Item<ConfigV100> = Item::new("config");
 
+static STATEV110: Item<StateV110> = Item::new("state");
+
 /// ## Description
 /// This structure describes a contract migration message.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -51,4 +53,22 @@ pub struct ConfigV100 {
 /// * **storage** is an object of type [`Storage`]
 pub fn load_config_v100(storage: &dyn Storage) -> StdResult<ConfigV100> {
     CONFIGV100.load(storage)
+}
+
+/// ## Description
+/// This structure describes state of bonding contract.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct StateV110 {
+    /// available bro balance for ust bonding
+    pub ust_bonding_balance: Uint128,
+    /// available bro balance for lp token bonding
+    pub lp_bonding_balance: Uint128,
+}
+
+// ## Description
+/// Returns outdated state struct of type [`StateV110`]
+/// ## Params
+/// * **storage** is an object of type [`Storage`]
+pub fn load_state_v110(storage: &dyn Storage) -> StdResult<StateV110> {
+    STATEV110.load(storage)
 }

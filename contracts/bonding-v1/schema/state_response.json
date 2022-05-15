@@ -4,10 +4,19 @@
   "description": "This structure describes the fields for state response message.",
   "type": "object",
   "required": [
+    "bonded_bro_amount",
     "lp_bonding_balance",
     "ust_bonding_balance"
   ],
   "properties": {
+    "bonded_bro_amount": {
+      "description": "bonded amount of bro tokens",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        }
+      ]
+    },
     "lp_bonding_balance": {
       "description": "available bro balance for lp token bonding",
       "allOf": [

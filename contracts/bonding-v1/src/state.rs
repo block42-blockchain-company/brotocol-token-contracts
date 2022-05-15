@@ -167,6 +167,8 @@ pub struct State {
     pub ust_bonding_balance: Uint128,
     /// available bro balance for lp token bonding
     pub lp_bonding_balance: Uint128,
+    /// bonded amount of bro tokens
+    pub bonded_bro_amount: Uint128,
 }
 
 impl Default for State {
@@ -174,6 +176,7 @@ impl Default for State {
         State {
             ust_bonding_balance: Uint128::zero(),
             lp_bonding_balance: Uint128::zero(),
+            bonded_bro_amount: Uint128::zero(),
         }
     }
 }

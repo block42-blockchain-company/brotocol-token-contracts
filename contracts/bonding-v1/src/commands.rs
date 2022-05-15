@@ -127,6 +127,7 @@ pub fn lp_bond(
     }
 
     state.lp_bonding_balance = state.lp_bonding_balance.checked_sub(bro_payout)?;
+    state.bonded_bro_amount = state.bonded_bro_amount.checked_add(bro_payout)?;
     store_state(deps.storage, &state)?;
 
     let mut claims = load_claims(deps.storage, &sender_raw)?;
@@ -203,6 +204,7 @@ pub fn ust_bond(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, 
     }
 
     state.ust_bonding_balance = state.ust_bonding_balance.checked_sub(bro_payout)?;
+    state.bonded_bro_amount = state.bonded_bro_amount.checked_add(bro_payout)?;
     store_state(deps.storage, &state)?;
 
     let mut msgs: Vec<CosmosMsg> = vec![bond_asset.into_msg(

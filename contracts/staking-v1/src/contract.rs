@@ -350,6 +350,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
             to_binary(&queries::query_staker_info(deps, env, staker)?)
         }
         QueryMsg::Withdrawals { staker } => to_binary(&queries::query_withdrawals(deps, staker)?),
+        QueryMsg::StakersInfo { skip, limit } => {
+            to_binary(&queries::query_stakers_info(deps, skip, limit)?)
+        }
         QueryMsg::StakersWithDeprecatedLockups { skip, limit } => to_binary(
             &queries::query_stakers_with_deprecated_lockups(deps, skip, limit)?,
         ),
@@ -399,6 +402,7 @@ pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, Co
                 new_config.validate()?;
                 store_config(deps.storage, &new_config)?;
             }
+            "1.1.0" => {}
             _ => return Err(ContractError::MigrationError {}),
         },
         _ => return Err(ContractError::MigrationError {}),

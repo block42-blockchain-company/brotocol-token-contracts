@@ -9,8 +9,8 @@ use services::{
 };
 
 use crate::state::{
-    load_config, load_state, load_withdrawals, read_staker_info,
-    read_stakers_with_deprecated_lockups,
+    load_config, load_state, load_withdrawals, read_staker_info, read_stakers_info,
+    read_stakers_with_deprecated_lockups, StakerInfo,
 };
 
 /// ## Description
@@ -137,6 +137,10 @@ pub fn query_withdrawals(deps: Deps, staker: String) -> StdResult<WithdrawalsRes
 
     let resp = WithdrawalsResponse { claims };
     Ok(resp)
+}
+
+pub fn query_stakers_info(deps: Deps, skip: u32, limit: Option<u32>) -> StdResult<Vec<StakerInfo>> {
+    read_stakers_info(deps.storage, skip, limit)
 }
 
 pub fn query_stakers_with_deprecated_lockups(

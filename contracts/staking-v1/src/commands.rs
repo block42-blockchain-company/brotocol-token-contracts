@@ -1,14 +1,15 @@
 use cosmwasm_std::{
-    to_binary, Addr, Attribute, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, StdError,
-    Uint128, WasmMsg,
+    to_binary, Addr, Attribute, CosmosMsg, Decimal, DepsMut, Env, MessageInfo, Response, Uint128,
+    WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Expiration};
 
 use crate::{
     error::ContractError,
     state::{
-        load_config, load_state, load_withdrawals, read_staker_info, remove_staker_info,
-        store_config, store_staker_info, store_state, store_withdrawals, WithdrawalInfo,
+        load_config, load_staker_info, load_state, load_withdrawals, read_staker_info,
+        remove_staker_info, store_config, store_staker_info, store_state, store_withdrawals,
+        WithdrawalInfo,
     },
 };
 
@@ -656,19 +657,19 @@ pub fn update_staker_lockups(
     stakers: Vec<String>,
 ) -> Result<Response, ContractError> {
     let config = load_config(deps.storage)?;
+    let epoch_info = query_epoch_info(
+        &deps.querier,
+        deps.api.addr_humanize(&config.epoch_manager_contract)?,
+    )?;
 
     for staker in stakers {
         let staker_raw = deps.api.addr_canonicalize(&staker)?;
-        let mut staker_info = read_staker_info(deps.storage, &staker_raw, env.block.height)?;
+        let mut staker_info = load_staker_info(deps.storage, &staker_raw)?;
 
-        if staker_info.reward_index == Decimal::zero() {
-            return Err(StdError::generic_err("staker not found").into());
+        if staker_info.locked_stake_amount == Uint128::zero() {
+            // skipping account due to zero locked amount
+            continue;
         }
-
-        let epoch_info = query_epoch_info(
-            &deps.querier,
-            deps.api.addr_humanize(&config.epoch_manager_contract)?,
-        )?;
 
         staker_info.unlock_expired_lockups(&env.block, &epoch_info, config.prev_epoch_blocks)?;
         store_staker_info(deps.storage, &staker_raw, &staker_info)?;

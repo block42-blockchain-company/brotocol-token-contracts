@@ -154,6 +154,7 @@ fn proper_initialization() {
         StateResponse {
             ust_bonding_balance: Uint128::zero(),
             lp_bonding_balance: Uint128::zero(),
+            bonded_bro_amount: Uint128::zero(),
         },
     );
 
@@ -229,6 +230,7 @@ fn proper_initialization() {
         StateResponse {
             ust_bonding_balance: Uint128::zero(),
             lp_bonding_balance: Uint128::zero(),
+            bonded_bro_amount: Uint128::zero(),
         },
     );
 }
@@ -296,6 +298,7 @@ fn distribute_reward() {
         StateResponse {
             ust_bonding_balance: Uint128::from(60u128),
             lp_bonding_balance: Uint128::from(40u128),
+            bonded_bro_amount: Uint128::zero(),
         },
     );
 
@@ -336,6 +339,7 @@ fn distribute_reward() {
         StateResponse {
             ust_bonding_balance: Uint128::from(100u128),
             lp_bonding_balance: Uint128::zero(),
+            bonded_bro_amount: Uint128::zero(),
         },
     );
 }
@@ -502,6 +506,7 @@ fn lp_bond() {
         StateResponse {
             ust_bonding_balance: Uint128::from(60_000000u128),
             lp_bonding_balance: Uint128::from(37_900000u128),
+            bonded_bro_amount: Uint128::from(2_100000u128),
         },
     );
 
@@ -757,6 +762,7 @@ fn ust_bond_normal_mode() {
         StateResponse {
             ust_bonding_balance: Uint128::from(54_500000u128),
             lp_bonding_balance: Uint128::from(40_000000u128),
+            bonded_bro_amount: Uint128::from(5_500000u128),
         },
     );
 
@@ -888,6 +894,7 @@ fn ust_bond_community_mode() {
         StateResponse {
             ust_bonding_balance: Uint128::from(94_500000u128),
             lp_bonding_balance: Uint128::zero(),
+            bonded_bro_amount: Uint128::from(5_500000u128),
         },
     );
 
